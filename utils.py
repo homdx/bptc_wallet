@@ -10,6 +10,7 @@ from nacl.utils import random
 
 def toposort(nodes, parents):
     seen = {}
+
     def visit(u):
         if u in seen:
             if seen[u] == 0:

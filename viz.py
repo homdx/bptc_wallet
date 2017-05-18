@@ -1,30 +1,28 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from itertools import repeat
-from random import shuffle
+
 import sys
-from base64 import b64encode
-from time import localtime, strftime, sleep
 
 from bokeh.io import curdoc
-from bokeh.layouts import layout, widgetbox, row, column
+from bokeh.layouts import row, column
 from bokeh.plotting import figure
 from bokeh.palettes import plasma, small_palettes
-from bokeh.models import (
-    FixedTicker, Button, ColumnDataSource, PanTool, Scroll,
-    RadioButtonGroup, RadioGroup, Arrow, NormalHead, HoverTool, Dimensions, logging, PreText)
-from sklavit_nacl.signing import SigningKey
+from bokeh.models import (Button, ColumnDataSource,
+                          PanTool, RadioButtonGroup, HoverTool, Dimensions, PreText)
 
-from utils import bfs, randrange
-from node import Node
+from utils import bfs
 from network import LocalNetwork
 
 R_COLORS = small_palettes['Set2'][8]
+
+
 # shuffle(R_COLORS)
 def round_color(r):
     return R_COLORS[r % 8]
 
 I_COLORS = plasma(256)
+
+
 def idx_color(r):
     return I_COLORS[r % 256]
 
@@ -52,7 +50,6 @@ class App:
         do_one_step = Button(label="Do 1 step", width=60)
         do_one_step.on_click(self.animate)
 
-
         selector = RadioButtonGroup(
                 labels=['Node %i' % i for i in range(n_nodes)], active=0,
                 name='Node to inspect')
@@ -72,7 +69,7 @@ class App:
 
         self.links_src = ColumnDataSource(data={'x0': [], 'y0': [], 'x1': [],
                                                 'y1': [], 'width': []})
-        #self.links_rend = plot.add_layout(
+        # self.links_rend = plot.add_layout(
         #        Arrow(end=NormalHead(fill_color='black'), x_start='x0', y_start='y0', x_end='x1',
         #        y_end='y1', source=self.links_src))
         self.links_rend = plot.segment(color='#777777',
@@ -80,9 +77,8 @@ class App:
                 y1='y1', source=self.links_src, line_width='width')
 
         self.tr_src = ColumnDataSource(
-                data={'x': [], 'y': [], 'round_color': [], 'idx': [],
-                    'line_alpha': [], 'round': [], 'hash': [], 'payload': [],
-                    'time': []})
+                data={'x': [], 'y': [], 'round_color': [], 'idx': [], 'line_alpha': [],
+                      'round': [], 'hash': [], 'payload': [], 'time': []})
 
         self.tr_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                    line_alpha='line_alpha', source=self.tr_src, line_width=5)
@@ -118,8 +114,7 @@ class App:
 
     def extract_data(self, hashgraph, trs, i):
         tr_data = {'x': [], 'y': [], 'round_color': [], 'idx': [],
-                'line_alpha': [], 'round': [], 'hash': [], 'payload': [],
-                'time': []}
+                   'line_alpha': [], 'round': [], 'hash': [], 'payload': [], 'time': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
         for j, event in enumerate(trs):
             self.tbd[event] = i + j  # idx of event in self.trs
@@ -178,6 +173,5 @@ class App:
                     del self.tbd[u]
                     print('updated')
             self.tr_src.trigger('data', None, self.tr_src.data)
-
 
 App(int(sys.argv[1]))
