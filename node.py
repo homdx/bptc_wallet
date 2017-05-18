@@ -61,7 +61,7 @@ class Node:
     @classmethod
     def create(cls):
         """Creates new node.
-        Generate singing and verification keys. ID will be as verification kay."""
+        Generate singing and verification keys. ID will be as verification key."""
         signing_key = SigningKey.generate()
         return cls(signing_key)
 
@@ -142,11 +142,14 @@ class Node:
         payload = ()  # TODO: it is not used!!! why?
         self.new = []
 
-        logging.info("{}.payload = {}".format(self, payload))
+        logging.debug("{}.payload = {}".format(self, payload))
 
         # pick a random node to sync with but not me
-        node = choice(list(self.neighbours.values()))
+        if len(list(self.neighbours.values())) == 0:
+            logging.error("No known neighbours!")
+            return None
 
+        node = choice(list(self.neighbours.values()))
         logging.info("{}.sync with {}".format(self, node))
         new = self.sync(node, payload)
 
