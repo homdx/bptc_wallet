@@ -14,4 +14,4 @@ def run_network(n_nodes, n_turns):
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.DEBUG)
-    run_network(3, 100)
+    run_network(4, 1000)

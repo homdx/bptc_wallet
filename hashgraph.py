@@ -219,7 +219,8 @@ class Hashgraph:
                 if r_ - r == 1:
                     y.votes[x] = x in s
                 else:
-                    v, t = majority((self.stake[self.lookup_table[w].verify_key], w.votes[x]) for w in s)
+                    filtered_s = filter(lambda w: w in self.lookup_table, s)  # TODO: check why filtering is necessary
+                    v, t = majority((self.stake[self.lookup_table[w].verify_key], w.votes[x]) for w in filtered_s)
                     if (r_ - r) % C != 0:
                         if t > self.min_s:
                             self.famous[x] = v
