@@ -16,7 +16,8 @@ from bokeh.models import (
 from sklavit_nacl.signing import SigningKey
 
 from utils import bfs, randrange
-from swirld import HashgraphNetNode, LocalNetwork
+from node import Node
+from network import LocalNetwork
 
 R_COLORS = small_palettes['Set2'][8]
 # shuffle(R_COLORS)
