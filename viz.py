@@ -56,7 +56,7 @@ class App:
         selector.on_click(self.sel_node)
 
         plot = figure(
-                plot_height=700, plot_width=900, y_range=(0, 30), x_range=(0, n_nodes - 1),
+                plot_height=2000, plot_width=900, y_range=(0, 30), x_range=(0, n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
                            ('round', '@round'), ('hash', '@hash'),
@@ -147,7 +147,7 @@ class App:
 
         self.i += 1
 
-        self.log.text += "Iteration {}\n".format(self.i)
+        self.log.text += "#{}: {})\n".format(self.i, node.id)
 
         new = node.heartbeat_callback()
 

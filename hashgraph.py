@@ -5,8 +5,8 @@ from utils import bfs
 from itertools import zip_longest
 from functools import reduce
 
-
 C = 6  # what is this?
+
 
 class Hashgraph:
     def __init__(self):
@@ -31,7 +31,7 @@ class Hashgraph:
 
         self.idx = {}
 
-        # {round-num}: rounds where famousness is fully decided
+        # {round-num}: rounds where fame is fully decided
         self.consensus = set()
 
         # {event-hash => {event-hash => bool}}
@@ -112,7 +112,8 @@ class Hashgraph:
         return self.lookup_table.keys()
 
     def difference(self, info):
-        """Difference with given hashgraf info (fingerprint?)"""
+        """Difference with given hashgraph info (fingerprint?)"""
+
         # NOTE we need bfs() due to cheating possibility -- several children of one parent
         # succ = lambda u: (p for p in u.parents
         #                if (p.verify_key not in info) or (p.height > info[p.verify_key]))
@@ -240,7 +241,8 @@ class Hashgraph:
         return new_c
 
     def find_order(self, new_c):
-        to_int = lambda x: int.from_bytes(self.lookup_table[x].signature, byteorder='big')
+        def to_int(x):
+            return int.from_bytes(self.lookup_table[x].signature, byteorder='big')
 
         for r in sorted(new_c):
             f_w = {w for w in self.witnesses[r].values() if self.famous[w]}
