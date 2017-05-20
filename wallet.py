@@ -34,6 +34,7 @@ class Core(GridLayout):
             iteration += 1
             logger.info('#{}'.format(iteration))
             self.member.heartbeat()
+            self.member.sync()  # DEV: this is intended to sync with the other member
             time.sleep(1)
 
 

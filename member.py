@@ -78,43 +78,43 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
-    def sync(self, member, payload):
+    def sync(self):
         """Update hg and return new event ids in topological order."""
 
-        fingerprint = self.hashgraph.get_fingerprint()
+        fingerprint = self.hashgraph.get_fingerprint(self)
 
-        logger.info("{}.sync:message = \n{}".format(self, pformat(fingerprint)))
+        logger.info("{} sync fingerprint = {}".format(self, pformat(fingerprint)))
 
         # NOTE: communication channel security must be provided in standard way: SSL
-        logger.info("{}.sync: reply acquired:".format(self))
 
-        remote_head, difference = member.ask_sync(self, fingerprint)
-        logger.info("  remote_head = {}".format(remote_head))
-        logger.info("  difference  = {}".format(difference))
-
-        # TODO move to hashgraph
-        new = tuple(toposort([event for event in difference if event.id not in self.hashgraph.lookup_table],
-                             # difference.keys() - self.hashgraph.keys(),
-                             lambda u: u.parents))
-
-        logger.info("{}.sync:new = \n{}".format(self, pformat(new)))
-
-        # TODO move to hashgraph
-        for event in new:
-            if self.hashgraph.is_valid_event(event.id, event):  # TODO check?
-                self.hashgraph.add_event(event)  # (, h) ??
-
-        # TODO move to hashgraph
-        # TODO check DOUBLE add remote_head ?
-        if self.hashgraph.is_valid_event(remote_head.id, remote_head):  # TODO move id check to communication part
-            event = self.hashgraph.new_event(payload, remote_head, self.signing_key)
-            self.hashgraph.add_event(event)
-            self.hashgraph.head = event
-            h = event.id
-
-        logger.info("{}.sync exits.".format(self))
-
-        return new + (event,)
+        # remote_head, difference = member.ask_sync(self, fingerprint)
+        # logger.info("  remote_head = {}".format(remote_head))
+        # logger.info("  difference  = {}".format(difference))
+        #
+        # # TODO move to hashgraph
+        # new = tuple(toposort([event for event in difference if event.id not in self.hashgraph.lookup_table],
+        #                      # difference.keys() - self.hashgraph.keys(),
+        #                      lambda u: u.parents))
+        #
+        # logger.info("{}.sync:new = \n{}".format(self, pformat(new)))
+        #
+        # # TODO move to hashgraph
+        # for event in new:
+        #     if self.hashgraph.is_valid_event(event.id, event):  # TODO check?
+        #         self.hashgraph.add_event(event)  # (, h) ??
+        #
+        # # TODO move to hashgraph
+        # # TODO check DOUBLE add remote_head ?
+        # if self.hashgraph.is_valid_event(remote_head.id, remote_head):  # TODO move id check to communication part
+        #     event = self.hashgraph.new_event(payload, remote_head, self.signing_key)
+        #     self.hashgraph.add_event(event)
+        #     self.hashgraph.head = event
+        #     h = event.id
+        #
+        # logger.info("{}.sync exits.".format(self))
+        #
+        # return new + (event,)
+        return
 
     def ask_sync(self, member, fingerprint):
         """Respond to someone wanting to sync (only public method)."""
@@ -167,7 +167,7 @@ class Member:
     def heartbeat(self):
         logger.info("{} heartbeat...".format(self))
         event = self._new_event(None, (self.head, None))
-        self.hashgraph.add_event(event)
+        self.hashgraph.add_event(self.head, event)
         self.head = event
         return event
 

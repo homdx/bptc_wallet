@@ -50,12 +50,13 @@ class Hashgraph:
         # self.can_see = {}
 
     def add_first_event(self, event):
-        self.add_event(event)
+        self.add_event(event, event)
         self.witnesses[0][event.verify_key] = event
 
-    def add_event(self, event: Event):
+    def add_event(self, head, event: Event):
         """Add given event to this hashgraph."""
         h = event.id
+        event.can_see = {event.verify_key: head}
         self.lookup_table[h] = event
         self.tbd.add(h)  # TODO add event?
 
@@ -82,9 +83,10 @@ class Hashgraph:
         # and all(x.verify_key != ev.verify_key
         #        for x in self.preds[ev.parents[0]]))))
 
-    def get_fingerprint(self):
-        """Returns dict of heights for each branch (== HashgraghNetNode)."""
-        return {branch_id: event.height for branch_id, event in self.head.can_see.items()}
+    @staticmethod
+    def get_fingerprint(member):
+        """Returns dict of heights for each member."""
+        return {branch_id: event.height for branch_id, event in member.head.can_see.items()}
 
     def keys(self):
         return self.lookup_table.keys()
