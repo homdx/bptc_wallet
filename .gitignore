@@ -8,3 +8,6 @@ Lib/
 Scripts/
 pip-selfcheck.json
 tcl/
+
+# DLLs used by kivy
+share/
