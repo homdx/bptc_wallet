@@ -1,5 +1,5 @@
+from hashgraph.member import User
 from utils import randrange
-from member import User
 
 
 class LocalNetwork(object):

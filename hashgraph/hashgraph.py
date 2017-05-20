@@ -1,8 +1,9 @@
 from collections import defaultdict
-from event import Event
-from utils.utils import bfs
-from itertools import zip_longest
 from functools import reduce
+from itertools import zip_longest
+
+from hashgraph.event import Event
+from utils.utils import bfs
 
 C = 6  # what is this?
 

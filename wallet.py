@@ -7,15 +7,19 @@ from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 
-from member import Member
+from hashgraph.member import Member
 from utils.log_helper import *
+
+from kivy.config import Config
+Config.set('graphics', 'width', '200')
+Config.set('graphics', 'height', '50')
 
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
 class Core(GridLayout):
 
     def __init__(self):
-        Builder.load_file('client_layout.kv')
+        Builder.load_file('wallet_layout.kv')
         super().__init__()
         self.stop = threading.Event()
         self.add_widget(Button(text='Start event loop', on_press=partial(self.start_loop_thread)))

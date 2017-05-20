@@ -1,10 +1,10 @@
-from hashgraph import Hashgraph
-from sklavit_nacl.signing import *
-from random import choice
-from utils.utils import toposort
 from pprint import pformat
-from event import Event
-from utils.log_helper import *
+from random import choice
+
+from hashgraph.hashgraph import Hashgraph
+from hashgraph.event import Event
+from sklavit_nacl.signing import SigningKey
+from utils.log_helper import logger
 
 
 class Member:
