@@ -1,3 +1,10 @@
 .idea
 log.txt
 *__pycache__/
+
+# virtualenv (Windows)
+Include/
+Lib/
+Scripts/
+pip-selfcheck.json
+tcl/
