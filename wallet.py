@@ -9,7 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 
 from hashgraph.member import Member
 from utils.log_helper import *
-from twisted.internet import reactor
+from network.network import *
 
 import argparse
 
@@ -26,7 +26,7 @@ class Core(GridLayout):
         Builder.load_file('wallet_layout.kv')
         super().__init__()
         self.stop = threading.Event()
-        self.add_widget(Button(text='step', on_press=partial(self.start_loop_thread)))
+        self.add_widget(Button(text='run', on_press=partial(self.start_loop_thread)))
         self.member = Member.create()
 
     def start_loop_thread(self, *args):
@@ -45,7 +45,7 @@ class Core(GridLayout):
             self.step()
             time.sleep(1)
 
-    def step(self, *args):
+    def step(self):
         if self.args.id == 1:
             self.member.wait_for_sync_request()
         elif self.args.id == 2:
@@ -58,6 +58,15 @@ class HPTWallet(App):
     def __init__(self, args):
         super().__init__()
         self.args = args
+        threading.Thread(target=self.start_server).start()
+
+    def start_server(self):
+        port = 8000 + int(self.args.id)
+        logger.info("Listening on port {}".format(port))
+        factory = protocol.ServerFactory()
+        factory.protocol = Echo
+        reactor.listenTCP(port, factory)
+        reactor.run(installSignalHandlers=0)
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;

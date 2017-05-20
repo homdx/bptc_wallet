@@ -85,9 +85,12 @@ class Member:
         fingerprint = self.hashgraph.get_fingerprint(self)
 
         logger.info("{} hashgraph fingerprint = {}".format(self, pformat(fingerprint)))
-        factory = EchoFactory()
-        reactor.connectTCP('localhost', 8000, factory)
-        reactor.run(installSignalHandlers=0)
+        factory = ClientFactory()
+
+        def connect_to_server():
+            reactor.connectTCP('localhost', 8001, factory)
+
+        reactor.callFromThread(connect_to_server)
 
         # NOTE: communication channel security must be provided in standard way: SSL
 
@@ -177,10 +180,6 @@ class Member:
 
     def wait_for_sync_request(self):
         logger.info("{} waiting for a sync request...".format(self))
-        factory = protocol.ServerFactory()
-        factory.protocol = Echo
-        reactor.listenTCP(8000, factory)
-        reactor.run(installSignalHandlers=0)
 
     def create_first_event(self):
         event = self._new_event(None, (self.head, None))

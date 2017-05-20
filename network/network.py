@@ -24,7 +24,7 @@ class EchoClient(protocol.Protocol):
         print('connection lost')
 
 
-class EchoFactory(protocol.ClientFactory):
+class ClientFactory(protocol.ClientFactory):
     protocol = EchoClient
 
     def clientConnectionFailed(self, connector, reason):
