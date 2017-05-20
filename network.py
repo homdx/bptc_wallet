@@ -1,5 +1,5 @@
 from utils import randrange
-from user import User
+from member import User
 
 
 class LocalNetwork(object):

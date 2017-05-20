@@ -5,7 +5,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.lang import Builder
 import threading
 import time
-from user import User
+from member import Member
 from log_helper import *
 
 
@@ -17,7 +17,7 @@ class Core(GridLayout):
         super().__init__()
         self.stop = threading.Event()
         self.add_widget(Button(text='Button 1', on_press=partial(self.start_loop_thread)))
-        self.node = User.create()
+        self.member = Member.create()
 
     def start_loop_thread(self, *args):
         logger.info("Starting event loop...")
@@ -31,7 +31,7 @@ class Core(GridLayout):
                 return
             iteration += 1
             logger.info('#{}'.format(iteration))
-            self.node.heartbeat()
+            self.member.heartbeat()
             time.sleep(1)
 
 

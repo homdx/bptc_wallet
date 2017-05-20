@@ -9,33 +9,33 @@ from event import Event
 logger = logging.getLogger(__name__)
 
 
-class User:
+class Member:
     """
-    A user in a hashgraph network.
+    A member in a hashgraph network.
 
     Note can:
     - process incoming requests.
     - generate requests
 
-    User <==> User <==> User
+    Member <==> Member <==> Member
 
-    Network == set of working Users
+    Network == set of working Members
 
-    User -- User:
+    Member -- Member:
     - create
     - dump/load identity
     - start (and connect to network), ready to process requests
     - shutdown
     -----
-    - acquaint with User
-    - forget User
+    - acquaint with Member
+    - forget Member
     -----
     - get (full) state; get consensus as sub-request
     - send message
     - subscribe / unsubscribe listener
     -----
 
-    User -- User:
+    Member -- Member:
     - ping ?; return ping time
     - get( what to get ?); returns response
     - post(message); returns response
@@ -46,7 +46,7 @@ class User:
     def __init__(self, signing_key):
         self.signing_key = signing_key  # TODO implement
 
-        self.neighbours = {}  # dict(pk -> User)
+        self.neighbours = {}  # dict(pk -> Member)
         self.hashgraph = Hashgraph()
 
         # init first local event
@@ -57,7 +57,7 @@ class User:
 
     @classmethod
     def create(cls):
-        """Creates new user.
+        """Creates new member.
         Generate singing and verification keys. ID will be as verification key."""
         signing_key = SigningKey.generate()
         return cls(signing_key)
@@ -65,22 +65,22 @@ class User:
     def set(self, stake):
         self.hashgraph.set_stake(stake)
 
-    def acquaint(self, user):
-        """- acquaint with User"""
-        self.neighbours[user.id] = user
+    def acquaint(self, member):
+        """- acquaint with Member"""
+        self.neighbours[member.id] = member
 
-    def forget(self, user):
-        """Forget neighbour user."""
-        del self.neighbours[user.id]
+    def forget(self, member):
+        """Forget neighbour member."""
+        del self.neighbours[member.id]
 
     @property
     def id(self):
         return self.signing_key.verify_key
 
     def __str__(self):
-        return "User({})".format(self.id)
+        return "Member({})".format(self.id)
 
-    def sync(self, user, payload):
+    def sync(self, member, payload):
         """Update hg and return new event ids in topological order."""
 
         fingerprint = self.hashgraph.get_fingerprint()
@@ -90,7 +90,7 @@ class User:
         # NOTE: communication channel security must be provided in standard way: SSL
         logger.info("{}.sync: reply acquired:".format(self))
 
-        remote_head, difference = user.ask_sync(self, fingerprint)
+        remote_head, difference = member.ask_sync(self, fingerprint)
         logger.info("  remote_head = {}".format(remote_head))
         logger.info("  difference  = {}".format(difference))
 
@@ -118,7 +118,7 @@ class User:
 
         return new + (event,)
 
-    def ask_sync(self, user, fingerprint):
+    def ask_sync(self, member, fingerprint):
         """Respond to someone wanting to sync (only public method)."""
 
         # TODO: only send a diff? maybe with the help of self.height
@@ -142,14 +142,14 @@ class User:
 
         logger.debug("{}.payload = {}".format(self, payload))
 
-        # pick a random user to sync with but not me
+        # pick a random member to sync with but not me
         if len(list(self.neighbours.values())) == 0:
             logger.error("No known neighbours!")
             return None
 
-        user = choice(list(self.neighbours.values()))
-        logger.info("{}.sync with {}".format(self, user))
-        new = self.sync(user, payload)
+        member = choice(list(self.neighbours.values()))
+        logger.info("{}.sync with {}".format(self, member))
+        new = self.sync(member, payload)
 
         logger.info("{}.new = {}".format(self, new))
 
