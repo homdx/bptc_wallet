@@ -9,6 +9,9 @@ from kivy.uix.gridlayout import GridLayout
 
 from hashgraph.member import Member
 from utils.log_helper import *
+from twisted.internet import reactor
+
+import argparse
 
 from kivy.config import Config
 Config.set('graphics', 'width', '200')
@@ -18,16 +21,18 @@ Config.set('graphics', 'height', '50')
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
 class Core(GridLayout):
 
-    def __init__(self):
+    def __init__(self, args):
+        self.args = args
         Builder.load_file('wallet_layout.kv')
         super().__init__()
         self.stop = threading.Event()
-        self.add_widget(Button(text='Start event loop', on_press=partial(self.start_loop_thread)))
+        self.add_widget(Button(text='step', on_press=partial(self.start_loop_thread)))
         self.member = Member.create()
 
     def start_loop_thread(self, *args):
         logger.info("Starting event loop...")
-        threading.Thread(target=self.loop).start()
+        threading.Thread(target=self.step).start()
+        # threading.Thread(target=self.loop).start()  # for loop
 
     def loop(self):
         iteration = 0
@@ -37,26 +42,40 @@ class Core(GridLayout):
                 return
             iteration += 1
             logger.info('#{}'.format(iteration))
+            self.step()
+            time.sleep(1)
+
+    def step(self, *args):
+        if self.args.id == 1:
+            self.member.wait_for_sync_request()
+        elif self.args.id == 2:
             self.member.heartbeat()
             self.member.sync()  # DEV: this is intended to sync with the other member
-            time.sleep(1)
 
 
 class HPTWallet(App):
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__()
+        self.args = args
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
         logger.info("Stopping...")
+        reactor.callFromThread(reactor.stop)
         self.root.stop.set()
 
     def build(self):
-        return Core()
+        return Core(self.args)
 
+
+def main():
+    parser = argparse.ArgumentParser(description='HPT Wallet')
+    parser.add_argument('--id', type=int, help='command line id for dev')
+    args = parser.parse_args()
+    HPTWallet(args).run()
 
 if __name__ == '__main__':
-    HPTWallet().run()
+    main()

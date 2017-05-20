@@ -1,3 +1,4 @@
+twisted
 appdirs==1.4.3
 cffi==1.10.0
 docutils==0.13.1

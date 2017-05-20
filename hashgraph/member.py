@@ -5,6 +5,7 @@ from hashgraph.hashgraph import Hashgraph
 from hashgraph.event import Event
 from sklavit_nacl.signing import SigningKey
 from utils.log_helper import logger
+from network.network import *
 
 
 class Member:
@@ -83,7 +84,10 @@ class Member:
 
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        logger.info("{} sync fingerprint = {}".format(self, pformat(fingerprint)))
+        logger.info("{} hashgraph fingerprint = {}".format(self, pformat(fingerprint)))
+        factory = EchoFactory()
+        reactor.connectTCP('localhost', 8000, factory)
+        reactor.run(installSignalHandlers=0)
 
         # NOTE: communication channel security must be provided in standard way: SSL
 
@@ -165,11 +169,18 @@ class Member:
         return self.new
 
     def heartbeat(self):
-        logger.info("{} heartbeat...".format(self))
+        logger.info("{} heartbeat".format(self))
         event = self._new_event(None, (self.head, None))
         self.hashgraph.add_event(self.head, event)
         self.head = event
         return event
+
+    def wait_for_sync_request(self):
+        logger.info("{} waiting for a sync request...".format(self))
+        factory = protocol.ServerFactory()
+        factory.protocol = Echo
+        reactor.listenTCP(8000, factory)
+        reactor.run(installSignalHandlers=0)
 
     def create_first_event(self):
         event = self._new_event(None, (self.head, None))
