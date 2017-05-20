@@ -1,12 +1,10 @@
 from hashgraph import Hashgraph
 from sklavit_nacl.signing import *
-import logging
 from random import choice
-from utils import toposort
+from utils.utils import toposort
 from pprint import pformat
 from event import Event
-
-logger = logging.getLogger(__name__)
+from utils.log_helper import *
 
 
 class Member:

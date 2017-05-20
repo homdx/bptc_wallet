@@ -1,12 +1,14 @@
-from kivy.uix.button import Button
-from functools import partial
-from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.lang import Builder
 import threading
 import time
+from functools import partial
+
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+
 from member import Member
-from log_helper import *
+from utils.log_helper import *
 
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
@@ -16,7 +18,7 @@ class Core(GridLayout):
         Builder.load_file('client_layout.kv')
         super().__init__()
         self.stop = threading.Event()
-        self.add_widget(Button(text='Button 1', on_press=partial(self.start_loop_thread)))
+        self.add_widget(Button(text='Start event loop', on_press=partial(self.start_loop_thread)))
         self.member = Member.create()
 
     def start_loop_thread(self, *args):
@@ -35,7 +37,7 @@ class Core(GridLayout):
             time.sleep(1)
 
 
-class HPTClient(App):
+class HPTWallet(App):
 
     def __init__(self):
         super().__init__()
@@ -52,4 +54,4 @@ class HPTClient(App):
 
 
 if __name__ == '__main__':
-    HPTClient().run()
+    HPTWallet().run()

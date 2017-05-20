@@ -1,6 +1,6 @@
 from collections import defaultdict
 from event import Event
-from utils import bfs
+from utils.utils import bfs
 from itertools import zip_longest
 from functools import reduce
 
