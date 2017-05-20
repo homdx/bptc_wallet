@@ -1,6 +1,5 @@
 from collections import defaultdict
 from event import Event
-import logging
 from utils import bfs
 from itertools import zip_longest
 from functools import reduce
@@ -10,7 +9,7 @@ C = 6  # what is this?
 
 class Hashgraph:
     def __init__(self):
-        self.stake = None
+        # self.stake = None  #  moved to User
         self.tot_stake = None
         self.min_s = None  # min stake amount
 
@@ -18,7 +17,7 @@ class Hashgraph:
         self.lookup_table = {}
 
         # event-hash: latest event from me
-        self.head = None
+        # self.head = None # moved to User
 
         # {event-hash => round-num}: assigned round number of each event
         # self.round = {}
@@ -52,10 +51,7 @@ class Hashgraph:
 
     def add_first_event(self, event):
         self.add_event(event)
-        event.round = 0  # TODO move to event creation ?
         self.witnesses[0][event.verify_key] = event
-        event.can_see = {event.verify_key: event}  # TODO move to event creation ?
-        self.head = event
 
     def add_event(self, event: Event):
         """Add given event to this hashgraph."""
@@ -63,29 +59,11 @@ class Hashgraph:
         self.lookup_table[h] = event
         self.tbd.add(h)  # TODO add event?
 
-        logging.info("{}.add_event: {}".format(self, event))
-
+    # TODO: move to User
     def set_stake(self, stake):
         self.stake = stake
         self.tot_stake = sum(stake.values())
         self.min_s = 2 * self.tot_stake / 3  # min stake amount
-
-    def create_first_event(self, signing_key):
-        event = self._new_event(None, (), signing_key)
-        return event
-
-    def new_event(self, payload, other_parent, creator_id):
-        event = self._new_event(payload, (self.head, other_parent), creator_id)
-        return event
-
-    def _new_event(self, d, parents, signing_key):
-        """Create a new event.
-        Access hash from class.
-        :param creator_id: """
-        # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
-        event = Event(signing_key, d, parents)
-        logging.info("{}._new_event: {}".format(self, event))
-        return event
 
     def is_valid_event(self, id, event: Event):
         try:

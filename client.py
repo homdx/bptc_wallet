@@ -2,27 +2,25 @@ from kivy.uix.button import Button
 from functools import partial
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
+from kivy.lang import Builder
 import threading
 import time
-from node import Node
-import logging
+from user import User
+from log_helper import *
 
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
-class Worker(GridLayout):
+class Core(GridLayout):
 
     def __init__(self):
+        Builder.load_file('client_layout.kv')
         super().__init__()
-
-        self.node = Node.create()
-
-        button_1 = Button(text='Button 1', on_press=partial(self.start_loop_thread))
-        self.add_widget(button_1)
-
-    stop = threading.Event()
+        self.stop = threading.Event()
+        self.add_widget(Button(text='Button 1', on_press=partial(self.start_loop_thread)))
+        self.node = User.create()
 
     def start_loop_thread(self, *args):
-        logging.info("Starting...")
+        logger.info("Starting event loop...")
         threading.Thread(target=self.loop).start()
 
     def loop(self):
@@ -32,8 +30,8 @@ class Worker(GridLayout):
                 # Stop running this thread so the main Python process can exit.
                 return
             iteration += 1
-            logging.info('#{}'.format(iteration))
-            self.node.heartbeat_callback()
+            logger.info('#{}'.format(iteration))
+            self.node.heartbeat()
             time.sleep(1)
 
 
@@ -46,11 +44,11 @@ class HPTClient(App):
         # The Kivy event loop is about to stop, set a stop signal;
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
-        logging.info("Stopping...")
+        logger.info("Stopping...")
         self.root.stop.set()
 
     def build(self):
-        return Worker()
+        return Core()
 
 
 if __name__ == '__main__':

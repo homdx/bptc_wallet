@@ -1,5 +1,5 @@
 from utils import randrange
-from node import Node
+from user import User
 
 
 class LocalNetwork(object):
@@ -7,7 +7,7 @@ class LocalNetwork(object):
     def __init__(self, n_nodes):
         """Creates local network with given number of nodes."""
         self.size = n_nodes
-        nodes = [Node.create() for i in range(n_nodes)]
+        nodes = [User.create() for i in range(n_nodes)]
         stake = {node.id: 1 for node in nodes}
         for node in nodes:
             node.set(stake)  # TODO make network creation explicit !
