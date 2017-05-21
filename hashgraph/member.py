@@ -6,6 +6,7 @@ from hashgraph.event import Event
 from sklavit_nacl.signing import SigningKey
 from utils.log_helper import logger
 from network.network import *
+from twisted.internet import threads
 
 
 class Member:
@@ -90,7 +91,7 @@ class Member:
         def connect_to_server():
             reactor.connectTCP('localhost', 8001, factory)
 
-        reactor.callFromThread(connect_to_server)
+        threads.blockingCallFromThread(reactor, connect_to_server)
 
         # NOTE: communication channel security must be provided in standard way: SSL
 
