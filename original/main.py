@@ -1,5 +1,5 @@
 import logging
-from network import LocalNetwork
+from networking import LocalNetwork
 
 
 def run_network(n_nodes, n_turns):

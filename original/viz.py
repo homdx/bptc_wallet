@@ -10,8 +10,8 @@ from bokeh.palettes import plasma, small_palettes
 from bokeh.models import (Button, ColumnDataSource,
                           PanTool, RadioButtonGroup, HoverTool, Dimensions, PreText)
 
-from utils import bfs
-from network import LocalNetwork
+from utilities import bfs
+from networking import LocalNetwork
 
 R_COLORS = small_palettes['Set2'][8]
 

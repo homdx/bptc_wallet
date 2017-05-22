@@ -1,8 +1,8 @@
-from twisted.internet import reactor, protocol
-from utils.log_helper import logger
+from twisted.internet import protocol
+from utilities.log_helper import logger
 
 
-class Echo(protocol.Protocol):
+class EchoServer(protocol.Protocol):
     """This is just about the simplest possible protocol"""
 
     def connectionMade(self):

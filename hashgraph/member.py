@@ -1,17 +1,17 @@
 from pprint import pformat
 from random import choice
 
-from hashgraph.hashgraph import Hashgraph
+from twisted.internet import threads, reactor
+
 from hashgraph.event import Event
-from sklavit_nacl.signing import SigningKey
-from utils.log_helper import logger
-from network.network import *
-from twisted.internet import threads
+from hashgraph.hashgraph import Hashgraph
+from networking.protocol import *
+from utilities.signing import SigningKey
 
 
 class Member:
     """
-    A member in a hashgraph network.
+    A member in a hashgraph networking.
 
     Note can:
     - process incoming requests.
@@ -24,7 +24,7 @@ class Member:
     Member -- Member:
     - create
     - dump/load identity
-    - start (and connect to network), ready to process requests
+    - start (and connect to networking), ready to process requests
     - shutdown
     -----
     - acquaint with Member
@@ -89,7 +89,7 @@ class Member:
         factory = ClientFactory()
 
         def connect_to_server():
-            reactor.connectTCP('localhost', 8001, factory)
+            reactor.connectTCP('localhost', 8000, factory)
 
         threads.blockingCallFromThread(reactor, connect_to_server)
 

@@ -3,7 +3,7 @@ from functools import reduce
 from itertools import zip_longest
 
 from hashgraph.event import Event
-from utils.utils import bfs
+from utilities.utils import bfs
 
 C = 6  # what is this?
 
