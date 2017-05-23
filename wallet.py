@@ -1,22 +1,20 @@
 import threading
 from functools import partial
-
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
-
 from hashgraph.member import Member
-from networking.simple_protocol import *
-from twisted.internet import reactor
-
+from networking.sync_protocol import SyncServer
+from twisted.internet import reactor, protocol, threads
+from utilities.log_helper import logger
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '50')
 
-#import gi
-#gi.require_version('Gtk', '3.0')
+import gi
+gi.require_version('Gtk', '3.0')
 
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
@@ -29,12 +27,12 @@ class Core(GridLayout):
         self.stop = threading.Event()
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)
-        self.add_widget(Button(text='start reactor', on_press=partial(self.start_reactor_thread)))
+        self.add_widget(Button(text='start listening', on_press=self.start_listening))
         self.connect_to_ip_input = TextInput(text='localhost')
         self.add_widget(self.connect_to_ip_input)
         self.connect_to_port_input = TextInput(text='8000')
         self.add_widget(self.connect_to_port_input)
-        self.add_widget(Button(text='connect to', on_press=partial(self.start_single_step_thread)))
+        self.add_widget(Button(text='sync with', on_press=self.heartbeat_and_sync))
         self.member = Member.create()
 
     # def start_loop_thread(self, *args):
@@ -52,25 +50,16 @@ class Core(GridLayout):
     #     logger.info("Starting event loop...")
     #     threading.Thread(target=loop).start()
 
-    def start_single_step_thread(self, *args):
-        def step():
-            self.member.heartbeat()
-            self.member.sync(self.connect_to_ip_input.text, int(
-                self.connect_to_port_input.text))  # DEV: this is intended to sync with the other member
+    def heartbeat_and_sync(self, *args):
+        self.member.heartbeat()
+        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
 
-        logger.info("Stepping...")
-        threading.Thread(target=step).start()
-
-    def start_reactor_thread(self, *args):
-        def start_reactor():
-            port = int(self.listening_port_input.text)
-            logger.info("Listening on port {}".format(port))
-            factory = protocol.ServerFactory()
-            factory.protocol = SimpleServer
-            reactor.listenTCP(port, factory)
-            reactor.run(installSignalHandlers=0)
-
-        threading.Thread(target=start_reactor).start()
+    def start_listening(self, *args):
+        port = int(self.listening_port_input.text)
+        logger.info("Listening on port {}".format(port))
+        factory = protocol.ServerFactory()
+        factory.protocol = SyncServer
+        reactor.listenTCP(port, factory)
 
 
 class HPTWallet(App):
@@ -78,13 +67,21 @@ class HPTWallet(App):
     def __init__(self, args):
         super().__init__()
         self.args = args
+        self.start_reactor_thread()
+
+    @staticmethod
+    def start_reactor_thread():
+        def start_reactor():
+            reactor.run(installSignalHandlers=0)
+
+        threading.Thread(target=start_reactor).start()
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
         logger.info("Stopping...")
-        reactor.callFromThread(reactor.stop)  # threads.blockingCallFromThread(reactor, ...)?
+        reactor.callFromThread(reactor.stop)
         self.root.stop.set()
 
     def build(self):

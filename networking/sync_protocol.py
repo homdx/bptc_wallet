@@ -8,7 +8,7 @@ class SyncServer(protocol.Protocol):
         logger.info('Connected to client')
 
     def dataReceived(self, data):
-        logger.info('Data received from client')
+        logger.info('Received: {}'.format(data))
 
     def connectionLost(self, reason):
         logger.info('Connection to client lost')
@@ -18,7 +18,7 @@ class SyncClient(protocol.Protocol):
 
     def connectionMade(self):
         logger.info('Connected to server. Sending hashgraph...')
-        self.transport.write(self.factory.data)
+        self.transport.write(self.factory.data.encode('UTF-8'))
 
     def connectionLost(self, reason):
         logger.info('Connection to server lost')

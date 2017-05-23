@@ -1,12 +1,11 @@
 from pprint import pformat
 from random import choice
-
 from twisted.internet import threads, reactor
-
-from hashgraph.event import Event
+from hashgraph.event import Event, SerializableEvent, Parents
 from hashgraph.hashgraph import Hashgraph
 from networking.sync_protocol import *
 from utilities.signing import SigningKey
+import json
 
 
 class Member:
@@ -82,16 +81,16 @@ class Member:
 
     def sync(self, ip, port):
         """Update hg and return new event ids in topological order."""
-
         fingerprint = self.hashgraph.get_fingerprint(self)
+        data_to_send = {}
+        for event_id, event in self.hashgraph.lookup_table.items():
+            data_to_send[event_id] = SerializableEvent(event.data, event.parents, event.height, event.time.isoformat())
+        factory = SyncClientFactory(json.dumps(data_to_send))
 
-        logger.info("{} hashgraph fingerprint = {}".format(self, pformat(fingerprint)))
-        factory = SyncClientFactory("hashgraph".encode('UTF-8'))
-
-        def connect_to_server():
+        def sync_with_member():
             reactor.connectTCP(ip, port, factory)
 
-        threads.blockingCallFromThread(reactor, connect_to_server)
+        threads.blockingCallFromThread(reactor, sync_with_member)
 
         # NOTE: communication channel security must be provided in standard way: SSL
 
@@ -173,8 +172,7 @@ class Member:
         return self.new
 
     def heartbeat(self):
-        logger.info("{} heartbeat".format(self))
-        event = self._new_event(None, (self.head, None))
+        event = self._new_event(None, Parents(self.head.id, None))
         self.hashgraph.add_event(self.head, event)
         self.head = event
         return event
@@ -183,14 +181,23 @@ class Member:
         logger.info("{} waiting for a sync request...".format(self))
 
     def create_first_event(self):
-        event = self._new_event(None, (self.head, None))
-        event.parents = (event, None)
+        event = self._new_event(None, Parents(None, None))
+        event.parents = Parents(event.id, None)
         event.round = 0
         event.can_see = {event.verify_key: event}
         return event
 
-    def _new_event(self, data, parents):
+    def _new_event(self, data, parents_id):
         # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
-        event = Event(self.signing_key, data, parents)
+        event = Event(self.signing_key, data, parents_id)
+        if parents_id.self_parent is not None:
+            self_parent_height = self.hashgraph.lookup_table[parents_id.self_parent].height
+        else:
+            self_parent_height = -1
+        if parents_id.other_parent is not None:
+            other_parent_height = self.hashgraph.lookup_table[parents_id.other_parent].height
+        else:
+            other_parent_height = -1
+        event.height = max(self_parent_height, other_parent_height) + 1
         logger.info("{} created new event {}".format(self, event))
         return event
