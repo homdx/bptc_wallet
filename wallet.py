@@ -5,6 +5,7 @@ from functools import partial
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button, Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 
 from hashgraph.member import Member
@@ -14,9 +15,11 @@ from twisted.internet import threads, reactor
 import argparse
 
 from kivy.config import Config
-Config.set('graphics', 'width', '200')
+Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '50')
 
+import gi
+gi.require_version('Gtk', '3.0')
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
 class Core(GridLayout):
@@ -26,9 +29,14 @@ class Core(GridLayout):
         Builder.load_file('wallet_layout.kv')
         super().__init__()
         self.stop = threading.Event()
-        self.add_widget(Button(text='step', on_press=partial(self.single_step)))
-        self.add_widget(Button(text='loop', on_press=partial(self.start_loop_thread)))
-        self.add_widget(Label(text='Port: {}'.format(8000 + int(self.args.id))))
+        self.listening_port_input = TextInput(text='8000')
+        self.add_widget(self.listening_port_input)
+        self.add_widget(Button(text='start reactor', on_press=partial(self.start_reactor_thread)))
+        self.connect_to_ip_input = TextInput(text='localhost')
+        self.add_widget(self.connect_to_ip_input)
+        self.connect_to_port_input = TextInput(text='8000')
+        self.add_widget(self.connect_to_port_input)
+        self.add_widget(Button(text='connect to', on_press=partial(self.start_loop_thread)))
         self.member = Member.create()
 
     def start_loop_thread(self, *args):
@@ -52,7 +60,18 @@ class Core(GridLayout):
 
     def step(self):
         self.member.heartbeat()
-        self.member.sync()  # DEV: this is intended to sync with the other member
+        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))  # DEV: this is intended to sync with the other member
+
+    def start_reactor_thread(self, *args):
+        threading.Thread(target=self.start_reactor).start()
+
+    def start_reactor(self):
+        port = int(self.listening_port_input.text)
+        logger.info("Listening on port {}".format(port))
+        factory = protocol.ServerFactory()
+        factory.protocol = EchoServer
+        reactor.listenTCP(port, factory)
+        reactor.run(installSignalHandlers=0)
 
 
 class HPTWallet(App):
@@ -60,15 +79,6 @@ class HPTWallet(App):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        threading.Thread(target=self.start_reactor).start()
-
-    def start_reactor(self):
-        port = 8000 + int(self.args.id)
-        logger.info("Listening on port {}".format(port))
-        factory = protocol.ServerFactory()
-        factory.protocol = EchoServer
-        reactor.listenTCP(port, factory)
-        reactor.run(installSignalHandlers=0)
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;
@@ -83,9 +93,10 @@ class HPTWallet(App):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='HPT Wallet')
-    parser.add_argument('--id', type=int, help='command line id for dev')
-    args = parser.parse_args()
+    #parser = argparse.ArgumentParser(description='HPT Wallet')
+    #parser.add_argument('--id', type=int, help='command line id for dev')
+    #args = parser.parse_args()
+    args = ()
     HPTWallet(args).run()
 
 if __name__ == '__main__':

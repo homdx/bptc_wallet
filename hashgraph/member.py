@@ -80,7 +80,7 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
-    def sync(self):
+    def sync(self, ip, port):
         """Update hg and return new event ids in topological order."""
 
         fingerprint = self.hashgraph.get_fingerprint(self)
@@ -89,7 +89,7 @@ class Member:
         factory = ClientFactory()
 
         def connect_to_server():
-            reactor.connectTCP('localhost', 8000, factory)
+            reactor.connectTCP(ip, port, factory)
 
         threads.blockingCallFromThread(reactor, connect_to_server)
 
