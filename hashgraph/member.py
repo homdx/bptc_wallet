@@ -5,7 +5,7 @@ from twisted.internet import threads, reactor
 
 from hashgraph.event import Event
 from hashgraph.hashgraph import Hashgraph
-from networking.protocol import *
+from networking.sync_protocol import *
 from utilities.signing import SigningKey
 
 
@@ -86,7 +86,7 @@ class Member:
         fingerprint = self.hashgraph.get_fingerprint(self)
 
         logger.info("{} hashgraph fingerprint = {}".format(self, pformat(fingerprint)))
-        factory = ClientFactory()
+        factory = SyncClientFactory("hashgraph".encode('UTF-8'))
 
         def connect_to_server():
             reactor.connectTCP(ip, port, factory)

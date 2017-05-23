@@ -1,5 +1,4 @@
 import threading
-import time
 from functools import partial
 
 from kivy.app import App
@@ -9,7 +8,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 
 from hashgraph.member import Member
-from networking.protocol import *
+from networking.simple_protocol import *
 from twisted.internet import reactor
 
 from kivy.config import Config
@@ -67,7 +66,7 @@ class Core(GridLayout):
             port = int(self.listening_port_input.text)
             logger.info("Listening on port {}".format(port))
             factory = protocol.ServerFactory()
-            factory.protocol = EchoServer
+            factory.protocol = SimpleServer
             reactor.listenTCP(port, factory)
             reactor.run(installSignalHandlers=0)
 

@@ -2,7 +2,7 @@ from twisted.internet import protocol
 from utilities.log_helper import logger
 
 
-class EchoServer(protocol.Protocol):
+class SimpleServer(protocol.Protocol):
     """This is just about the simplest possible protocol"""
 
     def connectionMade(self):
@@ -17,7 +17,7 @@ class EchoServer(protocol.Protocol):
         logger.info('Connection to client lost')
 
 
-class EchoClient(protocol.Protocol):
+class SimpleClient(protocol.Protocol):
     """Once connected, send a message, then print the result."""
 
     def connectionMade(self):
@@ -34,7 +34,7 @@ class EchoClient(protocol.Protocol):
 
 
 class ClientFactory(protocol.ClientFactory):
-    protocol = EchoClient
+    protocol = SimpleClient
 
     def clientConnectionFailed(self, connector, reason):
         logger.info('Connection failed - goodbye!')
