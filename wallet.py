@@ -4,22 +4,21 @@ from functools import partial
 
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.button import Button, Label
+from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 
 from hashgraph.member import Member
 from networking.protocol import *
-from twisted.internet import threads, reactor
-
-import argparse
+from twisted.internet import reactor
 
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '50')
 
-import gi
-gi.require_version('Gtk', '3.0')
+#import gi
+#gi.require_version('Gtk', '3.0')
+
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
 class Core(GridLayout):
@@ -36,42 +35,43 @@ class Core(GridLayout):
         self.add_widget(self.connect_to_ip_input)
         self.connect_to_port_input = TextInput(text='8000')
         self.add_widget(self.connect_to_port_input)
-        self.add_widget(Button(text='connect to', on_press=partial(self.start_loop_thread)))
+        self.add_widget(Button(text='connect to', on_press=partial(self.start_single_step_thread)))
         self.member = Member.create()
 
-    def start_loop_thread(self, *args):
-        logger.info("Starting event loop...")
-        threading.Thread(target=self.loop).start()
+    # def start_loop_thread(self, *args):
+    #     def loop():
+    #         iteration = 0
+    #         while True:
+    #             if self.stop.is_set():
+    #                 # Stop running this thread so the main Python process can exit.
+    #                 return
+    #             iteration += 1
+    #             logger.info('#{}'.format(iteration))
+    #             self.step()
+    #             time.sleep(2)
+    #
+    #     logger.info("Starting event loop...")
+    #     threading.Thread(target=loop).start()
 
-    def single_step(self, *args):
+    def start_single_step_thread(self, *args):
+        def step():
+            self.member.heartbeat()
+            self.member.sync(self.connect_to_ip_input.text, int(
+                self.connect_to_port_input.text))  # DEV: this is intended to sync with the other member
+
         logger.info("Stepping...")
-        threading.Thread(target=self.step).start()
-
-    def loop(self):
-        iteration = 0
-        while True:
-            if self.stop.is_set():
-                # Stop running this thread so the main Python process can exit.
-                return
-            iteration += 1
-            logger.info('#{}'.format(iteration))
-            self.step()
-            time.sleep(2)
-
-    def step(self):
-        self.member.heartbeat()
-        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))  # DEV: this is intended to sync with the other member
+        threading.Thread(target=step).start()
 
     def start_reactor_thread(self, *args):
-        threading.Thread(target=self.start_reactor).start()
+        def start_reactor():
+            port = int(self.listening_port_input.text)
+            logger.info("Listening on port {}".format(port))
+            factory = protocol.ServerFactory()
+            factory.protocol = EchoServer
+            reactor.listenTCP(port, factory)
+            reactor.run(installSignalHandlers=0)
 
-    def start_reactor(self):
-        port = int(self.listening_port_input.text)
-        logger.info("Listening on port {}".format(port))
-        factory = protocol.ServerFactory()
-        factory.protocol = EchoServer
-        reactor.listenTCP(port, factory)
-        reactor.run(installSignalHandlers=0)
+        threading.Thread(target=start_reactor).start()
 
 
 class HPTWallet(App):
@@ -89,6 +89,7 @@ class HPTWallet(App):
         self.root.stop.set()
 
     def build(self):
+        self.title = 'HPT Wallet'
         return Core(self.args)
 
 
