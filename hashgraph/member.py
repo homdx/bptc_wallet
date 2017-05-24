@@ -91,7 +91,7 @@ class Member:
         return
 
     def process_new_events(self, lookup_table):
-        logger.info('Received new Events {}'.format(lookup_table))
+        logger.info('Received new events: {}'.format(lookup_table))
 
     def heartbeat(self):
         event = self._new_event(None, Parents(self.head.id, None))
