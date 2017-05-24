@@ -1,5 +1,10 @@
+# PyCharm
 .idea
+
+# Log
 log.txt
+
+# Python
 *__pycache__/
 
 # virtualenv (Windows)
@@ -11,3 +16,7 @@ tcl/
 
 # DLLs used by kivy
 share/
+
+# Buildozer
+buildozer.spec
+.buildozer/

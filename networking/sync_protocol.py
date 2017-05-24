@@ -5,11 +5,11 @@ from utilities.log_helper import logger
 class SyncServer(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Connected to client')
+        logger.info('Connected to client. Waiting for data...')
 
     def dataReceived(self, data):
         data = data.decode('UTF-8')
-        logger.info('Received: {}'.format(data))
+        #logger.info('Received: {}'.format(data))
         self.factory.callback(data)
 
     def connectionLost(self, reason):
@@ -19,7 +19,7 @@ class SyncServer(protocol.Protocol):
 class SyncClient(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Connected to server. Sending hashgraph...')
+        logger.info('Connected to server. Sending data...')
         self.transport.write(self.factory.data.encode('UTF-8'))
 
     def connectionLost(self, reason):

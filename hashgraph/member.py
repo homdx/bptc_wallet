@@ -51,7 +51,7 @@ class Member:
         fingerprint = self.hashgraph.get_fingerprint(self)
         data_to_send = {}
         for event_id, event in self.hashgraph.lookup_table.items():
-            data_to_send[event_id] = SerializableEvent(event.data, event.parents, event.height, event.time.isoformat())
+            data_to_send[event_id] = SerializableEvent(event.data, event.parents, event.height, event.time.isoformat(), str(event.verify_key))
         factory = SyncClientFactory(json.dumps(data_to_send))
 
         def sync_with_member():
@@ -90,6 +90,9 @@ class Member:
         # return new + (event,)
         return
 
+    def process_new_events(self, lookup_table):
+        logger.info('Received new Events {}'.format(lookup_table))
+
     def heartbeat(self):
         event = self._new_event(None, Parents(self.head.id, None))
         self.hashgraph.add_event(self.head, event)
@@ -98,14 +101,15 @@ class Member:
 
     def create_first_event(self):
         event = self._new_event(None, Parents(None, None))
-        event.parents = Parents(event.id, None)
+        event.parents = Parents(event.id, None)  # self-reference because of first event
         event.round = 0
         event.can_see = {event.verify_key: event}
         return event
 
     def _new_event(self, data, parents_id):
         # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
-        event = Event(self.signing_key, data, parents_id)
+        event = Event(self.signing_key.verify_key, data, parents_id)
+        # set event height
         if parents_id.self_parent is not None:
             self_parent_height = self.hashgraph.lookup_table[parents_id.self_parent].height
         else:
@@ -115,6 +119,8 @@ class Member:
         else:
             other_parent_height = -1
         event.height = max(self_parent_height, other_parent_height) + 1
+        # sign event body
+        event.signature = self.signing_key.sign(event.body).signature
         logger.info("{} created new event {}".format(self, event))
         return event
 
