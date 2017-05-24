@@ -18,5 +18,4 @@ tcl/
 share/
 
 # Buildozer
-buildozer.spec
 .buildozer/
