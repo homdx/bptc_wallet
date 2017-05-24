@@ -1,5 +1,4 @@
 import threading
-import json
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -9,7 +8,6 @@ from hashgraph.member import Member
 from networking.sync_protocol import SyncServerFactory
 from twisted.internet import reactor
 from utilities.log_helper import logger
-from hashgraph.event import Event, SerializableEvent
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '50')
@@ -25,6 +23,7 @@ class Core(GridLayout):
         self.args = args
         Builder.load_file('wallet_layout.kv')
         super().__init__()
+        self.member = Member.create()
         self.stop = threading.Event()
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)
@@ -33,8 +32,8 @@ class Core(GridLayout):
         self.add_widget(self.connect_to_ip_input)
         self.connect_to_port_input = TextInput(text='8000')
         self.add_widget(self.connect_to_port_input)
-        self.add_widget(Button(text='sync with', on_press=self.heartbeat_and_sync))
-        self.member = Member.create()
+        self.add_widget(Button(text='sync with', on_press=self.sync))
+        self.add_widget(Button(text='heartbeat', on_press=self.heartbeat))
 
     # def start_loop_thread(self, *args):
     #     def loop():
@@ -51,21 +50,16 @@ class Core(GridLayout):
     #     logger.info("Starting event loop...")
     #     threading.Thread(target=loop).start()
 
-    def heartbeat_and_sync(self, *args):
+    def heartbeat(self, *args):
         self.member.heartbeat()
-        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
 
-    def received_data(self, data):
-        s_events = json.loads(data)
-        lookup_table = {}
-        for id, s_event in s_events.items():
-            lookup_table[id] = Event.create_from(s_event)
-        self.member.process_new_events(lookup_table)
+    def sync(self, *args):
+        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
 
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
         logger.info("Started listening on port {}...".format(port))
-        factory = SyncServerFactory(self.received_data)
+        factory = SyncServerFactory(self.member)
         reactor.listenTCP(port, factory)
 
 

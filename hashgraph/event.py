@@ -59,4 +59,4 @@ class Event(object):  # TODO make it namedtuple
     @classmethod
     def create_from(cls, s_event: SerializableEvent):
         # 0: data, 1: parents, 2: height, 3: time, 4: verify_key
-        return Event(s_event[4], s_event[0], s_event[1], s_event[3])
+        return Event(s_event[4], s_event[0], Parents(s_event[1][0], s_event[1][1]), s_event[3])

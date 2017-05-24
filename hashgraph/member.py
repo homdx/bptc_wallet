@@ -46,13 +46,17 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
+    def received_data_callback(self, events):
+            self.process_new_events(events)
+
     def sync(self, ip, port):
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
+
         data_to_send = {}
         for event_id, event in self.hashgraph.lookup_table.items():
             data_to_send[event_id] = SerializableEvent(event.data, event.parents, event.height, event.time.isoformat(), str(event.verify_key))
-        factory = SyncClientFactory(json.dumps(data_to_send))
+        factory = SyncClientFactory(self)
 
         def sync_with_member():
             reactor.connectTCP(ip, port, factory)
