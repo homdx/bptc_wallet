@@ -1,13 +1,13 @@
 import threading
-from functools import partial
+import json
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 from hashgraph.member import Member
-from networking.sync_protocol import SyncServer
-from twisted.internet import reactor, protocol, threads
+from networking.sync_protocol import SyncServerFactory
+from twisted.internet import reactor
 from utilities.log_helper import logger
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
@@ -54,11 +54,16 @@ class Core(GridLayout):
         self.member.heartbeat()
         self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
 
+    def received_data(self, data):
+        # logger.info('Received: {}'.format(data))
+        dict_s_events = json.loads(data)
+        logger.info(dict_s_events)
+        return
+
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
         logger.info("Listening on port {}".format(port))
-        factory = protocol.ServerFactory()
-        factory.protocol = SyncServer
+        factory = SyncServerFactory(self.received_data)
         reactor.listenTCP(port, factory)
 
 

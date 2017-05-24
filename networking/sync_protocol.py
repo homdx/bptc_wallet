@@ -8,7 +8,9 @@ class SyncServer(protocol.Protocol):
         logger.info('Connected to client')
 
     def dataReceived(self, data):
+        data = data.decode('UTF-8')
         logger.info('Received: {}'.format(data))
+        self.factory.callback(data)
 
     def connectionLost(self, reason):
         logger.info('Connection to client lost')
@@ -30,8 +32,9 @@ class SyncClientFactory(protocol.ClientFactory):
         self.protocol = SyncClient
         self.data = data
 
-    def clientConnectionFailed(self, connector, reason):
-        logger.info('Connection failed - goodbye!')
 
-    def clientConnectionLost(self, connector, reason):
-        logger.info('Connection lost - goodbye!')
+class SyncServerFactory(protocol.ServerFactory):
+
+    def __init__(self, callback):
+        self.protocol = SyncServer
+        self.callback = callback

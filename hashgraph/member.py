@@ -1,4 +1,3 @@
-from pprint import pformat
 from random import choice
 from twisted.internet import threads, reactor
 from hashgraph.event import Event, SerializableEvent, Parents
@@ -9,38 +8,6 @@ import json
 
 
 class Member:
-    """
-    A member in a hashgraph networking.
-
-    Note can:
-    - process incoming requests.
-    - generate requests
-
-    Member <==> Member <==> Member
-
-    Network == set of working Members
-
-    Member -- Member:
-    - create
-    - dump/load identity
-    - start (and connect to networking), ready to process requests
-    - shutdown
-    -----
-    - acquaint with Member
-    - forget Member
-    -----
-    - get (full) state; get consensus as sub-request
-    - send message
-    - subscribe / unsubscribe listener
-    -----
-
-    Member -- Member:
-    - ping ?; return ping time
-    - get( what to get ?); returns response
-    - post(message); returns response
-    - pinged_get
-    - pinged_post
-    """
 
     def __init__(self, signing_key):
         self.signing_key = signing_key  # TODO implement
@@ -123,6 +90,35 @@ class Member:
         # return new + (event,)
         return
 
+    def heartbeat(self):
+        event = self._new_event(None, Parents(self.head.id, None))
+        self.hashgraph.add_event(self.head, event)
+        self.head = event
+        return event
+
+    def create_first_event(self):
+        event = self._new_event(None, Parents(None, None))
+        event.parents = Parents(event.id, None)
+        event.round = 0
+        event.can_see = {event.verify_key: event}
+        return event
+
+    def _new_event(self, data, parents_id):
+        # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
+        event = Event(self.signing_key, data, parents_id)
+        if parents_id.self_parent is not None:
+            self_parent_height = self.hashgraph.lookup_table[parents_id.self_parent].height
+        else:
+            self_parent_height = -1
+        if parents_id.other_parent is not None:
+            other_parent_height = self.hashgraph.lookup_table[parents_id.other_parent].height
+        else:
+            other_parent_height = -1
+        event.height = max(self_parent_height, other_parent_height) + 1
+        logger.info("{} created new event {}".format(self, event))
+        return event
+
+    # TODO: remove
     def ask_sync(self, member, fingerprint):
         """Respond to someone wanting to sync (only public method)."""
 
@@ -170,34 +166,3 @@ class Member:
 
         # return payload
         return self.new
-
-    def heartbeat(self):
-        event = self._new_event(None, Parents(self.head.id, None))
-        self.hashgraph.add_event(self.head, event)
-        self.head = event
-        return event
-
-    def wait_for_sync_request(self):
-        logger.info("{} waiting for a sync request...".format(self))
-
-    def create_first_event(self):
-        event = self._new_event(None, Parents(None, None))
-        event.parents = Parents(event.id, None)
-        event.round = 0
-        event.can_see = {event.verify_key: event}
-        return event
-
-    def _new_event(self, data, parents_id):
-        # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
-        event = Event(self.signing_key, data, parents_id)
-        if parents_id.self_parent is not None:
-            self_parent_height = self.hashgraph.lookup_table[parents_id.self_parent].height
-        else:
-            self_parent_height = -1
-        if parents_id.other_parent is not None:
-            other_parent_height = self.hashgraph.lookup_table[parents_id.other_parent].height
-        else:
-            other_parent_height = -1
-        event.height = max(self_parent_height, other_parent_height) + 1
-        logger.info("{} created new event {}".format(self, event))
-        return event
