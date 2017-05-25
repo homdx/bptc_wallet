@@ -17,12 +17,12 @@ SerializableEvent = collections.namedtuple('SerializableEvent', 'data parents he
 class Event(object):  # TODO make it namedtuple
     """Event is a node of hashgraph."""
 
-    def __init__(self, verify_key, data, parents, time=None):
+    def __init__(self, verify_key, data, parents: SerializableEvent, time=None):
         # Immutable body of Event
         self.data = data
         self.parents = parents
-        self.time = datetime.datetime.now() if time is None else time
-        self.verify_key = verify_key  # Setting of verify_key is delayed TODO fix it!
+        self.time = datetime.datetime.now().isoformat() if time is None else time
+        self.verify_key = str(verify_key)  # Setting of verify_key is delayed TODO fix it!
         # End of immutable body
         self.__body = pickle.dumps((self.data, parents, self.time, self.verify_key))
 
@@ -42,8 +42,8 @@ class Event(object):  # TODO make it namedtuple
         # self.can_see = {}
 
     def __str__(self):
-        return "Event({}) by User({}), Height({}), Round({}), {}, Data({})".format(
-            self.id[:6], self.verify_key, self.height, self.round, self.parents, self.data)
+        return "Event({}) by Member({}), Height({}), Round({}), {}, Data({}), Time({})".format(
+            self.id, self.verify_key, self.height, self.round, self.parents, self.data, self.time)
 
     def __repr__(self):
         return self.__str__()

@@ -1,10 +1,9 @@
 from random import choice
 from twisted.internet import threads, reactor
-from hashgraph.event import Event, SerializableEvent, Parents
+from hashgraph.event import Parents
 from hashgraph.hashgraph import Hashgraph
-from networking.sync_protocol import *
+from networking.push_protocol import *
 from utilities.signing import SigningKey
-import json
 
 
 class Member:
@@ -49,19 +48,16 @@ class Member:
     def received_data_callback(self, events):
             self.process_new_events(events)
 
-    def sync(self, ip, port):
+    def push_to(self, ip, port):
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        data_to_send = {}
-        for event_id, event in self.hashgraph.lookup_table.items():
-            data_to_send[event_id] = SerializableEvent(event.data, event.parents, event.height, event.time.isoformat(), str(event.verify_key))
-        factory = SyncClientFactory(self)
+        factory = PushClientFactory(self.hashgraph.lookup_table)
 
-        def sync_with_member():
+        def push():
             reactor.connectTCP(ip, port, factory)
 
-        threads.blockingCallFromThread(reactor, sync_with_member)
+        threads.blockingCallFromThread(reactor, push)
 
         # NOTE: communication channel security must be provided in standard way: SSL
 
@@ -95,7 +91,7 @@ class Member:
         return
 
     def process_new_events(self, lookup_table):
-        logger.info('Received new events: {}'.format(lookup_table))
+        return
 
     def heartbeat(self):
         event = self._new_event(None, Parents(self.head.id, None))
@@ -105,7 +101,6 @@ class Member:
 
     def create_first_event(self):
         event = self._new_event(None, Parents(None, None))
-        event.parents = Parents(event.id, None)  # self-reference because of first event
         event.round = 0
         event.can_see = {event.verify_key: event}
         return event
@@ -160,7 +155,7 @@ class Member:
 
         member = choice(list(self.neighbours.values()))
         logger.info("{}.sync with {}".format(self, member))
-        new = self.sync(member, payload)
+        new = self.push_to(member, payload)
 
         logger.info("{}.new = {}".format(self, new))
 

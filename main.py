@@ -5,7 +5,8 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 from hashgraph.member import Member
-from networking.sync_protocol import SyncServerFactory
+from networking.push_protocol import PushServerFactory
+from networking.pull_protocol import PullServerFactory
 from twisted.internet import reactor
 from utilities.log_helper import logger
 from kivy.config import Config
@@ -54,13 +55,16 @@ class Core(GridLayout):
         self.member.heartbeat()
 
     def sync(self, *args):
-        self.member.sync(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
+        self.member.push_to(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
 
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
-        logger.info("Started listening on port {}...".format(port))
-        factory = SyncServerFactory(self.member)
-        reactor.listenTCP(port, factory)
+        logger.info("Push server listens on port {}...".format(port))
+        factory1 = PushServerFactory(self.member.received_data_callback)
+        reactor.listenTCP(port, factory1)
+        logger.info("Pull server listens on port {}...".format(port + 1))
+        factory2 = PullServerFactory(self.member)
+        reactor.listenTCP(port + 1, factory2)
 
 
 class HPTWallet(App):

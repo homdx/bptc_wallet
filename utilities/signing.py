@@ -23,7 +23,7 @@
 # import nacl.bindings
 # from nacl.public import (PrivateKey as _Curve25519_PrivateKey,
 #                          PublicKey as _Curve25519_PublicKey)
-# from nacl.utilities import StringFixer, random
+# from nacl.utils import StringFixer, random
 from nacl import encoding
 from nacl.signing import SignedMessage as pynacl_SignedMessage, \
     VerifyKey as pynacl_VerifyKey, SigningKey as pynacl_SigningKey
