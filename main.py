@@ -11,7 +11,7 @@ from twisted.internet import reactor
 from utilities.log_helper import logger
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
-Config.set('graphics', 'height', '50')
+Config.set('graphics', 'height', '100')
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -26,15 +26,15 @@ class Core(GridLayout):
         super().__init__()
         self.member = Member.create()
         self.stop = threading.Event()
+        self.add_widget(Button(text='start listening on', on_press=self.start_listening))
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)
-        self.add_widget(Button(text='start listening', on_press=self.start_listening))
+        self.add_widget(Button(text='heartbeat', on_press=self.heartbeat))
+        self.add_widget(Button(text='push to', on_press=self.sync))
         self.connect_to_ip_input = TextInput(text='localhost')
         self.add_widget(self.connect_to_ip_input)
         self.connect_to_port_input = TextInput(text='8000')
         self.add_widget(self.connect_to_port_input)
-        self.add_widget(Button(text='sync with', on_press=self.sync))
-        self.add_widget(Button(text='heartbeat', on_press=self.heartbeat))
 
     # def start_loop_thread(self, *args):
     #     def loop():

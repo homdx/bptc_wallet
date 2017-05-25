@@ -21,10 +21,6 @@ def round_color(r):
 I_COLORS = plasma(256)
 
 
-def idx_color(r):
-    return I_COLORS[r % 256]
-
-
 class App:
 
     @staticmethod
@@ -39,31 +35,39 @@ class App:
         if not reactor.running:
             self.start_reactor_thread()
 
-        self.draw_button = Button(label='Draw', width=60)
-        self.draw_button.on_click(self.draw)
-
         self.update_button = Button(label="Update", width=60)
         self.update_button.on_click(partial(self.pull_from, ip, port))
 
-        self.events = None
+        self.draw_button = Button(label='Draw', width=60)
+        self.draw_button.on_click(self.draw)
+
+        self.all_events = {}
+        self.new_events = {}
         self.verify_key_to_x = {}
         self.n_nodes = 4
+        self.counter = 0
 
         plot = figure(
                 plot_height=1000, plot_width=900, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
                            ('round', '@round'), ('hash', '@hash'),
-                           ('timestamp', '@time'), ('payload', '@payload'),
-                           ('number', '@idx')])])
+                           ('timestamp', '@time'), ('payload', '@payload')])])
 
         plot.xgrid.grid_line_color = None
         plot.xaxis.minor_tick_line_color = None
         plot.ygrid.grid_line_color = None
         plot.yaxis.minor_tick_line_color = None
 
+        self.links_src = ColumnDataSource(data={'x0': [], 'y0': [], 'x1': [],
+                                                'y1': [], 'width': []})
+
+        self.links_rend = plot.segment(color='#777777',
+                x0='x0', y0='y0', x1='x1',
+                y1='y1', source=self.links_src, line_width='width')
+
         self.tr_src = ColumnDataSource(
-                data={'x': [], 'y': [], 'round_color': [], 'idx': [], 'line_alpha': [],
+                data={'x': [], 'y': [], 'round_color': [], 'line_alpha': [],
                       'round': [], 'hash': [], 'payload': [], 'time': []})
 
         self.tr_rend = plot.circle(x='x', y='y', size=20, color='round_color',
@@ -77,52 +81,60 @@ class App:
 
     @staticmethod
     def received_data_callback(self, events):
-        self.events = events
-
-        counter = 0
-        for event_id, event in self.events.items():
-            if event.verify_key not in self.verify_key_to_x.keys():
-                self.verify_key_to_x[event.verify_key] = counter
-                counter = counter + 1
+        for event_id, event in events.items():
+            if event_id not in self.all_events:
+                if event.verify_key not in self.verify_key_to_x.keys():
+                    self.verify_key_to_x[str(event.verify_key)] = self.counter
+                    self.counter = self.counter + 1
+                self.all_events[event_id] = event
+                self.new_events[event_id] = event
         self.n_nodes = len(self.verify_key_to_x)
 
     def pull_from(self, ip, port):
-
         factory = PullClientFactory(self, self.received_data_callback)
 
         def sync_with_member():
             reactor.connectTCP(ip, port, factory)
-
         threads.blockingCallFromThread(reactor, sync_with_member)
 
     def draw(self):
-        # TODO remake the following code to include inside hashgraph?
-        print(self.events)
-        tr = self.extract_data(self.events)
+        tr, links = self.extract_data(self.new_events)
+        self.new_events = {}
+        self.links_src.stream(links)
         self.tr_src.stream(tr)
-        print(self.tr_src.data)
-        self.tr_src.trigger('data', None, self.tr_src.data)
 
     def extract_data(self, events):
-        counter = 0
-        tr_data = {'x': [], 'y': [], 'round_color': [], 'idx': [],
+        tr_data = {'x': [], 'y': [], 'round_color': [],
                    'line_alpha': [], 'round': [], 'hash': [], 'payload': [], 'time': []}
+        links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
+
         for event_id, event in events.items():
             x = self.verify_key_to_x[event.verify_key]
-            y = counter
-            counter = counter + 1
+            y = event.height
             tr_data['x'].append(x)
             tr_data['y'].append(y)
-            event.round = 0  # TODO: remove
+            event.round = 0  # TODO: fix
             tr_data['round_color'].append(round_color(event.round))
             tr_data['round'].append(event.round)
             tr_data['hash'].append(event.id[:8] + "...")
             tr_data['payload'].append("".format(event.data))
             tr_data['time'].append(event.time)
-            tr_data['idx'].append(1)
             tr_data['line_alpha'].append(1)
 
-        print(tr_data)
-        return tr_data
+            if event.parents.self_parent is not None:
+                links_data['x0'].append(x)
+                links_data['y0'].append(y)
+                links_data['x1'].append(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key])
+                links_data['y1'].append(self.all_events[event.parents.self_parent].height)
+                links_data['width'].append(3)
+
+            if event.parents.other_parent is not None:
+                links_data['x0'].append(x)
+                links_data['y0'].append(y)
+                links_data['x1'].append(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key])
+                links_data['y1'].append(self.all_events[event.parents.other_parent].height)
+                links_data['width'].append(1)
+
+        return tr_data, links_data
 
 App(sys.argv[1], int(sys.argv[2]))
