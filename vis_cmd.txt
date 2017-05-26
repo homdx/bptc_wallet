@@ -1,5 +1,5 @@
 # starting bokeh
-bokeh serve viz.py --args localhost 8001
+bokeh serve viz.py
 
 # starting bokeh and browser
-bokeh serve --show viz.py --args localhost 8001
+bokeh serve --show viz.py

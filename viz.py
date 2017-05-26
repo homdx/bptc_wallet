@@ -7,7 +7,7 @@ from bokeh.io import curdoc
 from bokeh.layouts import row, column
 from bokeh.plotting import figure
 from bokeh.palettes import plasma, small_palettes
-from bokeh.models import (Button, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText)
+from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText)
 from networking.pull_protocol import PullClientFactory
 from twisted.internet import threads, reactor
 
@@ -31,12 +31,14 @@ class App:
         threading.Thread(target=start_reactor).start()
         print('Started reactor')
 
-    def __init__(self, ip, port):
+    def __init__(self):
         if not reactor.running:
             self.start_reactor_thread()
 
+        self.ip_text_input = TextInput(value='localhost')
+        self.port_text_input = TextInput(value='8001')
         self.update_button = Button(label="Update", width=60)
-        self.update_button.on_click(partial(self.pull_from, ip, port))
+        self.update_button.on_click(partial(self.pull_from, self.ip_text_input, self.port_text_input))
 
         self.draw_button = Button(label='Draw', width=60)
         self.draw_button.on_click(self.draw)
@@ -75,7 +77,7 @@ class App:
 
         self.log = PreText(text='')
 
-        control_column = column(self.update_button, self.draw_button, self.log)
+        control_column = column(self.ip_text_input, self.port_text_input, self.update_button, self.draw_button, self.log)
         main_row = row([control_column, plot], sizing_mode='fixed')
         curdoc().add_root(main_row)
 
@@ -90,7 +92,9 @@ class App:
                 self.new_events[event_id] = event
         self.n_nodes = len(self.verify_key_to_x)
 
-    def pull_from(self, ip, port):
+    def pull_from(self, ip_text_input, port_text_input):
+        ip = ip_text_input.value
+        port = int(port_text_input.value)
         factory = PullClientFactory(self, self.received_data_callback)
 
         def sync_with_member():
@@ -137,4 +141,4 @@ class App:
 
         return tr_data, links_data
 
-App(sys.argv[1], int(sys.argv[2]))
+App()

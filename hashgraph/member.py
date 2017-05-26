@@ -46,7 +46,7 @@ class Member:
         return "Member({})".format(self.id)
 
     def received_data_callback(self, events):
-            self.process_new_events(events)
+            self.process_received_events(events)
 
     def push_to(self, ip, port):
         """Update hg and return new event ids in topological order."""
@@ -90,8 +90,10 @@ class Member:
         # return new + (event,)
         return
 
-    def process_new_events(self, lookup_table):
-        return
+    def process_received_events(self, events):
+        for event_id, event in events.items():
+            if event_id not in self.hashgraph.lookup_table:
+                self.hashgraph.lookup_table[event_id] = event
 
     def heartbeat(self):
         event = self._new_event(None, Parents(self.head.id, None))
