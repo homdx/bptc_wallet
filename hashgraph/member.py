@@ -45,14 +45,14 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
-    def received_data_callback(self, events):
-            self.process_received_events(events)
+    def received_data_callback(self, from_member, events):
+            self.process_received_events(from_member, events)
 
     def push_to(self, ip, port):
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        factory = PushClientFactory(self.hashgraph.lookup_table)
+        factory = PushClientFactory(self.id, self.hashgraph.lookup_table)
 
         def push():
             reactor.connectTCP(ip, port, factory)
@@ -90,14 +90,18 @@ class Member:
         # return new + (event,)
         return
 
-    def process_received_events(self, events):
+    def process_received_events(self, from_member, events):
         for event_id, event in events.items():
             if event_id not in self.hashgraph.lookup_table:
                 self.hashgraph.lookup_table[event_id] = event
 
+        print(from_member)
+        event = self._new_event(None, Parents(self.head.id, self.hashgraph.get_head_of(from_member).id))
+        self.hashgraph.add_event(event)
+
     def heartbeat(self):
         event = self._new_event(None, Parents(self.head.id, None))
-        self.hashgraph.add_event(self.head, event)
+        self.hashgraph.add_event(event)
         self.head = event
         return event
 

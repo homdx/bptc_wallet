@@ -2,6 +2,7 @@ import threading
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 from hashgraph.member import Member
@@ -26,6 +27,7 @@ class Core(GridLayout):
         super().__init__()
         self.member = Member.create()
         self.stop = threading.Event()
+        self.add_widget(Label(text='Member ID: {}'.format(self.member.id)))
         self.add_widget(Button(text='start listening on', on_press=self.start_listening))
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)

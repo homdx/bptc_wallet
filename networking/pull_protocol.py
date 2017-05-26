@@ -14,8 +14,11 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Client connected. Sending data...')
-        print(self.factory.member.hashgraph.lookup_table)
+        logger.info('Client connected')
+        logger.info('Sending:')
+        for event_id, event in self.factory.member.hashgraph.lookup_table.items():
+            logger.info('{}'.format(event))
+
         # TODO: move somewhere else
         data_to_send = {}
         for event_id, event in self.factory.member.hashgraph.lookup_table.items():
@@ -42,14 +45,16 @@ class PullClient(protocol.Protocol):
         logger.info('Connected to server. Waiting for data...')
 
     def dataReceived(self, data):
-        logger.info('Data received')
-
         # TODO: move somewhere else?
         data_decoded = data.decode('UTF-8')
         s_events = json.loads(data_decoded)
         events = {}
         for event_id, s_event in s_events.items():
             events[event_id] = Event.create_from(s_event)
+
+        logger.info('Received:')
+        for event_id, event in events.items():
+            logger.info('{}'.format(event))
 
         self.factory.callback(self.factory.callback_obj, events)
 

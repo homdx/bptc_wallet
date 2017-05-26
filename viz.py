@@ -37,10 +37,10 @@ class App:
 
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
-        self.update_button = Button(label="Update", width=60)
+        self.update_button = Button(label="Pull from", width=60)
         self.update_button.on_click(partial(self.pull_from, self.ip_text_input, self.port_text_input))
 
-        self.draw_button = Button(label='Draw', width=60)
+        self.draw_button = Button(label='Refresh plot', width=60)
         self.draw_button.on_click(self.draw)
 
         self.all_events = {}
@@ -53,8 +53,7 @@ class App:
                 plot_height=1000, plot_width=900, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
-                           ('round', '@round'), ('hash', '@hash'),
-                           ('timestamp', '@time'), ('payload', '@payload')])])
+                           ('hash', '@hash'), ('member', '@member_id'), ('height', '@height'), ('round', '@round')])])
 
         plot.xgrid.grid_line_color = None
         plot.xaxis.minor_tick_line_color = None
@@ -70,7 +69,7 @@ class App:
 
         self.tr_src = ColumnDataSource(
                 data={'x': [], 'y': [], 'round_color': [], 'line_alpha': [],
-                      'round': [], 'hash': [], 'payload': [], 'time': []})
+                      'round': [], 'hash': [], 'payload': [], 'time': [], 'member_id': [], 'height': []})
 
         self.tr_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                    line_alpha='line_alpha', source=self.tr_src, line_width=5)
@@ -109,7 +108,7 @@ class App:
 
     def extract_data(self, events):
         tr_data = {'x': [], 'y': [], 'round_color': [],
-                   'line_alpha': [], 'round': [], 'hash': [], 'payload': [], 'time': []}
+                   'line_alpha': [], 'round': [], 'hash': [], 'payload': [], 'time': [], 'member_id': [],'height': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
 
         for event_id, event in events.items():
@@ -124,6 +123,8 @@ class App:
             tr_data['payload'].append("".format(event.data))
             tr_data['time'].append(event.time)
             tr_data['line_alpha'].append(1)
+            tr_data['member_id'].append(event.verify_key)
+            tr_data['height'].append(event.height)
 
             if event.parents.self_parent is not None:
                 links_data['x0'].append(x)

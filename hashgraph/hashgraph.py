@@ -50,16 +50,22 @@ class Hashgraph:
         # number as ev that ev can see
         # self.can_see = {}
 
+    def get_head_of(self, member):
+        height = -1
+        head = None
+        for item_id, item in self.lookup_table.items():
+            if str(item.verify_key) == str(member):
+                if item.height > height:
+                    head = item
+                    height = item.height
+        return head
+
     def add_first_event(self, event):
-        self.add_event(event, event)
+        self.add_event(event)
         self.witnesses[0][event.verify_key] = event
 
-    def add_event(self, head, event: Event):
-        """Add given event to this hashgraph."""
-        h = event.id
-        event.can_see = {event.verify_key: head}
-        self.lookup_table[h] = event
-        self.tbd.add(h)  # TODO add event?
+    def add_event(self, event: Event):
+        self.lookup_table[event.id] = event
 
     # TODO: move to User
     def set_stake(self, stake):
@@ -87,7 +93,7 @@ class Hashgraph:
     @staticmethod
     def get_fingerprint(member):
         """Returns dict of heights for each member."""
-        return {branch_id: event.height for branch_id, event in member.head.can_see.items()}
+        return {}
 
     def keys(self):
         return self.lookup_table.keys()
