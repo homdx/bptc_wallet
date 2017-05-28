@@ -23,7 +23,7 @@ class PullServer(protocol.Protocol):
         for event_id, event in self.factory.from_member.hashgraph.lookup_table.items():
             serialized_events[event_id] = SerializableEvent(event.data, event.parents,
                                                        event.height, event.time, str(event.verify_key))
-        data_to_send = {'from': str(self.factory.from_member), 'events': serialized_events}
+        data_to_send = {'from': str(self.factory.from_member.id), 'events': serialized_events}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         self.transport.loseConnection()
 

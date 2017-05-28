@@ -9,7 +9,7 @@ from hashgraph.member import Member
 from networking.push_protocol import PushServerFactory
 from networking.pull_protocol import PullServerFactory
 from twisted.internet import reactor, threads
-
+import random
 from networking.query_members_protocol import QueryMembersClientFactory
 from networking.register_protocol import RegisterClientFactory
 from utilities.log_helper import logger
@@ -28,6 +28,7 @@ class Core(GridLayout):
         self.args = args
         Builder.load_file('wallet_layout.kv')
         super().__init__()
+        self.neighbours = {}  # dict(member_id -> (ip, port))
         self.member = Member.create()
         self.stop = threading.Event()
         self.add_widget(Label(text='Member ID: {}'.format(self.member.id)))
@@ -36,6 +37,7 @@ class Core(GridLayout):
         self.add_widget(self.listening_port_input)
         self.add_widget(Button(text='heartbeat', on_press=self.heartbeat))
         self.add_widget(Button(text='push to', on_press=self.push))
+        self.add_widget(Button(text='push to random', on_press=self.push_to_random))
         self.push_to_ip_input = TextInput(text='localhost')
         self.add_widget(self.push_to_ip_input)
         self.push_to_port_input = TextInput(text='8000')
@@ -70,6 +72,13 @@ class Core(GridLayout):
     def push(self, *args):
         self.member.push_to(self.push_to_ip_input.text, int(self.push_to_port_input.text))
 
+    def push_to_random(self, *args):
+        if self.neighbours:
+            member_id, (ip, port) = random.choice(list(self.neighbours.items()))
+            self.member.push_to(ip, port)
+        else:
+            logger.info("Don't know any other members. Get them from the registry!")
+
     def register(self, *args):
         factory = RegisterClientFactory(str(self.member.id), int(self.listening_port_input.text))
 
@@ -78,7 +87,12 @@ class Core(GridLayout):
         threads.blockingCallFromThread(reactor, register)
 
     def process_query(self, members):
-        print(members)
+        new_members = {}
+        for member_id, (ip, port) in members.items():
+            if member_id != str(self.member.id):
+                new_members[member_id] = (ip, port)
+                self.neighbours[member_id] = (ip, port)
+        logger.info("Acquainted with {}".format(new_members))
 
     def query_members(self, *args):
         factory = QueryMembersClientFactory(self, self.process_query)
@@ -90,11 +104,11 @@ class Core(GridLayout):
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
         logger.info("Push server listens on port {}".format(port))
-        factory1 = PushServerFactory(self.member.received_data_callback)
-        reactor.listenTCP(port, factory1)
+        push_server_factory = PushServerFactory(self.member.process_events)
+        reactor.listenTCP(port, push_server_factory)
         logger.info("[Pull server (for viz tool) listens on port {}]".format(port + 1))
-        factory2 = PullServerFactory(self.member)
-        reactor.listenTCP(port + 1, factory2)
+        pull_server_factory = PullServerFactory(self.member)
+        reactor.listenTCP(port + 1, pull_server_factory)
 
 
 class HPTWallet(App):

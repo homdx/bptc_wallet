@@ -1,4 +1,3 @@
-from random import choice
 from twisted.internet import threads, reactor
 from hashgraph.event import Parents
 from hashgraph.hashgraph import Hashgraph
@@ -9,11 +8,8 @@ from utilities.signing import SigningKey
 class Member:
 
     def __init__(self, signing_key):
-        self.signing_key = signing_key  # TODO implement
-
-        self.neighbours = {}  # dict(pk -> Member)
+        self.signing_key = signing_key
         self.hashgraph = Hashgraph()
-
         # init first local event
         self.head = None
         event = self.create_first_event()
@@ -27,17 +23,6 @@ class Member:
         signing_key = SigningKey.generate()
         return cls(signing_key)
 
-    def set(self, stake):
-        self.hashgraph.set_stake(stake)
-
-    def acquaint(self, member):
-        """- acquaint with Member"""
-        self.neighbours[member.id] = member
-
-    def forget(self, member):
-        """Forget neighbour member."""
-        del self.neighbours[member.id]
-
     @property
     def id(self):
         return self.signing_key.verify_key
@@ -45,9 +30,7 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
-    def received_data_callback(self, from_member, events):
-            self.process_received_events(from_member, events)
-
+    # TODO: member shouldn't know of network stuff
     def push_to(self, ip, port):
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
@@ -90,7 +73,7 @@ class Member:
         # return new + (event,)
         return
 
-    def process_received_events(self, from_member, events):
+    def process_events(self, from_member, events):
         for event_id, event in events.items():
             if event_id not in self.hashgraph.lookup_table:
                 self.hashgraph.lookup_table[event_id] = event
