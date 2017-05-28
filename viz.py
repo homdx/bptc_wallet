@@ -35,13 +35,14 @@ class App:
         if not reactor.running:
             self.start_reactor_thread()
 
+        self.text = PreText(text='Reload the page to clear all events,\n'
+                                 'especially when changing the member to\n'
+                                 'pull from.',
+                            width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
         self.update_button = Button(label="Pull from", width=60)
         self.update_button.on_click(partial(self.pull_from, self.ip_text_input, self.port_text_input))
-
-        self.draw_button = Button(label='Refresh plot', width=60)
-        self.draw_button.on_click(self.draw)
 
         self.all_events = {}
         self.new_events = {}
@@ -76,12 +77,13 @@ class App:
 
         self.log = PreText(text='')
 
-        control_column = column(self.ip_text_input, self.port_text_input, self.update_button, self.draw_button, self.log)
+        control_column = column(self.text, self.ip_text_input, self.port_text_input, self.update_button, self.log)
         main_row = row([control_column, plot], sizing_mode='fixed')
         curdoc().add_root(main_row)
+        self.data_received = threading.Event()
 
     @staticmethod
-    def received_data_callback(self, events):
+    def received_data_callback(self, from_member, events):
         for event_id, event in events.items():
             if event_id not in self.all_events:
                 if event.verify_key not in self.verify_key_to_x.keys():
@@ -90,15 +92,21 @@ class App:
                 self.all_events[event_id] = event
                 self.new_events[event_id] = event
         self.n_nodes = len(self.verify_key_to_x)
+        self.log.text += "Received data from member {}\n".format(from_member)
+        self.data_received.set()
 
     def pull_from(self, ip_text_input, port_text_input):
         ip = ip_text_input.value
         port = int(port_text_input.value)
         factory = PullClientFactory(self, self.received_data_callback)
+        self.data_received.clear()
 
         def sync_with_member():
             reactor.connectTCP(ip, port, factory)
         threads.blockingCallFromThread(reactor, sync_with_member)
+
+        self.data_received.wait()
+        self.draw()
 
     def draw(self):
         tr, links = self.extract_data(self.new_events)
