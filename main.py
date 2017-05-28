@@ -8,7 +8,10 @@ from kivy.uix.gridlayout import GridLayout
 from hashgraph.member import Member
 from networking.push_protocol import PushServerFactory
 from networking.pull_protocol import PullServerFactory
-from twisted.internet import reactor
+from twisted.internet import reactor, threads
+
+from networking.query_members_protocol import QueryMembersClientFactory
+from networking.register_protocol import RegisterClientFactory
 from utilities.log_helper import logger
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
@@ -32,11 +35,19 @@ class Core(GridLayout):
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)
         self.add_widget(Button(text='heartbeat', on_press=self.heartbeat))
-        self.add_widget(Button(text='push to', on_press=self.sync))
-        self.connect_to_ip_input = TextInput(text='localhost')
-        self.add_widget(self.connect_to_ip_input)
-        self.connect_to_port_input = TextInput(text='8000')
-        self.add_widget(self.connect_to_port_input)
+        self.add_widget(Button(text='push to', on_press=self.push))
+        self.push_to_ip_input = TextInput(text='localhost')
+        self.add_widget(self.push_to_ip_input)
+        self.push_to_port_input = TextInput(text='8000')
+        self.add_widget(self.push_to_port_input)
+        self.add_widget(Button(text='register at', on_press=self.register))
+        self.registry_ip_input = TextInput(text='localhost')
+        self.add_widget(self.registry_ip_input)
+        self.registry_register_port_input = TextInput(text='8010')
+        self.add_widget(self.registry_register_port_input)
+        self.add_widget(Button(text='query members from', on_press=self.query_members))
+        self.registry_query_port_input = TextInput(text='8011')
+        self.add_widget(self.registry_query_port_input)
 
     # def start_loop_thread(self, *args):
     #     def loop():
@@ -56,15 +67,32 @@ class Core(GridLayout):
     def heartbeat(self, *args):
         self.member.heartbeat()
 
-    def sync(self, *args):
-        self.member.push_to(self.connect_to_ip_input.text, int(self.connect_to_port_input.text))
+    def push(self, *args):
+        self.member.push_to(self.push_to_ip_input.text, int(self.push_to_port_input.text))
+
+    def register(self, *args):
+        factory = RegisterClientFactory(str(self.member.id), int(self.listening_port_input.text))
+
+        def register():
+            reactor.connectTCP(self.registry_ip_input.text, int(self.registry_register_port_input.text), factory)
+        threads.blockingCallFromThread(reactor, register)
+
+    def process_query(self, members):
+        print(members)
+
+    def query_members(self, *args):
+        factory = QueryMembersClientFactory(self, self.process_query)
+
+        def query():
+            reactor.connectTCP(self.registry_ip_input.text, int(self.registry_query_port_input.text), factory)
+        threads.blockingCallFromThread(reactor, query)
 
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
-        logger.info("Push server listens on port {}...".format(port))
+        logger.info("Push server listens on port {}".format(port))
         factory1 = PushServerFactory(self.member.received_data_callback)
         reactor.listenTCP(port, factory1)
-        logger.info("Pull server listens on port {}...".format(port + 1))
+        logger.info("[Pull server (for viz tool) listens on port {}]".format(port + 1))
         factory2 = PullServerFactory(self.member)
         reactor.listenTCP(port + 1, factory2)
 
