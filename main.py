@@ -17,8 +17,8 @@ from kivy.config import Config
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '100')
 
-import gi
-gi.require_version('Gtk', '3.0')
+# import gi
+# gi.require_version('Gtk', '3.0')
 
 
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application

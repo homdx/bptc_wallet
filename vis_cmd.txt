@@ -1,5 +1,0 @@
-# starting bokeh
-bokeh serve viz.py
-
-# starting bokeh and browser
-bokeh serve --show viz.py

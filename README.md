@@ -1,3 +1,17 @@
+# BPT Hashgraph
+
+## Execution
+Starting bokeh
+```shell
+  bokeh serve viz.py
+```
+
+Starting bokeh and browser
+```shell
+  bokeh serve --show viz.py
+```
+
+
 # py-swirld
 
 Just fooling around the _Swirlds_ byzantine consensus algorithm by Leemon Baird
@@ -11,7 +25,7 @@ It seems to work as intended to me but don't take it for granted!
 
 - python=3.5
 - [pyNaCl] (https://pypi.python.org/pypi/PyNaCl) for the crypto
-  PyNaCl relies on [libsodium] (https://github.com/jedisct1/libsodium), a portable C library. 
+  PyNaCl relies on [libsodium] (https://github.com/jedisct1/libsodium), a portable C library.
   And copy is bundled with PyNaCl! ([pysodium](https://pypi.python.org/pypi/pysodium) does not have one.)
 - [bokeh](http://bokeh.pydata.org/en/latest/) for the analysis and interactive visualization
 
