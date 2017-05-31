@@ -1,3 +1,4 @@
+import os
 import threading
 from kivy.app import App
 from kivy.lang import Builder
@@ -26,7 +27,7 @@ class Core(GridLayout):
 
     def __init__(self, args):
         self.args = args
-        Builder.load_file('wallet_layout.kv')
+        Builder.load_file(os.path.join('res', 'wallet_layout.kv'))
         super().__init__()
         self.neighbours = {}  # dict(member_id -> (ip, port))
         self.member = Member.create()

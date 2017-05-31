@@ -13,6 +13,7 @@ Lib/
 Scripts/
 pip-selfcheck.json
 tcl/
+venv/
 
 # DLLs used by kivy
 share/
