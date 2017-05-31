@@ -1,4 +1,4 @@
-from hashgraph.member import User
+from hashgraph.member import Member
 from utilities import randrange
 
 
@@ -7,7 +7,7 @@ class LocalNetwork(object):
     def __init__(self, n_nodes):
         """Creates local networking with given number of nodes."""
         self.size = n_nodes
-        nodes = [User.create() for i in range(n_nodes)]
+        nodes = [Member.create() for i in range(n_nodes)]
         stake = {node.id: 1 for node in nodes}
         for node in nodes:
             node.set(stake)  # TODO make networking creation explicit !

@@ -39,7 +39,9 @@ class Event(object):  # TODO make it namedtuple
         # {node-id = > event}}: stores for each event ev
         # and for each member m the latest event from m having same round
         # number as ev that ev can see
-        # self.can_see = {}
+
+        # {event-hash => event}: All events that this event can see
+        self.can_see = {}
 
     def __str__(self):
         return "Event({}) by Member({}), Height({}), Round({}), {}, Data({}), Time({})".format(

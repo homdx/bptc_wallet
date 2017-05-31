@@ -6,11 +6,18 @@ from utilities.signing import SigningKey
 
 
 class Member:
+    """
+    A Member is a participant in the Hashgraph
+    """
 
     def __init__(self, signing_key):
+        # The key used to sign events
         self.signing_key = signing_key
+
+        # The user's point of view of the Hashgraph
         self.hashgraph = Hashgraph()
-        # init first local event
+
+        # Initialize first event
         self.head = None
         event = self.create_first_event()
         self.hashgraph.add_first_event(event)
