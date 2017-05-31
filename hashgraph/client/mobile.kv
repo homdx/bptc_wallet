@@ -1,0 +1,150 @@
+#:kivy 1.0
+
+<Mobile>:
+    id: MobileApp
+    cols: 1
+    rows: 11
+    cols: 1
+    row: 8
+    BoxLayout:
+        size_hint: 1, 2
+        orientation: 'vertical'
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: "../../res/images/black-and-gray-background.jpg"
+        Label:
+            text: 'HPTaler'
+            text_size: self.width, 200
+            font: 'Calibri Light'
+            font_size: 20
+            size_hint: 1, .8
+            halign: 'center'
+            valign: 'middle'
+        Label:
+            text: 'Member ID: {}'.format(root.defaults['member_id'])
+            halign: 'left'
+            valign: 'top'
+            size_hint: 1, .2
+            padding: 30, 30
+            text_size: self.width, None
+    BoxLayout:
+        size_hint: 1, 1
+        id: listening_port_container
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: [x + 1 for x in self.pos]
+                size: [x - 2 for x in self.size]
+        Label:
+            text: 'Port Pull-Server: '
+            valign: 'middle'
+            padding: 20, 20
+            text_size: self.width, None
+            color: 0, 0, 0, 1
+        TextInput:
+            id: listening_port
+            text: str(root.defaults['listening_port'])
+            padding_x: 20
+            padding_y: ( self.height - self.line_height ) / 2
+            multiline: False
+            input_filter: root.generate_limited_input(self, 6)
+    Button:
+        id: start_listening
+        text: 'Start listening to events'
+        size_hint: 1, 1
+        on_press: root.start_listening()
+    BoxLayout:
+        size_hint: 1, 0.3
+    BoxLayout:
+        size_hint: 1, 1
+        id: registering_container
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: [x + 1 for x in self.pos]
+                size: [x - 2 for x in self.size]
+        Label:
+            text: 'Registering-Adress: '
+            valign: 'middle'
+            padding: 20, 20
+            text_size: self.width, None
+            color: 0, 0, 0, 1
+        TextInput:
+            id: registering_address
+            text: str(root.defaults['registering_address'])
+            padding_x: 20
+            padding_y: ( self.height - self.line_height ) / 2
+            multiline: False
+            input_filter: root.generate_limited_input(self, 21)
+    BoxLayout:
+        size_hint: 1, 1
+        id: members_container
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: [x + 1 for x in self.pos]
+                size: [x - 2 for x in self.size]
+        Label:
+            text: 'Get-Members-Adress: '
+            valign: 'middle'
+            padding: 20, 20
+            text_size: self.width, None
+            color: 0, 0, 0, 1
+        TextInput:
+            id: members_address
+            text: str(root.defaults['members_address'])
+            padding_x: 20
+            padding_y: ( self.height - self.line_height ) / 2
+            multiline: False
+            input_filter: root.generate_limited_input(self, 21)
+    BoxLayout:
+        size_hint: 1, 1
+        id: network_container
+        Button:
+            id: register
+            text: 'Register'
+            on_press: root.register()
+        Button:
+            id: query_members
+            text: 'Query members'
+            on_press: root.query_members()
+    BoxLayout:
+        size_hint: 1, 0.3
+    BoxLayout:
+        size_hint: 1, 1
+        id: push_input_container
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: [x + 1 for x in self.pos]
+                size: [x - 2 for x in self.size]
+        Label:
+            text: 'Push-Adress: '
+            valign: 'middle'
+            padding: 20, 20
+            text_size: self.width, None
+            color: 0, 0, 0, 1
+        TextInput:
+            id: push_address
+            text: str(root.defaults['push_address'])
+            padding_x: 20
+            padding_y: ( self.height - self.line_height ) / 2
+            multiline: False
+            input_filter: root.generate_limited_input(self, 21)
+    BoxLayout:
+        size_hint: 1, 1
+        id: push_container
+        Button:
+            id: push
+            text: 'Push'
+            on_press: root.push()
+        Button:
+            id: push_random
+            text: 'Push to random node'
+            on_press: root.push_random()
