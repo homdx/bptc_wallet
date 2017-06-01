@@ -6,7 +6,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
-from hashgraph.member import Member
+from hptaler.data.member import Member
 from networking.push_protocol import PushServerFactory
 from networking.pull_protocol import PullServerFactory
 from twisted.internet import reactor, threads

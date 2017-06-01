@@ -1,7 +1,7 @@
 from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
-from hashgraph.event import SerializableEvent, Event
+from hptaler.data.event import SerializableEvent, Event
 
 
 class PushServerFactory(protocol.ServerFactory):

@@ -1,44 +1,36 @@
+from hptaler.data.member import Member
+from hptaler.data.hashgraph import Hashgraph
+from hptaler.data.event import Event, Parents
+
 from twisted.internet import threads, reactor
-from hashgraph.event import Parents
-from hashgraph.hashgraph import Hashgraph
-from networking.push_protocol import *
-from utilities.signing import SigningKey
+from networking.push_protocol import PushClientFactory
+
+from utilities.log_helper import logger
+
+from random import choice
 
 
-class Member:
+class Network:
     """
-    A Member is a participant in the Hashgraph
+    An abstraction of the P2P network communicating the Hashgrpah
+    This should be the main API for evertything Hashgraph/P2P related
+    TODO: There has to be a better name for this...
     """
 
-    def __init__(self, signing_key):
-        # The key used to sign events
-        self.signing_key = signing_key
+    def __init__(self, me: Member):
+        # The current user's Member object
+        self.me = me
 
-        # The user's point of view of the Hashgraph
-        self.hashgraph = Hashgraph()
+        # The current hashgraph
+        self.hashgraph = Hashgraph(self.me)
 
-        # Initialize first event
-        self.head = None
-        event = self.create_first_event()
-        self.hashgraph.add_first_event(event)
-        self.head = event
+        # {member-id => member}: All other members we know
+        self.known_members = {}
 
-    @classmethod
-    def create(cls):
-        """Creates new member.
-        Generate singing and verification keys. ID will be as verification key."""
-        signing_key = SigningKey.generate()
-        return cls(signing_key)
+        # Create first own event
+        self.create_own_first_event()
 
-    @property
-    def id(self):
-        return self.signing_key.verify_key
-
-    def __str__(self):
-        return "Member({})".format(self.id)
-
-    # TODO: member shouldn't know of network stuff
-    def push_to(self, ip, port):
+    def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
@@ -80,48 +72,30 @@ class Member:
         # return new + (event,)
         return
 
-    def process_events(self, from_member, events):
-        for event_id, event in events.items():
-            if event_id not in self.hashgraph.lookup_table:
-                self.hashgraph.lookup_table[event_id] = event
-
-        print(from_member)
-        event = self._new_event(None, Parents(self.head.id, self.hashgraph.get_head_of(from_member).id))
-        self.hashgraph.add_event(event)
-
-    def heartbeat(self):
-        event = self._new_event(None, Parents(self.head.id, None))
-        self.hashgraph.add_event(event)
-        self.head = event
+    def heartbeat(self) -> Event:
+        """
+        Creates a heartbeat (= own, empty) event and adds it to the hashgraph
+        :return: The newly created event
+        """
+        event = Event(self.me.verify_key, None, Parents(self.me.head.id, None))
+        self.hashgraph.add_own_event(event)
         return event
 
-    def create_first_event(self):
-        event = self._new_event(None, Parents(None, None))
+    def create_own_first_event(self) -> Event:
+        """
+        Creates the own initial event and adds it to the hashgraph
+        :return: The newly created event
+        """
+        event = Event(self.me.verify_key, None, Parents(None, None))
         event.round = 0
-        event.can_see = {event.verify_key: event}
+        event.can_see = {event.creator_verify_key: event}
+        self.hashgraph.add_own_first_event(event)
         return event
 
-    def _new_event(self, data, parents_id):
-        # TODO: fail if an ancestor of p[1] from creator self.pk is not an ancestor of p[0] ???
-        event = Event(self.signing_key.verify_key, data, parents_id)
-        # set event height
-        if parents_id.self_parent is not None:
-            self_parent_height = self.hashgraph.lookup_table[parents_id.self_parent].height
-        else:
-            self_parent_height = -1
-        if parents_id.other_parent is not None:
-            other_parent_height = self.hashgraph.lookup_table[parents_id.other_parent].height
-        else:
-            other_parent_height = -1
-        event.height = max(self_parent_height, other_parent_height) + 1
-        # sign event body
-        event.signature = self.signing_key.sign(event.body).signature
-        logger.info("{} created new event {}".format(self, event))
-        return event
 
     # TODO: remove
     def ask_sync(self, member, fingerprint):
-        """Respond to someone wanting to sync (only public method)."""
+        """Respond to someone wanting to sync"""
 
         # TODO: only send a diff? maybe with the help of self.height
         # TODO: thread safe? (allow to run while mainloop is running)
@@ -130,7 +104,7 @@ class Member:
 
         # TODO Clear response from internal information !!!
 
-        return self.hashgraph.head, subset
+        return self.me.head, subset
 
     # TODO: remove
     def heartbeat_callback(self):
@@ -145,11 +119,11 @@ class Member:
         logger.debug("{}.payload = {}".format(self, payload))
 
         # pick a random member to sync with but not me
-        if len(list(self.neighbours.values())) == 0:
+        if len(list(self.known_members.values())) == 0:
             logger.error("No known neighbours!")
             return None
 
-        member = choice(list(self.neighbours.values()))
+        member = choice(list(self.known_members.values()))
         logger.info("{}.sync with {}".format(self, member))
         new = self.push_to(member, payload)
 
