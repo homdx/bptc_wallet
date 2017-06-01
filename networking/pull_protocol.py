@@ -2,12 +2,13 @@ from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
 from hptaler.data.event import SerializableEvent, Event
+from hptaler.data.network import Network
 
 
 class PullServerFactory(protocol.ServerFactory):
 
-    def __init__(self, member):
-        self.from_member = member
+    def __init__(self, network: Network):
+        self.network = network
         self.protocol = PullServer
 
 
@@ -16,14 +17,14 @@ class PullServer(protocol.Protocol):
     def connectionMade(self):
         logger.info('Client connected')
         logger.info('Sending:')
-        for event_id, event in self.factory.from_member.hashgraph.lookup_table.items():
+        for event_id, event in self.factory.network.hashgraph.lookup_table.items():
             logger.info('{}'.format(event))
 
         serialized_events = {}
-        for event_id, event in self.factory.from_member.hashgraph.lookup_table.items():
+        for event_id, event in self.factory.network.hashgraph.lookup_table.items():
             serialized_events[event_id] = SerializableEvent(event.data, event.parents,
                                                        event.height, event.time, str(event.verify_key))
-        data_to_send = {'from': str(self.factory.from_member.id), 'events': serialized_events}
+        data_to_send = {'from': str(self.factory.network.me.id), 'events': serialized_events}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         self.transport.loseConnection()
 

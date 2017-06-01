@@ -1,5 +1,7 @@
 from utilities.signing import SigningKey
 
+from utilities.log_helper import logger
+
 
 class Member:
     """
@@ -13,10 +15,15 @@ class Member:
         # The key to verify data
         self.verify_key = verify_key
 
+        # The current head of this member
+        self.head = None
+
+        # The current stake of this member
+        self.stake = 1  # TODO: Different stakes
+
         # The networking data
         # TODO: Set, or move somewhere else
-        self.ip = None
-        self.port = None
+        self.address = None
 
     @classmethod
     def create(cls) -> 'Member':
@@ -26,11 +33,14 @@ class Member:
         signing_key = SigningKey.generate()
         new_member = Member(signing_key.verify_key)
         new_member.signing_key = signing_key
+
+        logger.info("Created new Member: " + str(new_member))
+
         return new_member
 
     @property
     def id(self):
-        return self.verify_key
+        return str(self.verify_key)
 
     def __str__(self):
         return "Member({})".format(self.id)

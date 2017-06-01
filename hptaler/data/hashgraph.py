@@ -1,3 +1,5 @@
+import math
+
 from collections import defaultdict
 from functools import reduce
 
@@ -19,11 +21,8 @@ class Hashgraph:
         # Member: A reference to the current user. For convenience (e.g. signing)
         self.me: Member = me
 
-        # int: The total stake in the hashgraph
-        self.total_stake = None
-
-        # int: The stake needed for a supermajority (2/3 of total)
-        self.supermajority_stake = None
+        # {member-id => Member}: All members we know
+        self.known_members = {me.id: me}
 
         # {event-hash => event}: Dictionary mapping hashes to events
         self.lookup_table = {}
@@ -55,6 +54,20 @@ class Hashgraph:
         # number as ev that ev can see
         # self.can_see = {}
 
+    @property
+    def total_stake(self) -> int:
+        """
+        :return: The total stake in the hashgraph
+        """
+        return sum([member.stake for _, member in self.known_members.items()])
+
+    @property
+    def supermajority_stake(self) -> int:
+        """
+        :return: The stake needed for a supermajority (2/3 of total)
+        """
+        return int(math.floor(2 * self.total_stake / 3))
+
     def get_head_of(self, member: Member):
         """
         Returns the head of a given member
@@ -64,7 +77,7 @@ class Hashgraph:
         height = -1
         head = None
         for item_id, item in self.lookup_table.items():
-            if str(item.verify_key) == str(member):
+            if str(item.verify_key) == str(member.verify_key):
                 if item.height > height:
                     head = item
                     height = item.height
@@ -74,19 +87,19 @@ class Hashgraph:
         """
         Adds the own initial event to the hashgraph
         :param event: The event to be added
-        :return: void
+        :return: None
         """
         # Add the event
         self.add_own_event(event)
 
         # Make the new event a witness for round 0
-        self.witnesses[0][event.creator_verify_key] = event
+        self.witnesses[0][event.verify_key] = event
 
     def add_own_event(self, event: Event):
         """
         Adds an own event to the hashgraph, setting the event's height depending on its parents
         :param event: The event to be added
-        :return: void
+        :return: None
         """
 
         # Set the event's correct height
@@ -110,12 +123,6 @@ class Hashgraph:
 
         logger.info("Added event to hashgraph: " + str(event))
 
-    # TODO: move to User
-    def set_stake(self, stake):
-        self.stake = stake
-        self.total_stake = sum(stake.values())
-        self.supermajority_stake = 2 * self.total_stake / 3  # min stake amount
-
     def is_valid_event(self, id, event: Event):
         """
         Checks whether an event is valid (signature valid, parents known)
@@ -125,7 +132,7 @@ class Hashgraph:
         """
         # Verify signature is valid
         try:
-            event.creator_verify_key.verify(event.body, event.signature)
+            event.verify_key.verify(event.body, event.signature)
         except ValueError:
             return False
 
@@ -134,8 +141,8 @@ class Hashgraph:
                 and (event.parents == ()
                      or (len(event.parents) == 2
                          and event.parents[0].id in self.lookup_table and event.parents[1].id in self.lookup_table
-                         and event.parents[0].creator_verify_key == event.creator_verify_key
-                         and event.parents[1].creator_verify_key != event.creator_verify_key)))
+                         and event.parents[0].verify_key == event.verify_key
+                         and event.parents[1].verify_key != event.verify_key)))
 
         # TODO: check if there is a fork (rly need reverse edges?)
         # and all(x.verify_key != ev.verify_key
@@ -157,7 +164,7 @@ class Hashgraph:
         #                if (p.verify_key not in info) or (p.height > info[p.verify_key]))
         def succ(u):
             return [p for p in u.parents
-                    if (p.creator_verify_key not in info) or (p.height > info[p.verify_key])]
+                    if (p.verify_key not in info) or (p.height > info[p.verify_key])]
 
         subset = [h for h in bfs((self.head,), succ)]
         return subset
@@ -204,32 +211,35 @@ class Hashgraph:
         :param events: Topologicaly sorted sequence of new event to process.
         """
 
+        logger.info("Dividing rounds for {} events".format(len(events)))
+
         for event in events:
             # Check if this is a root event or not
-            if event.parents == ():
+            if event.parents == () or (event.parents.self_parent is None and event.parents.other_parent is None):
                 # This is a root event
                 event.round = 0
-                self.witnesses[0][event.creator_verify_key] = event
-                event.can_see = {event.creator_verify_key: event}
+                self.witnesses[0][event.verify_key] = event
+                event.can_see = {event.verify_key: event}
             else:
                 # This is a normal event
                 # Estimate round (= maximum round of parents)
-                calculated_round = max(parent.round for parent in event.parents)
+                logger.info("Checking {}".format(str(event.parents)))
+                calculated_round = max(self.lookup_table[parent].round for parent in event.parents)
 
                 # recurrence relation to update can_see
                 # TODO: What exactly happens here?
-                p0, p1 = (p.can_see for p in event.parents)
+                p0, p1 = (self.lookup_table[p].can_see for p in event.parents)
                 event.can_see = {c: self.get_higher(p0.get(c), p1.get(c))
                              for c in p0.keys() | p1.keys()}
 
                 # Count distinct paths to distinct nodes
                 # TODO: What exactly happens here? Why two levels of visible events?
                 hits = defaultdict(int)
-                for creator_verify_key, visible_event in event.can_see.items():
+                for verify_key, visible_event in event.can_see.items():
                     if visible_event.round == calculated_round:
                         for c_, k_ in visible_event.can_see.items():
                             if k_.round == calculated_round:
-                                hits[c_] += self.stake[creator_verify_key]
+                                hits[c_] += self.known_members[verify_key].stake
 
                 # check if i can strongly see enough events
                 if sum(1 for x in hits.values() if x > self.supermajority_stake) > self.supermajority_stake:
@@ -238,11 +248,11 @@ class Hashgraph:
                     event.round = calculated_round
 
                 # Events can always see themselves
-                event.can_see[event.creator_verify_key] = event
+                event.can_see[event.verify_key] = event
 
                 # An event becomes a witness if it is the first of that round
                 if event.round > event.parents[0].round:
-                    self.witnesses[event.round][event.creator_verify_key] = event
+                    self.witnesses[event.round][event.verify_key] = event
 
     def decide_fame(self):
         max_r = max(self.witnesses)
@@ -280,7 +290,7 @@ class Hashgraph:
                 if k.round == round - 1:
                     for c_, k_ in k.can_see.items():
                         if k_.round == round - 1:
-                            hits[c_] += self.stake[c]
+                            hits[c_] += self.known_members[c].stake
             s = {self.witnesses[round - 1][c] for c, n in hits.items()
                  if n > self.supermajority_stake}
 
@@ -289,7 +299,7 @@ class Hashgraph:
                     witness.votes[x] = x in s
                 else:
                     filtered_s = filter(lambda w: w in self.lookup_table, s)  # TODO: check why filtering is necessary
-                    v, t = majority((self.stake[self.lookup_table[w].creator_verify_key], w.votes[x]) for w in filtered_s)
+                    v, t = majority((self.known_members[self.lookup_table[w].verify_key].stake, w.votes[x]) for w in filtered_s)
                     if (round - r) % C != 0:
                         if t > self.supermajority_stake:
                             self.famous[x] = v
@@ -319,10 +329,10 @@ class Hashgraph:
             seen = set()
             for x in bfs(filter(self.unordered_events.__contains__, f_w),
                          lambda u: (p for p in self.lookup_table[u].parents if p in self.unordered_events)):
-                c = self.lookup_table[x].creator_verify_key
+                c = self.lookup_table[x].verify_key
                 s = {w for w in f_w if c in w.can_see
                      and self.is_higher(w.can_see[c], x)}
-                if sum(self.stake[self.lookup_table[w].creator_verify_key] for w in s) > self.total_stake / 2:
+                if sum(self.known_members[self.lookup_table[w].verify_key].stake for w in s) > self.total_stake / 2:
                     self.unordered_events.remove(x)
                     seen.add(x)
                     times = []
@@ -347,16 +357,23 @@ class Hashgraph:
         Processes a list of events
         :param from_member: The member from whom the events were received
         :param events: The events to be processed
-        :return: void
+        :return: None
         """
         # Add all new events
+        logger.info("Processing {} events from {}".format(len(events), from_member.verify_key))
+
+        new_events = []
         for event_id, event in events.items():
             if event_id not in self.lookup_table:
+                new_events.append(event)
                 self.lookup_table[event_id] = event
 
         # Create a new event for the gossip
         event = Event(self.me.verify_key, None, Parents(self.me.head.id, self.get_head_of(from_member).id))
         self.add_own_event(event)
+
+        # Figure out fame, order, etc.
+        self.divide_rounds(new_events)
 
 
 def majority(it):

@@ -7,14 +7,15 @@ from utilities.log_helper import logger
 def main():
     # Create my account
     me: Member = Member.create()
-    logger.info("Created new Member: " + str(me))
 
     # Create the network
     network: Network = Network(me)
 
     # Add some heartbeats
-    for _ in range(5):
-        network.heartbeat()
+    #for _ in range(5):
+    #    network.heartbeat()
+
+
 
 
 if __name__ == '__main__':

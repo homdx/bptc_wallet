@@ -2,6 +2,7 @@ from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
 from hptaler.data.event import SerializableEvent, Event
+from hptaler.data.member import Member
 
 
 class PushServerFactory(protocol.ServerFactory):
@@ -17,8 +18,14 @@ class PushServer(protocol.Protocol):
         logger.info('Client connected. Waiting for data...')
 
     def dataReceived(self, data):
+        # Decode received JSON data
         received_data = json.loads(data.decode('UTF-8'))
-        from_member = received_data['from']
+
+        # Generate Member object
+        from_member_id = received_data['from']
+        from_member = Member(from_member_id)
+        from_member.address = self.transport.getPeer()
+
         s_events = received_data['events']
         events = {}
         for event_id, s_event in s_events.items():
@@ -56,6 +63,7 @@ class PushClient(protocol.Protocol):
                                                        event.height, event.time, str(event.verify_key))
         data_to_send = {'from': str(self.factory.from_member), 'events': serialized_events}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
+        logger.info("Sent data")
         self.transport.loseConnection()
 
     def connectionLost(self, reason):

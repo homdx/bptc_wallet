@@ -9,23 +9,19 @@ from utilities.log_helper import logger
 
 from random import choice
 
+from typing import List
+
 
 class Network:
     """
-    An abstraction of the P2P network communicating the Hashgrpah
-    This should be the main API for evertything Hashgraph/P2P related
-    TODO: There has to be a better name for this...
+    An abstraction of the P2P network
+    This should be the main API of the
     """
 
-    def __init__(self, me: Member):
-        # The current user's Member object
-        self.me = me
-
+    def __init__(self, hashgraph: Hashgraph):
         # The current hashgraph
-        self.hashgraph = Hashgraph(self.me)
-
-        # {member-id => member}: All other members we know
-        self.known_members = {}
+        self.hashgraph = hashgraph
+        self.me = self.hashgraph.me
 
         # Create first own event
         self.create_own_first_event()
@@ -34,7 +30,7 @@ class Network:
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        factory = PushClientFactory(self.id, self.hashgraph.lookup_table)
+        factory = PushClientFactory(self.hashgraph.me.id, self.hashgraph.lookup_table)
 
         def push():
             reactor.connectTCP(ip, port, factory)
@@ -72,12 +68,30 @@ class Network:
         # return new + (event,)
         return
 
+    def push_to_member(self, member: Member) -> None:
+        self.push_to(member.address.host, member.address.port)
+
+    def push_to_random(self) -> None:
+        """
+        Pushes to a random, known member
+        :return: None
+        """
+        if self.hashgraph.known_members:
+            member_id, member = choice(list(self.hashgraph.known_members.items()))
+            # Don't send messages to ourselves
+            while member_id == self.me.id:
+                member_id, member = choice(list(self.hashgraph.known_members.items()))
+
+            self.push_to_member(member)
+        else:
+            logger.info("Don't know any other members. Get them from the registry!")
+
     def heartbeat(self) -> Event:
         """
         Creates a heartbeat (= own, empty) event and adds it to the hashgraph
         :return: The newly created event
         """
-        event = Event(self.me.verify_key, None, Parents(self.me.head.id, None))
+        event = Event(self.hashgraph.me.verify_key, None, Parents(self.hashgraph.me.head.id, None))
         self.hashgraph.add_own_event(event)
         return event
 
@@ -86,11 +100,24 @@ class Network:
         Creates the own initial event and adds it to the hashgraph
         :return: The newly created event
         """
-        event = Event(self.me.verify_key, None, Parents(None, None))
+        event = Event(self.hashgraph.me.verify_key, None, Parents(None, None))
         event.round = 0
-        event.can_see = {event.creator_verify_key: event}
+        event.can_see = {event.verify_key: event}
         self.hashgraph.add_own_first_event(event)
         return event
+
+    def receive_events_callback(self, from_member: Member, events: List[Event]) -> None:
+        """
+        Used as a callback when events are received from the outside
+        :param from_member: The member from which the events were received
+        :param events: The list of events
+        :return:
+        """
+        # Store/Update member
+        self.hashgraph.known_members[from_member.id] = from_member
+
+        # Let the hashgraph process the events
+        self.hashgraph.process_events(from_member, events)
 
 
     # TODO: remove
@@ -104,7 +131,7 @@ class Network:
 
         # TODO Clear response from internal information !!!
 
-        return self.me.head, subset
+        return self.hashgraph.me.head, subset
 
     # TODO: remove
     def heartbeat_callback(self):
@@ -119,11 +146,11 @@ class Network:
         logger.debug("{}.payload = {}".format(self, payload))
 
         # pick a random member to sync with but not me
-        if len(list(self.known_members.values())) == 0:
+        if len(list(self.hashgraph.known_members.values())) == 0:
             logger.error("No known neighbours!")
             return None
 
-        member = choice(list(self.known_members.values()))
+        member = choice(list(self.hashgraph.known_members.values()))
         logger.info("{}.sync with {}".format(self, member))
         new = self.push_to(member, payload)
 
