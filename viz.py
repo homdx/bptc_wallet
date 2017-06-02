@@ -124,7 +124,6 @@ class App:
             y = event.height
             tr_data['x'].append(x)
             tr_data['y'].append(y)
-            event.round = 0  # TODO: fix
             tr_data['round_color'].append(round_color(event.round))
             tr_data['round'].append(event.round)
             tr_data['hash'].append(event.id[:8] + "...")

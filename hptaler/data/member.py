@@ -15,7 +15,8 @@ class Member:
         # The key to verify data
         self.verify_key = verify_key
 
-        # The current head of this member
+        # The current (cached) head of this member
+        # Currently only used for the own member - all others are calculated on the fly
         self.head = None
 
         # The current stake of this member

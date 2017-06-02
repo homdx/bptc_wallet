@@ -10,8 +10,14 @@ from nacl.bindings import crypto_hash_sha512
 from nacl.encoding import Base64Encoder
 import collections
 
+# The parents of an event
 Parents = collections.namedtuple('Parents', 'self_parent other_parent')
+
+# A serializable version of an event for inter-member communication
 SerializableEvent = collections.namedtuple('SerializableEvent', 'data parents height time verify_key')
+
+# A serializable version of an event for debugging and visualization (contains more information)
+SerializableDebugEvent = collections.namedtuple('SerializableEvent', 'data parents height time verify_key round')
 
 
 class Event:
@@ -48,7 +54,7 @@ class Event:
         # and for each member m the latest event from m having same round
         # number as ev that ev can see
 
-        # {event-hash => event}: All events that this event can see
+        # {member-id => event-hash}: The top event of each member that this event can see
         self.can_see = {}
 
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
@@ -70,10 +76,18 @@ class Event:
         return self.__id
 
     @classmethod
-    def create_from(cls, s_event):
+    def create_from_serializable_event(cls, s_event):
         # 0: data, 1: parents, 2: height, 3: time, 4: verify_key
         event = Event(s_event[4], s_event[0], Parents(s_event[1][0], s_event[1][1]), s_event[3])
         event.height = s_event[2]
+        return event
+
+    @classmethod
+    def create_from_serializable_debug_event(cls, s_event):
+        # 0: data, 1: parents, 2: height, 3: time, 4: verify_key, 5: round
+        event = Event(s_event[4], s_event[0], Parents(s_event[1][0], s_event[1][1]), s_event[3])
+        event.height = s_event[2]
+        event.round = s_event[5]
         return event
 
     def sign(self, signing_key):

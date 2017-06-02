@@ -29,7 +29,7 @@ class PushServer(protocol.Protocol):
         s_events = received_data['events']
         events = {}
         for event_id, s_event in s_events.items():
-            events[event_id] = Event.create_from(s_event)
+            events[event_id] = Event.create_from_serializable_event(s_event)
 
         logger.info('Received:')
         for event_id, event in events.items():

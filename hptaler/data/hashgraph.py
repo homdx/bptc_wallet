@@ -9,6 +9,8 @@ from hptaler.data.member import Member
 from utilities.utils import bfs
 from utilities.log_helper import logger
 
+from typing import List
+
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
 
@@ -116,12 +118,16 @@ class Hashgraph:
         # Sign event body
         event.signature = self.me.signing_key.sign(event.body).signature
 
+        # Add event to graph
         self.lookup_table[event.id] = event
+
+        # Figure out rounds, fame, etc.
+        self.divide_rounds([event])
 
         # Update cached head
         self.me.head = event
 
-        logger.info("Added event to hashgraph: " + str(event))
+        logger.info("Added own event to hashgraph: " + str(event))
 
     def is_valid_event(self, id, event: Event):
         """
@@ -224,11 +230,14 @@ class Hashgraph:
                 # This is a normal event
                 # Estimate round (= maximum round of parents)
                 logger.info("Checking {}".format(str(event.parents)))
-                calculated_round = max(self.lookup_table[parent].round for parent in event.parents)
+                calculated_round = 0
+                for parent in event.parents:
+                    if parent is not None and self.lookup_table[parent].round > calculated_round:
+                        calculated_round = self.lookup_table[parent].round
 
                 # recurrence relation to update can_see
-                # TODO: What exactly happens here?
-                p0, p1 = (self.lookup_table[p].can_see for p in event.parents)
+                p0 = self.lookup_table[event.parents.self_parent].can_see if event.parents.self_parent is not None else dict()
+                p1 = self.lookup_table[event.parents.other_parent].can_see if event.parents.other_parent is not None else dict()
                 event.can_see = {c: self.get_higher(p0.get(c), p1.get(c))
                              for c in p0.keys() | p1.keys()}
 
@@ -251,7 +260,7 @@ class Hashgraph:
                 event.can_see[event.verify_key] = event
 
                 # An event becomes a witness if it is the first of that round
-                if event.round > event.parents[0].round:
+                if event.round > self.lookup_table[event.parents.self_parent].round:
                     self.witnesses[event.round][event.verify_key] = event
 
     def decide_fame(self):
@@ -352,7 +361,7 @@ class Hashgraph:
         if self.consensus:
             print(self.consensus)
 
-    def process_events(self, from_member: Member, events):
+    def process_events(self, from_member: Member, events: List[Event]) -> None:
         """
         Processes a list of events
         :param from_member: The member from whom the events were received
@@ -368,12 +377,26 @@ class Hashgraph:
                 new_events.append(event)
                 self.lookup_table[event_id] = event
 
+        # Learn about other members
+        self.learn_members_from_events(new_events);
+
+        # Figure out fame, order, etc.
+        self.divide_rounds(new_events)
+
         # Create a new event for the gossip
         event = Event(self.me.verify_key, None, Parents(self.me.head.id, self.get_head_of(from_member).id))
         self.add_own_event(event)
 
-        # Figure out fame, order, etc.
-        self.divide_rounds(new_events)
+    def learn_members_from_events(self, events: List[Event]) -> None:
+        """
+        Goes through a list of events and learns their creators if they are not already known
+        :param events: The list of events
+        :return: None
+        """
+        for event in events:
+            if event.verify_key not in self.known_members:
+                self.known_members[event.verify_key] = Member(event.verify_key)
+
 
 
 def majority(it):
