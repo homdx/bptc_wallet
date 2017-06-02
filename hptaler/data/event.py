@@ -39,8 +39,7 @@ class Event:
         self.__body = pickle.dumps((self.data, parents, self.time, self.verify_key))
 
         # Compute Event hash and ID
-        event_hash = Base64Encoder.encode(crypto_hash_sha512(self.__body)).decode()
-        self.__id = event_hash[:5]  # TODO fix this limit
+        self.__id = Base64Encoder.encode(crypto_hash_sha512(self.__body)).decode("utf-8")
 
         # Event is always created with height 0
         # The real height is determined once the event is added to the hashgraph
@@ -63,8 +62,8 @@ class Event:
         self.signature = None
 
     def __str__(self):
-        return "Event({}) by Member({}), Height({}), Round({}), {}, Data({}), Time({})".format(
-            self.id, self.verify_key, self.height, self.round, self.parents, self.data, self.time)
+        return "Event({}...) by Member({}), Height({}), Round({}), {}, Data({}), Time({})".format(
+            self.id[:6], self.verify_key, self.height, self.round, self.parents, self.data, self.time)
 
     def __repr__(self):
         return self.__str__()

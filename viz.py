@@ -126,7 +126,7 @@ class App:
             tr_data['y'].append(y)
             tr_data['round_color'].append(round_color(event.round))
             tr_data['round'].append(event.round)
-            tr_data['hash'].append(event.id[:8] + "...")
+            tr_data['hash'].append(event.id[:6] + "...")
             tr_data['payload'].append("".format(event.data))
             tr_data['time'].append(event.time)
             tr_data['line_alpha'].append(1)

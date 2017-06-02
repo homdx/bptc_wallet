@@ -40,21 +40,10 @@ class Hashgraph:
         # {round-num}: rounds where fame is fully decided
         self.consensus = set()
 
-        # {event-hash => {event-hash => bool}}
-        # self.votes = defaultdict(dict)
-
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
 
         self.famous = {}
-
-        # {event-hash => int}: 0 or 1 + max(height of parents)
-        # self.height = {}
-
-        # {event-hash => {member-pk => event-hash}}: stores for each event ev
-        # and for each member m the latest event from m having same round
-        # number as ev that ev can see
-        # self.can_see = {}
 
     @property
     def total_stake(self) -> int:
