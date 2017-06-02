@@ -53,7 +53,7 @@ class VerifyKey(pynacl_VerifyKey):
         return "{}...".format(self.encode(encoding.Base64Encoder).decode('utf8')[:6])
 
     def __repr__(self):
-        return self.__str__()
+        return self.encode(encoding.Base64Encoder).decode('utf8')
 
     def __eq__(self, other):
         return self._key == other._key

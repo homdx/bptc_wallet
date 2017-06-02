@@ -3,6 +3,7 @@ import json
 from utilities.log_helper import logger
 from hptaler.data.event import SerializableEvent, Event
 from hptaler.data.member import Member
+from nacl.encoding import Base64Encoder
 
 
 class PushServerFactory(protocol.ServerFactory):
@@ -23,13 +24,13 @@ class PushServer(protocol.Protocol):
 
         # Generate Member object
         from_member_id = received_data['from']
-        from_member = Member(from_member_id)
+        from_member = Member.from_string_verifykey(from_member_id)
         from_member.address = self.transport.getPeer()
 
         s_events = received_data['events']
         events = {}
         for event_id, s_event in s_events.items():
-            events[event_id] = Event.create_from_serializable_event(s_event)
+            events[event_id] = Event.from_serializable_event(s_event)
 
         logger.info('Received:')
         for event_id, event in events.items():
@@ -43,7 +44,7 @@ class PushServer(protocol.Protocol):
 
 class PushClientFactory(protocol.ClientFactory):
 
-    def __init__(self, from_member, events):
+    def __init__(self, from_member: Member, events):
         self.from_member = from_member
         self.events = events
         self.protocol = PushClient
@@ -59,9 +60,11 @@ class PushClient(protocol.Protocol):
 
         serialized_events = {}
         for event_id, event in self.factory.events.items():
-            serialized_events[event_id] = SerializableEvent(event.data, event.parents,
-                                                       event.height, event.time, str(event.verify_key))
-        data_to_send = {'from': str(self.factory.from_member), 'events': serialized_events}
+            serialized_events[event_id] = event.to_serializable_event()
+        data_to_send = {
+            'from': self.factory.from_member.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
+            'events': serialized_events
+        }
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         logger.info("Sent data")
         self.transport.loseConnection()

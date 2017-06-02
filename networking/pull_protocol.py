@@ -3,6 +3,7 @@ import json
 from utilities.log_helper import logger
 from hptaler.data.event import SerializableDebugEvent, Event
 from hptaler.data.network import Network
+from nacl.encoding import Base64Encoder
 
 
 class PullServerFactory(protocol.ServerFactory):
@@ -22,8 +23,7 @@ class PullServer(protocol.Protocol):
 
         serialized_events = {}
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
-            serialized_events[event_id] = SerializableDebugEvent(event.data, event.parents, event.height, event.time,
-                                                                 str(event.verify_key), event.round)
+            serialized_events[event_id] = event.to_serializable_debug_event()
         data_to_send = {'from': str(self.factory.network.me.id), 'events': serialized_events}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         self.transport.loseConnection()
@@ -51,7 +51,7 @@ class PullClient(protocol.Protocol):
         s_events = received_data['events']
         events = {}
         for event_id, s_event in s_events.items():
-            events[event_id] = Event.create_from_serializable_debug_event(s_event)
+            events[event_id] = Event.from_serializable_debug_event(s_event)
 
         logger.info('Received:')
         for event_id, event in events.items():

@@ -1,4 +1,5 @@
-from utilities.signing import SigningKey
+from utilities.signing import SigningKey, VerifyKey
+from nacl.encoding import Base64Encoder
 
 from utilities.log_helper import logger
 
@@ -8,7 +9,7 @@ class Member:
     A Member is a participant in the Hashgraph
     """
 
-    def __init__(self, verify_key):
+    def __init__(self, verify_key: VerifyKey):
         # The key used to sign data
         self.signing_key = None
 
@@ -39,9 +40,14 @@ class Member:
 
         return new_member
 
+    @classmethod
+    def from_string_verifykey(cls, string_verify_key):
+        verify_key = VerifyKey(string_verify_key.encode("utf-8"), encoder=Base64Encoder)
+        return cls(verify_key)
+
     @property
     def id(self):
-        return str(self.verify_key)
+        return self.verify_key
 
     def __str__(self):
         return "Member({})".format(self.id)

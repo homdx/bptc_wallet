@@ -9,7 +9,7 @@ from hptaler.data.member import Member
 from utilities.utils import bfs
 from utilities.log_helper import logger
 
-from typing import List
+from typing import List, Dict
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -121,38 +121,15 @@ class Hashgraph:
         # Add event to graph
         self.lookup_table[event.id] = event
 
-        # Figure out rounds, fame, etc.
-        self.divide_rounds([event])
-
         # Update cached head
         self.me.head = event
 
+        # Figure out rounds, fame, etc.
+        self.divide_rounds([event])
+        new_c = self.decide_fame()
+        self.find_order(new_c)
+
         logger.info("Added own event to hashgraph: " + str(event))
-
-    def is_valid_event(self, id, event: Event):
-        """
-        Checks whether an event is valid (signature valid, parents known)
-        :param id: The event's ID
-        :param event: The event to be checked
-        :return: boolean: Whether the event is valid
-        """
-        # Verify signature is valid
-        try:
-            event.verify_key.verify(event.body, event.signature)
-        except ValueError:
-            return False
-
-        # Verify parents exist
-        return (event.id == id
-                and (event.parents == ()
-                     or (len(event.parents) == 2
-                         and event.parents[0].id in self.lookup_table and event.parents[1].id in self.lookup_table
-                         and event.parents[0].verify_key == event.verify_key
-                         and event.parents[1].verify_key != event.verify_key)))
-
-        # TODO: check if there is a fork (rly need reverse edges?)
-        # and all(x.verify_key != ev.verify_key
-        #        for x in self.preds[ev.parents[0]]))))
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -361,7 +338,7 @@ class Hashgraph:
         if self.consensus:
             print(self.consensus)
 
-    def process_events(self, from_member: Member, events: List[Event]) -> None:
+    def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
         Processes a list of events
         :param from_member: The member from whom the events were received
@@ -370,6 +347,9 @@ class Hashgraph:
         """
         # Add all new events
         logger.info("Processing {} events from {}".format(len(events), from_member.verify_key))
+
+        # Only deal with valid events
+        events = filter_valid_events(events)
 
         new_events = []
         for event_id, event in events.items():
@@ -382,6 +362,8 @@ class Hashgraph:
 
         # Figure out fame, order, etc.
         self.divide_rounds(new_events)
+        new_c = self.decide_fame()
+        self.find_order(new_c)
 
         # Create a new event for the gossip
         event = Event(self.me.verify_key, None, Parents(self.me.head.id, self.get_head_of(from_member).id))
@@ -398,7 +380,6 @@ class Hashgraph:
                 self.known_members[event.verify_key] = Member(event.verify_key)
 
 
-
 def majority(it):
     hits = [0, 0]
     for s, x in it:
@@ -407,3 +388,19 @@ def majority(it):
         return False, hits[0]
     else:
         return True, hits[1]
+
+
+def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
+    """
+    Goes through a dict of events and returns a dict containing only the valid ones
+    :param events: The dict to be filtered
+    :return: A dict containing only valid events
+    """
+    result = dict()
+    for event_id, event in events.items():
+        if event.has_valid_signature:
+            result[event_id] = event
+        else:
+            logger.warn("Event had invalid signature: {}".format(event))
+
+    return result

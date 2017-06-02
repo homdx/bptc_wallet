@@ -30,7 +30,7 @@ class Network:
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        factory = PushClientFactory(self.hashgraph.me.id, self.hashgraph.lookup_table)
+        factory = PushClientFactory(self.hashgraph.me, self.hashgraph.lookup_table)
 
         def push():
             reactor.connectTCP(ip, port, factory)
