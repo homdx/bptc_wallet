@@ -1,7 +1,7 @@
 from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
-from hptaler.data.event import SerializableDebugEvent, Event
+from hptaler.data.event import Event
 from hptaler.data.network import Network
 
 
@@ -22,7 +22,8 @@ class PullServer(protocol.Protocol):
 
         serialized_events = {}
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
-            serialized_events[event_id] = event.to_serializable_debug_event()
+            serialized_events[event_id] = event.to_debug_dict()
+
         data_to_send = {'from': str(self.factory.network.me.id), 'events': serialized_events}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         self.transport.loseConnection()
@@ -49,12 +50,12 @@ class PullClient(protocol.Protocol):
         from_member = received_data['from']
         s_events = received_data['events']
         events = {}
-        for event_id, s_event in s_events.items():
-            events[event_id] = Event.from_serializable_debug_event(s_event)
+        for event_id, dict_event in s_events.items():
+            events[event_id] = Event.from_debug_dict(dict_event)
 
-        #logger.info('Received:')
-        #for event_id, event in events.items():
-        #    logger.info('{}'.format(event))
+        logger.info('Received:')
+        for event_id, event in events.items():
+            logger.info('{}'.format(event))
 
         self.factory.callback(self.factory.callback_obj, from_member, events)
 

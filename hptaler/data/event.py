@@ -11,15 +11,11 @@ from nacl.bindings import crypto_hash_sha512
 from nacl.encoding import Base64Encoder
 from utilities.signing import VerifyKey
 import collections
+from hptaler.data.transaction import Transaction
+from typing import Dict
 
 # The parents of an event
 Parents = collections.namedtuple('Parents', 'self_parent other_parent')
-
-# A serializable version of an event for inter-member communication
-SerializableEvent = collections.namedtuple('SerializableEvent', 'data parents height time verify_key signature')
-
-# A serializable version of an event for debugging and visualization (contains more information)
-SerializableDebugEvent = collections.namedtuple('SerializableEvent', 'data parents height time verify_key signature round')
 
 
 class Event:
@@ -27,7 +23,7 @@ class Event:
     An Event is a node in the hashgraph - it may contain transactions
     """
 
-    def __init__(self, verify_key, data, parents: Parents, time=None):
+    def __init__(self, verify_key, data: Transaction, parents: Parents, time=None):
         # Immutable body of Event
         self.data = data
         self.parents = parents
@@ -77,33 +73,50 @@ class Event:
         return self.__id
 
     @classmethod
-    def from_serializable_event(cls, s_event):
-        # 0: data, 1: parents, 2: height, 3: time, 4: verify_key, 5: signature
-        event = Event(VerifyKey(s_event[4].encode("utf-8"), encoder=Base64Encoder), s_event[0],
-                      Parents(s_event[1][0],s_event[1][1]), s_event[3])
-        event.height = s_event[2]
-        event.signature = Base64Encoder.decode(s_event[5].encode("utf-8"))
+    def from_dict(cls, dict_event) -> "Event":
+        transaction = None
+        if dict_event['data'] is not None:
+            transaction = Transaction.from_dict(dict_event['data'])
+
+        event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
+                      transaction, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
+        event.height = dict_event['height']
+        event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
         return event
 
     @classmethod
-    def from_serializable_debug_event(cls, s_event):
-        # 0: data, 1: parents, 2: height, 3: time, 4: verify_key, 5: signature, 6: round
-        event = Event(VerifyKey(s_event[4].encode("utf-8"), encoder=Base64Encoder), s_event[0],
-                      Parents(s_event[1][0], s_event[1][1]), s_event[3])
-        event.height = s_event[2]
-        event.signature = Base64Encoder.decode(s_event[5].encode("utf-8"))
-        event.round = s_event[6]
+    def from_debug_dict(cls, dict_event) -> "Event":
+        transaction = None
+        if dict_event['data'] is not None:
+            transaction = Transaction.from_dict(dict_event['data'])
+
+        event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
+                      transaction, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
+        event.height = dict_event['height']
+        event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
+        event.round = dict_event['round']
         return event
 
-    def to_serializable_event(self):
-        return SerializableEvent(self.data, self.parents, self.height, self.time,
-                                 self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
-                                 Base64Encoder.encode(self.signature).decode("utf-8"))
+    def to_dict(self) -> Dict:
+        return dict(
+            data=self.data.to_dict() if self.data is not None else None,
+            parents=self.parents,
+            height=self.height,
+            time=self.time,
+            verify_key=self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
+            signature=Base64Encoder.encode(self.signature).decode("utf-8")
+        )
 
-    def to_serializable_debug_event(self):
-        return SerializableDebugEvent(self.data, self.parents, self.height, self.time,
-                                      self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
-                                      Base64Encoder.encode(self.signature).decode("utf-8"), self.round)
+    def to_debug_dict(self) -> Dict:
+        return dict(
+            data=self.data.to_dict() if self.data is not None else None,
+            parents=self.parents,
+            height=self.height,
+            time=self.time,
+            verify_key=self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
+            signature=Base64Encoder.encode(self.signature).decode("utf-8"),
+            round=self.round
+        )
 
     def sign(self, signing_key) -> None:
         """

@@ -1,6 +1,7 @@
 from hptaler.data.member import Member
 from hptaler.data.hashgraph import Hashgraph
 from hptaler.data.event import Event, Parents
+from hptaler.data.transaction import Transaction
 
 from twisted.internet import threads, reactor
 from networking.push_protocol import PushClientFactory
@@ -91,7 +92,7 @@ class Network:
         Creates a heartbeat (= own, empty) event and adds it to the hashgraph
         :return: The newly created event
         """
-        event = Event(self.hashgraph.me.verify_key, None, Parents(self.hashgraph.me.head.id, None))
+        event = Event(self.hashgraph.me.verify_key, Transaction(self.me.to_verifykey_string(), 1), Parents(self.hashgraph.me.head.id, None))
         self.hashgraph.add_own_event(event)
         return event
 

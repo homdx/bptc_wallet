@@ -105,7 +105,7 @@ class Hashgraph:
         event.height = max(self_parent_height, other_parent_height) + 1
 
         # Sign event body
-        event.signature = self.me.signing_key.sign(event.body).signature
+        event.sign(self.me.signing_key)
 
         # Add event to graph
         self.lookup_table[event.id] = event
@@ -118,7 +118,7 @@ class Hashgraph:
         new_c = self.decide_fame()
         self.find_order(new_c)
 
-        logger.info("Added own event to hashgraph: " + str(event))
+        #logger.info("Added own event to hashgraph: " + str(event))
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -183,7 +183,7 @@ class Hashgraph:
         :param events: Topologicaly sorted sequence of new event to process.
         """
 
-        logger.info("Dividing rounds for {} events".format(len(events)))
+        #logger.info("Dividing rounds for {} events".format(len(events)))
 
         for event in events:
             # Check if this is a root event or not
@@ -195,7 +195,7 @@ class Hashgraph:
             else:
                 # This is a normal event
                 # Estimate round (= maximum round of parents)
-                logger.info("Checking {}".format(str(event.parents)))
+                #logger.info("Checking {}".format(str(event.parents)))
                 calculated_round = 0
                 for parent in event.parents:
                     if parent is not None and self.lookup_table[parent].round > calculated_round:

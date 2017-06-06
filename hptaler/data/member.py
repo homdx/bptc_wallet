@@ -41,9 +41,12 @@ class Member:
         return new_member
 
     @classmethod
-    def from_string_verifykey(cls, string_verify_key):
+    def from_verifykey_string(cls, string_verify_key):
         verify_key = VerifyKey(string_verify_key.encode("utf-8"), encoder=Base64Encoder)
         return cls(verify_key)
+
+    def to_verifykey_string(self):
+        return self.verify_key.encode(encoder=Base64Encoder).decode("utf-8")
 
     @property
     def id(self):
