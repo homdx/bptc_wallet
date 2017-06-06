@@ -2,13 +2,27 @@
 
 ## Setup Linux
 ```shell
-  sudo apt-get install cython python-dev libffi-dev
+  sudo apt-get install cython python-dev libffi-dev libgl1-mesa-dev
   pip install -r requirements.txt
 ```
 
 ## Start UI client
 ```shell
   python -m hptaler.client
+```
+
+## Build Android package
+Install Buildozer following the instructions on its Github page. Note the difference between
+installation for Python 2 and Python 3.
+
+Look at the [documentation](http://buildozer.readthedocs.io/en/latest/installation.html)
+for installing the right dependencies for your OS. Buildozer and its dependency Crystax
+NDK require about 15 GB disk space.
+
+After setting up Buildozer run:
+
+```shell
+  buildozer android debug deploy run
 ```
 
 ## Execution
