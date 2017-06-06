@@ -1,12 +1,17 @@
 import os
 import threading
+
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
-from hashgraph.member import Member
+
+from hptaler.data.member import Member
+from hptaler.data.network import Network
+from hptaler.data.hashgraph import Hashgraph
+
 from networking.push_protocol import PushServerFactory
 from networking.pull_protocol import PullServerFactory
 from twisted.internet import reactor, threads
@@ -16,7 +21,7 @@ from networking.register_protocol import RegisterClientFactory
 from utilities.log_helper import logger
 from kivy.config import Config
 Config.set('graphics', 'width', '600')
-Config.set('graphics', 'height', '100')
+Config.set('graphics', 'height', '150')
 
 # import gi
 # gi.require_version('Gtk', '3.0')
@@ -29,10 +34,19 @@ class Core(GridLayout):
         self.args = args
         Builder.load_file(os.path.join('res', 'wallet_layout.kv'))
         super().__init__()
-        self.neighbours = {}  # dict(member_id -> (ip, port))
-        self.member = Member.create()
+
+        # Create new Member
+        self.me: Member = Member.create()
+
+        # Create Hashgraph
+        self.hashgraph: Hashgraph = Hashgraph(self.me)
+
+        # Create network
+        self.network: Network = Network(self.hashgraph)
+
+        # Set up UI
         self.stop = threading.Event()
-        self.add_widget(Label(text='Member ID: {}'.format(self.member.id)))
+        self.add_widget(Label(text='Member ID: {}'.format(self.me.id)))
         self.add_widget(Button(text='start listening on', on_press=self.start_listening))
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)
@@ -68,20 +82,16 @@ class Core(GridLayout):
     #     threading.Thread(target=loop).start()
 
     def heartbeat(self, *args):
-        self.member.heartbeat()
+        self.network.heartbeat()
 
     def push(self, *args):
-        self.member.push_to(self.push_to_ip_input.text, int(self.push_to_port_input.text))
+        self.network.push_to(self.push_to_ip_input.text, int(self.push_to_port_input.text))
 
     def push_to_random(self, *args):
-        if self.neighbours:
-            member_id, (ip, port) = random.choice(list(self.neighbours.items()))
-            self.member.push_to(ip, port)
-        else:
-            logger.info("Don't know any other members. Get them from the registry!")
+        self.network.push_to_random()
 
     def register(self, *args):
-        factory = RegisterClientFactory(str(self.member.id), int(self.listening_port_input.text))
+        factory = RegisterClientFactory(str(self.me.id), int(self.listening_port_input.text))
 
         def register():
             reactor.connectTCP(self.registry_ip_input.text, int(self.registry_register_port_input.text), factory)
@@ -90,7 +100,7 @@ class Core(GridLayout):
     def process_query(self, members):
         new_members = {}
         for member_id, (ip, port) in members.items():
-            if member_id != str(self.member.id):
+            if member_id != str(self.me.id):
                 new_members[member_id] = (ip, port)
                 self.neighbours[member_id] = (ip, port)
         logger.info("Acquainted with {}".format(new_members))
@@ -105,10 +115,12 @@ class Core(GridLayout):
     def start_listening(self, *args):
         port = int(self.listening_port_input.text)
         logger.info("Push server listens on port {}".format(port))
-        push_server_factory = PushServerFactory(self.member.process_events)
+        push_server_factory = PushServerFactory(self.network.receive_events_callback)
         reactor.listenTCP(port, push_server_factory)
+
         logger.info("[Pull server (for viz tool) listens on port {}]".format(port + 1))
-        pull_server_factory = PullServerFactory(self.member)
+
+        pull_server_factory = PullServerFactory(self.network)
         reactor.listenTCP(port + 1, pull_server_factory)
 
 

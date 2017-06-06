@@ -87,7 +87,7 @@ class App:
         for event_id, event in events.items():
             if event_id not in self.all_events:
                 if event.verify_key not in self.verify_key_to_x.keys():
-                    self.verify_key_to_x[str(event.verify_key)] = self.counter
+                    self.verify_key_to_x[event.verify_key] = self.counter
                     self.counter = self.counter + 1
                 self.all_events[event_id] = event
                 self.new_events[event_id] = event
@@ -124,27 +124,26 @@ class App:
             y = event.height
             tr_data['x'].append(x)
             tr_data['y'].append(y)
-            event.round = 0  # TODO: fix
             tr_data['round_color'].append(round_color(event.round))
             tr_data['round'].append(event.round)
-            tr_data['hash'].append(event.id[:8] + "...")
+            tr_data['hash'].append(event.id[:6] + "...")
             tr_data['payload'].append("".format(event.data))
             tr_data['time'].append(event.time)
             tr_data['line_alpha'].append(1)
-            tr_data['member_id'].append(event.verify_key)
+            tr_data['member_id'].append(str(event.verify_key))
             tr_data['height'].append(event.height)
 
             if event.parents.self_parent is not None:
                 links_data['x0'].append(x)
                 links_data['y0'].append(y)
-                links_data['x1'].append(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key])
+                links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.self_parent].height)
                 links_data['width'].append(3)
 
             if event.parents.other_parent is not None:
                 links_data['x0'].append(x)
                 links_data['y0'].append(y)
-                links_data['x1'].append(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key])
+                links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.other_parent].height)
                 links_data['width'].append(1)
 
