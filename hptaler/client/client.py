@@ -1,5 +1,6 @@
 import kivy
 kivy.require('1.0.7')
+
 from kivy.uix.gridlayout import GridLayout
 from utilities.log_helper import logger
 
