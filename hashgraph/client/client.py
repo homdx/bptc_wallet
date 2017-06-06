@@ -1,13 +1,10 @@
 import kivy
 kivy.require('1.0.7')
-
-from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from utilities.log_helper import logger
-from hashgraph.member import Member
 
 
-class Mobile(GridLayout):
+class Client(GridLayout):
     def __init__(self):
         self.defaults = {
             'listening_port': 8000,
@@ -18,6 +15,7 @@ class Mobile(GridLayout):
         }
         super().__init__()
 
+    # Get value for an attribute from its input element
     def get(self, key):
         for id_, obj in self.ids.items():
             if id_ == key:
@@ -47,10 +45,3 @@ class Mobile(GridLayout):
             if obj == widget:
                 return id_
         return None
-
-class MobileApp(App):
-    def build(self):
-        return Mobile()
-
-if __name__ == '__main__':
-    MobileApp().run()
