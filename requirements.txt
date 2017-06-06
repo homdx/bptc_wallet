@@ -5,8 +5,6 @@ cffi==1.10.0
 docutils==0.13.1
 Kivy==1.10.0
 Kivy-Garden==0.1.4
-kivy.deps.glew==0.1.9
-kivy.deps.sdl2==0.1.17
 olefile==0.44
 packaging==16.8
 pexpect==4.2.1
