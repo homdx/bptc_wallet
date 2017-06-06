@@ -1,5 +1,16 @@
 # BPT Hashgraph
 
+## Setup Linux
+```shell
+  sudo apt-get install cython python-dev libffi-dev
+  pip install -r requirements.txt
+```
+
+## Start UI client
+```shell
+  python -m hptaler.client
+```
+
 ## Execution
 Starting bokeh
 ```shell
