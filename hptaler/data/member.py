@@ -24,7 +24,6 @@ class Member:
         self.stake = 1  # TODO: Different stakes
 
         # The networking data
-        # TODO: Set, or move somewhere else
         self.address = None
 
     @classmethod

@@ -12,7 +12,7 @@ from nacl.encoding import Base64Encoder
 from utilities.signing import VerifyKey
 import collections
 from hptaler.data.transaction import Transaction
-from typing import Dict
+from typing import Dict, List
 
 # The parents of an event
 Parents = collections.namedtuple('Parents', 'self_parent other_parent')
@@ -23,7 +23,7 @@ class Event:
     An Event is a node in the hashgraph - it may contain transactions
     """
 
-    def __init__(self, verify_key, data: Transaction, parents: Parents, time=None):
+    def __init__(self, verify_key, data: List[Transaction], parents: Parents, time=None):
         # Immutable body of Event
         self.data = data
         self.parents = parents
@@ -74,24 +74,24 @@ class Event:
 
     @classmethod
     def from_dict(cls, dict_event) -> "Event":
-        transaction = None
+        data = None
         if dict_event['data'] is not None:
-            transaction = Transaction.from_dict(dict_event['data'])
+            data = [Transaction.from_dict(x) for x in dict_event['data']]
 
         event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
-                      transaction, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
+                      data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
         event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
         return event
 
     @classmethod
     def from_debug_dict(cls, dict_event) -> "Event":
-        transaction = None
+        data = None
         if dict_event['data'] is not None:
-            transaction = Transaction.from_dict(dict_event['data'])
+            data = [Transaction.from_dict(x) for x in dict_event['data']]
 
         event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
-                      transaction, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
+                      data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
         event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
         event.round = dict_event['round']
@@ -99,7 +99,7 @@ class Event:
 
     def to_dict(self) -> Dict:
         return dict(
-            data=self.data.to_dict() if self.data is not None else None,
+            data=[x.to_dict() for x in self.data] if self.data is not None else None,
             parents=self.parents,
             height=self.height,
             time=self.time,
@@ -109,7 +109,7 @@ class Event:
 
     def to_debug_dict(self) -> Dict:
         return dict(
-            data=self.data.to_dict() if self.data is not None else None,
+            data=[x.to_dict() for x in self.data] if self.data is not None else None,
             parents=self.parents,
             height=self.height,
             time=self.time,
