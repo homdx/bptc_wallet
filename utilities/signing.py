@@ -61,6 +61,9 @@ class VerifyKey(pynacl_VerifyKey):
     def __hash__(self):
         return hash(self._key)
 
+    def to_base64_string(self):
+        return self.__repr__()
+
 
 class SigningKey(pynacl_SigningKey):
     """
@@ -91,10 +94,17 @@ class SigningKey(pynacl_SigningKey):
         return "SigningKey(seed={})".format(self.encode(encoding.Base64Encoder).decode('utf8'))
 
     def __repr__(self):
-        return self.__str__()
+        return self.encode(encoding.Base64Encoder).decode('utf8')
 
     def __eq__(self, other):
         return self._seed == other._seed
 
     def __hash__(self):
         return hash(self._seed)
+
+    def to_base64_string(self):
+        return self.__repr__()
+
+    @classmethod
+    def from_base64_string(cls, base64_string):
+        return cls(base64_string.encode("utf-8"), encoder=encoding.Base64Encoder)

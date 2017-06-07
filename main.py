@@ -20,6 +20,8 @@ from networking.query_members_protocol import QueryMembersClientFactory
 from networking.register_protocol import RegisterClientFactory
 from utilities.log_helper import logger
 from kivy.config import Config
+from hptaler.data.db import DB
+
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '150')
 
@@ -30,19 +32,14 @@ Config.set('graphics', 'height', '150')
 # https://github.com/kivy/kivy/wiki/Working-with-Python-threads-inside-a-Kivy-application
 class Core(GridLayout):
 
-    def __init__(self, args):
+    def __init__(self, network, args):
         self.args = args
         Builder.load_file(os.path.join('res', 'wallet_layout.kv'))
         super().__init__()
 
-        # Create new Member
-        self.me: Member = Member.create()
-
-        # Create Hashgraph
-        self.hashgraph: Hashgraph = Hashgraph(self.me)
-
-        # Create network
-        self.network: Network = Network(self.hashgraph)
+        self.network = network
+        self.hashgraph = network.hashgraph
+        self.me = network.hashgraph.me
 
         # Set up UI
         self.stop = threading.Event()
@@ -129,6 +126,20 @@ class HPTWallet(App):
     def __init__(self, args):
         super().__init__()
         self.args = args
+
+        # Try to load the Hashgraph from the database
+        self.hashgraph: Hashgraph = DB.load_hashgraph()
+        create_initial_event = False
+
+        # Create a new hashgraph if it could not be loaded
+        if self.hashgraph is None or self.hashgraph.me is None:
+            self.me: Member = Member.create()
+            self.hashgraph: Hashgraph = Hashgraph(self.me)
+            create_initial_event = True
+
+        # Create network
+        self.network: Network = Network(self.hashgraph, create_initial_event)
+
         self.start_reactor_thread()
 
     @staticmethod
@@ -143,12 +154,13 @@ class HPTWallet(App):
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
         logger.info("Stopping...")
+        DB.save(self.network.hashgraph)
         reactor.callFromThread(reactor.stop)
         self.root.stop.set()
 
     def build(self):
         self.title = 'HPT Wallet'
-        return Core(self.args)
+        return Core(self.network, self.args)
 
 
 def main():

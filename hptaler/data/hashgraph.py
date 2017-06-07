@@ -24,7 +24,8 @@ class Hashgraph:
         self.me: Member = me
 
         # {member-id => Member}: All members we know
-        self.known_members = {me.id: me}
+        if me is not None:
+            self.known_members = {me.id: me}
 
         # {event-hash => event}: Dictionary mapping hashes to events
         self.lookup_table = {}
@@ -347,7 +348,7 @@ class Hashgraph:
                 self.lookup_table[event_id] = event
 
         # Learn about other members
-        self.learn_members_from_events(new_events);
+        self.learn_members_from_events(new_events)
 
         # Figure out fame, order, etc.
         self.divide_rounds(new_events)

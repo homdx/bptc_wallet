@@ -3,6 +3,8 @@ from hptaler.data.hashgraph import Hashgraph
 from hptaler.data.event import Event, Parents
 from hptaler.data.transaction import MoneyTransaction, StakeTransaction
 
+import hptaler.data.db
+
 from twisted.internet import threads, reactor
 from networking.push_protocol import PushClientFactory
 
@@ -19,13 +21,14 @@ class Network:
     This should be the main API of the
     """
 
-    def __init__(self, hashgraph: Hashgraph):
+    def __init__(self, hashgraph: Hashgraph, create_initial_event: bool = True):
         # The current hashgraph
         self.hashgraph = hashgraph
         self.me = self.hashgraph.me
 
         # Create first own event
-        self.create_own_first_event()
+        if create_initial_event:
+            self.create_own_first_event()
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
