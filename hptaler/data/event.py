@@ -12,7 +12,8 @@ from nacl.encoding import Base64Encoder
 from utilities.signing import VerifyKey
 import collections
 from hptaler.data.transaction import Transaction
-from typing import Dict, List
+from typing import Dict, List, Tuple
+import json
 
 # The parents of an event
 Parents = collections.namedtuple('Parents', 'self_parent other_parent')
@@ -27,8 +28,8 @@ class Event:
         # Immutable body of Event
         self.data = data
         self.parents = parents
-        self.time = datetime.datetime.now().isoformat() if time is None else time
-        self.verify_key = verify_key
+        self.time: datetime = datetime.datetime.now().isoformat() if time is None else time
+        self.verify_key: VerifyKey = verify_key
         # End of immutable body
 
         # Calculate the body (relevant data for hashing and signing)
@@ -39,20 +40,20 @@ class Event:
 
         # Event is always created with height 0
         # The real height is determined once the event is added to the hashgraph
-        self.height = 0
+        self.height: int = 0
 
         # assigned round number of each event
-        self.round = None  # TODO
+        self.round: int = None  # TODO
 
         # {event-hash => bool}
-        self.votes = dict()
+        self.votes: Dict[str, bool] = dict()
 
         # {node-id = > event}}: stores for each event ev
         # and for each member m the latest event from m having same round
         # number as ev that ev can see
 
         # {member-id => event-hash}: The top event of each member that this event can see
-        self.can_see = {}
+        self.can_see = dict()
 
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
@@ -78,7 +79,7 @@ class Event:
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
 
-        event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
+        event = Event(VerifyKey.from_base64_string(dict_event['verify_key']),
                       data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
         event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
@@ -90,7 +91,7 @@ class Event:
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
 
-        event = Event(VerifyKey(dict_event['verify_key'].encode('utf-8'), encoder=Base64Encoder),
+        event = Event(VerifyKey.from_base64_string(dict_event['verify_key']),
                       data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
         event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
@@ -117,6 +118,34 @@ class Event:
             signature=Base64Encoder.encode(self.signature).decode("utf-8"),
             round=self.round
         )
+
+    def to_db_tuple(self) -> Tuple:
+        return (
+            self.id,
+            json.dumps([x.to_dict() for x in self.data]) if self.data is not None else None,
+            self.parents.self_parent,
+            self.parents.other_parent,
+            self.time,
+            self.verify_key.to_base64_string(),
+            self.height,
+            Base64Encoder.encode(self.signature).decode("utf-8")
+        )
+
+    @classmethod
+    def from_db_tuple(cls, e: Tuple) -> "Event":
+        data = None
+        if e[1] is not None:
+            data = [Transaction.from_dict(x) for x in json.loads(e[1])]
+
+        event = Event(VerifyKey.from_base64_string(e[5]),
+                      data,
+                      Parents(e[2], e[3]),
+                      e[4])
+
+        event.height = e[6]
+        event.signature = Base64Encoder.decode(e[7].encode('utf-8'))
+
+        return event
 
     def sign(self, signing_key) -> None:
         """

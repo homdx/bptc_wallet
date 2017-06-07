@@ -1,5 +1,4 @@
 from utilities.signing import SigningKey, VerifyKey
-from nacl.encoding import Base64Encoder
 from utilities.log_helper import logger
 from twisted.internet.address import IPv4Address
 from typing import Tuple
@@ -50,16 +49,16 @@ class Member:
 
     @classmethod
     def from_verifykey_string(cls, string_verify_key):
-        verify_key = VerifyKey(string_verify_key.encode("utf-8"), encoder=Base64Encoder)
+        verify_key = VerifyKey.from_base64_string(string_verify_key)
         return cls(verify_key)
 
     def to_verifykey_string(self):
-        return self.verify_key.encode(encoder=Base64Encoder).decode("utf-8")
+        return self.verify_key.to_base64_string()
 
     @classmethod
     def from_db_tuple(cls, db: Tuple) -> "Member":
         member = Member.from_verifykey_string(db[0])
-        member.signing_key = SigningKey.from_base64_string(db[1])
+        member.signing_key = SigningKey.from_base64_string(db[1]) if db[1] is not None else None
         member.head = db[2] # TODO: Make this an Event object
         member.stake = db[3]
         if db[4] is not None and db[5] is not None:
@@ -74,5 +73,9 @@ class Member:
             host = self.address.host
             port = self.address.port
 
-        return (self.verify_key.to_base64_string(), self.signing_key.to_base64_string(), self.head.id, self.stake,
-                host, port)
+        return (self.verify_key.to_base64_string(),
+                self.signing_key.to_base64_string() if self.signing_key is not None else None,
+                self.head,
+                self.stake,
+                host,
+                port)

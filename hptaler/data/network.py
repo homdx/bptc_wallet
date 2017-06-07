@@ -97,7 +97,7 @@ class Network:
         """
         # TODO: Remove test transaction
         event = Event(self.hashgraph.me.verify_key, [MoneyTransaction(self.me.to_verifykey_string(), 1)],
-                      Parents(self.hashgraph.me.head.id, None))
+                      Parents(self.hashgraph.me.head, None))
         self.hashgraph.add_own_event(event)
         return event
 

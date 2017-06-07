@@ -64,6 +64,10 @@ class VerifyKey(pynacl_VerifyKey):
     def to_base64_string(self):
         return self.__repr__()
 
+    @classmethod
+    def from_base64_string(cls, base64_string):
+        return cls(base64_string.encode("utf-8"), encoder=encoding.Base64Encoder)
+
 
 class SigningKey(pynacl_SigningKey):
     """
