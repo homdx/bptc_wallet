@@ -21,7 +21,7 @@ class Hashgraph:
 
     def __init__(self, me):
         # Member: A reference to the current user. For convenience (e.g. signing)
-        self.me: Member = me
+        self.me = me
 
         # {member-id => Member}: All members we know
         if me is not None:

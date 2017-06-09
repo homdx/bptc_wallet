@@ -12,20 +12,20 @@ class Member:
 
     def __init__(self, verify_key: VerifyKey):
         # The key used to sign data
-        self.signing_key: SigningKey = None
+        self.signing_key = None
 
         # The key to verify data
-        self.verify_key: VerifyKey = verify_key
+        self.verify_key = verify_key
 
         # The current (cached) head of this member
         # Currently only used for the own member - all others are calculated on the fly
-        self.head: Event = None
+        self.head = None
 
         # The current stake of this member
-        self.stake: int = 1  # TODO: Different stakes
+        self.stake = 1  # TODO: Different stakes
 
         # The networking data
-        self.address: IPv4Address = None
+        self.address = None
 
     @classmethod
     def create(cls) -> 'Member':

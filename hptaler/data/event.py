@@ -28,8 +28,8 @@ class Event:
         # Immutable body of Event
         self.data = data
         self.parents = parents
-        self.time: datetime = datetime.datetime.now().isoformat() if time is None else time
-        self.verify_key: VerifyKey = verify_key
+        self.time = datetime.datetime.now().isoformat() if time is None else time
+        self.verify_key = verify_key
         # End of immutable body
 
         # Calculate the body (relevant data for hashing and signing)
@@ -40,13 +40,13 @@ class Event:
 
         # Event is always created with height 0
         # The real height is determined once the event is added to the hashgraph
-        self.height: int = 0
+        self.height = 0
 
         # assigned round number of each event
-        self.round: int = None  # TODO
+        self.round = None  # TODO
 
         # {event-hash => bool}
-        self.votes: Dict[str, bool] = dict()
+        self.votes = dict()
 
         # {node-id = > event}}: stores for each event ev
         # and for each member m the latest event from m having same round

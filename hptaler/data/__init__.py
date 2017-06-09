@@ -6,10 +6,10 @@ from utilities.log_helper import logger
 
 def main():
     # Create my account
-    me: Member = Member.create()
+    me = Member.create()
 
     # Create the network
-    network: Network = Network(me)
+    network = Network(me)
 
     # Add some heartbeats
     #for _ in range(5):

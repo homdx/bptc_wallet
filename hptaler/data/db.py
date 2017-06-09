@@ -87,8 +87,8 @@ class DB:
         c = cls.__get_cursor()
 
         # Load members
-        me: Member = None
-        members: Dict[str, Member] = dict()
+        me = None
+        members = dict()
         for row in c.execute('SELECT * FROM members'):
             member = Member.from_db_tuple(row)
             members[member.id] = member
@@ -96,12 +96,12 @@ class DB:
                 me = member
 
         # Load events
-        events: Dict[str, Event] = dict()
+        events = dict()
         for row in c.execute('SELECT * FROM events'):
             events[row[0]] = Event.from_db_tuple(row)
 
         # Create hashgraph
-        hg: Hashgraph = Hashgraph(me)
+        hg = Hashgraph(me)
         hg.known_members = members
         if len(events.items()) > 0:
             hg.add_events(events)

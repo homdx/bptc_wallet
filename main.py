@@ -128,17 +128,17 @@ class HPTWallet(App):
         self.args = args
 
         # Try to load the Hashgraph from the database
-        self.hashgraph: Hashgraph = DB.load_hashgraph()
+        self.hashgraph = DB.load_hashgraph()
         create_initial_event = False
 
         # Create a new hashgraph if it could not be loaded
         if self.hashgraph is None or self.hashgraph.me is None:
-            self.me: Member = Member.create()
-            self.hashgraph: Hashgraph = Hashgraph(self.me)
+            self.me = Member.create()
+            self.hashgraph = Hashgraph(self.me)
             create_initial_event = True
 
         # Create network
-        self.network: Network = Network(self.hashgraph, create_initial_event)
+        self.network = Network(self.hashgraph, create_initial_event)
 
         self.start_reactor_thread()
 
