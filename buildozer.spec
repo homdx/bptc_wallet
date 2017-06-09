@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = HPT Wallet
+title = BPTC Wallet
 
 # (str) Package name
-package.name = hpt
+package.name = bptc
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = de.hpi
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = python3crystax,kivy
+requirements = python3crystax,kivy,twisted,libnacl
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -190,7 +190,7 @@ android.arch = armeabi-v7a
 #
 
 # (str) python-for-android git clone directory (if empty, it will be automatically cloned from github)
-#p4a.source_dir =
+p4a.source_dir = /home/cedric/Desktop/git/python-for-android
 
 # (str) The directory in which python-for-android should look for your own build recipes (if any)
 #p4a.local_recipes =

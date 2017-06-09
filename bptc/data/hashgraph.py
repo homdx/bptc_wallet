@@ -3,13 +3,14 @@ import math
 from collections import defaultdict
 from functools import reduce
 
-from hptaler.data.event import Event, Parents
-from hptaler.data.member import Member
+from bptc.data.event import Event, Parents
+from bptc.data.member import Member
 
 from utilities.utils import bfs
 from utilities.log_helper import logger
 
 from typing import List, Dict
+from libnacl.encode import base64_decode
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -287,7 +288,8 @@ class Hashgraph:
                             witness.votes[x] = v
                         else:
                             # the 1st bit is same as any other bit right? # TODO not!
-                            witness.votes[x] = bool(witness.signature[0] // 128)
+                            witness_signature_byte = base64_decode(witness.signature.encode("UTF-8"))
+                            witness.votes[x] = bool(witness_signature_byte[0] // 128)
 
         new_c = {r for r in done
                  if all(w in self.famous for w in self.witnesses[r].values())}

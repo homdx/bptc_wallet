@@ -1,5 +1,5 @@
-from hptaler.data.member import Member
-from hptaler.data.network import Network
+from bptc.data.member import Member
+from bptc.data.network import Network
 
 from utilities.log_helper import logger
 

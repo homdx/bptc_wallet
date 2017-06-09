@@ -1,8 +1,8 @@
 from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
-from hptaler.data.event import Event
-from hptaler.data.network import Network
+from bptc.data.event import Event
+from bptc.data.network import Network
 
 
 class PullServerFactory(protocol.ServerFactory):

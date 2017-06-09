@@ -1,9 +1,9 @@
-from hptaler.data.member import Member
-from hptaler.data.hashgraph import Hashgraph
-from hptaler.data.event import Event, Parents
-from hptaler.data.transaction import MoneyTransaction, StakeTransaction
+from bptc.data.member import Member
+from bptc.data.hashgraph import Hashgraph
+from bptc.data.event import Event, Parents
+from bptc.data.transaction import MoneyTransaction, StakeTransaction
 
-import hptaler.data.db
+import bptc.data.db
 
 from twisted.internet import threads, reactor
 from networking.push_protocol import PushClientFactory

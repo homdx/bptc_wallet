@@ -1,8 +1,8 @@
 import sqlite3
 from utilities.log_helper import logger
-from hptaler.data.member import Member
-from hptaler.data.event import Event
-from hptaler.data.hashgraph import Hashgraph
+from bptc.data.member import Member
+from bptc.data.event import Event
+from bptc.data.hashgraph import Hashgraph
 from typing import Dict
 
 

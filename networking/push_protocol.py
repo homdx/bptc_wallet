@@ -1,8 +1,8 @@
 from twisted.internet import protocol
 import json
 from utilities.log_helper import logger
-from hptaler.data.event import Event
-from hptaler.data.member import Member
+from bptc.data.event import Event
+from bptc.data.member import Member
 from nacl.encoding import Base64Encoder
 
 
@@ -24,7 +24,7 @@ class PushServer(protocol.Protocol):
 
         # Generate Member object
         from_member_id = received_data['from']
-        from_member = Member.from_verifykey_string(from_member_id)
+        from_member = Member(from_member_id, None)
         from_member.address = self.transport.getPeer()
 
         s_events = received_data['events']
@@ -63,7 +63,7 @@ class PushClient(protocol.Protocol):
             serialized_events[event_id] = event.to_dict()
 
         data_to_send = {
-            'from': self.factory.from_member.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
+            'from': self.factory.from_member.verify_key,
             'events': serialized_events
         }
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))

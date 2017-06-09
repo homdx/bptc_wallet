@@ -3,10 +3,6 @@
 
 from collections import deque
 
-# from pysodium import randombytes
-import nacl
-from nacl.utils import random
-
 
 def toposort(nodes, parents):
     seen = {}

@@ -1,5 +1,4 @@
 import datetime
-from nacl.exceptions import BadSignatureError
 """
 Warning:
 The pickle module is not secure against erroneous or maliciously constructed data.
@@ -7,13 +6,13 @@ Never unpickle data received from an untrusted or unauthenticated source.
 https://docs.python.org/2/library/pickle.html
 """
 import pickle
-from nacl.bindings import crypto_hash_sha512
-from nacl.encoding import Base64Encoder
-from utilities.signing import VerifyKey
 import collections
-from hptaler.data.transaction import Transaction
+from bptc.data.transaction import Transaction
 from typing import Dict, List, Tuple
 import json
+from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
+from libnacl.encode import base64_encode, base64_decode
+from utilities.log_helper import logger
 
 # The parents of an event
 Parents = collections.namedtuple('Parents', 'self_parent other_parent')
@@ -36,7 +35,7 @@ class Event:
         self.__body = pickle.dumps((self.data, parents, self.time, self.verify_key))
 
         # Compute Event hash and ID
-        self.__id = Base64Encoder.encode(crypto_hash_sha512(self.__body)).decode("utf-8")
+        self.__id = base64_encode(crypto_hash_sha512(self.__body)).decode("UTF-8")
 
         # Event is always created with height 0
         # The real height is determined once the event is added to the hashgraph
@@ -79,10 +78,10 @@ class Event:
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
 
-        event = Event(VerifyKey.from_base64_string(dict_event['verify_key']),
+        event = Event(dict_event['verify_key'],
                       data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
-        event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
+        event.signature = dict_event['signature']
         return event
 
     @classmethod
@@ -91,10 +90,10 @@ class Event:
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
 
-        event = Event(VerifyKey.from_base64_string(dict_event['verify_key']),
+        event = Event(dict_event['verify_key'],
                       data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
-        event.signature = Base64Encoder.decode(dict_event['signature'].encode('utf-8'))
+        event.signature = dict_event['signature']
         event.round = dict_event['round']
         return event
 
@@ -104,8 +103,8 @@ class Event:
             parents=self.parents,
             height=self.height,
             time=self.time,
-            verify_key=self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
-            signature=Base64Encoder.encode(self.signature).decode("utf-8")
+            verify_key=self.verify_key,
+            signature=self.signature
         )
 
     def to_debug_dict(self) -> Dict:
@@ -114,8 +113,8 @@ class Event:
             parents=self.parents,
             height=self.height,
             time=self.time,
-            verify_key=self.verify_key.encode(encoder=Base64Encoder).decode("utf-8"),
-            signature=Base64Encoder.encode(self.signature).decode("utf-8"),
+            verify_key=self.verify_key,
+            signature=self.signature,
             round=self.round
         )
 
@@ -126,9 +125,9 @@ class Event:
             self.parents.self_parent,
             self.parents.other_parent,
             self.time,
-            self.verify_key.to_base64_string(),
+            self.verify_key,
             self.height,
-            Base64Encoder.encode(self.signature).decode("utf-8")
+            self.signature
         )
 
     @classmethod
@@ -137,13 +136,13 @@ class Event:
         if e[1] is not None:
             data = [Transaction.from_dict(x) for x in json.loads(e[1])]
 
-        event = Event(VerifyKey.from_base64_string(e[5]),
+        event = Event(e[5],
                       data,
                       Parents(e[2], e[3]),
                       e[4])
 
         event.height = e[6]
-        event.signature = Base64Encoder.decode(e[7].encode('utf-8'))
+        event.signature = e[7]
 
         return event
 
@@ -153,7 +152,8 @@ class Event:
         :param signing_key: The signing key to use
         :return: None
         """
-        self.signature = signing_key.sign(self.body).signature
+        signing_key_byte = base64_decode(signing_key.encode("UTF-8"))
+        self.signature = base64_encode(crypto_sign(self.body, signing_key_byte)).decode("UTF-8")
 
     @property
     def has_valid_signature(self) -> bool:
@@ -161,8 +161,10 @@ class Event:
         Checks whether the event has a valid signature
         :return: bool
         """
-        try:
-            self.verify_key.verify(self.body, self.signature)
+        signature_byte = base64_decode(self.signature.encode("UTF-8"))
+        verify_key_byte = base64_decode(self.verify_key.encode("UTF-8"))
+        valid = self.body == crypto_sign_open(signature_byte, verify_key_byte)
+        if valid:
             return True
-        except BadSignatureError:
-            return False
+        else:
+            return False  # TODO: raise Error

@@ -8,9 +8,9 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 
-from hptaler.data.member import Member
-from hptaler.data.network import Network
-from hptaler.data.hashgraph import Hashgraph
+from bptc.data.member import Member
+from bptc.data.network import Network
+from bptc.data.hashgraph import Hashgraph
 
 from networking.push_protocol import PushServerFactory
 from networking.pull_protocol import PullServerFactory
@@ -20,7 +20,7 @@ from networking.query_members_protocol import QueryMembersClientFactory
 from networking.register_protocol import RegisterClientFactory
 from utilities.log_helper import logger
 from kivy.config import Config
-from hptaler.data.db import DB
+from bptc.data.db import DB
 
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '150')

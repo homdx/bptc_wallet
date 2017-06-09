@@ -1,8 +1,8 @@
-from utilities.signing import SigningKey, VerifyKey
 from utilities.log_helper import logger
 from twisted.internet.address import IPv4Address
 from typing import Tuple
-from hptaler.data.event import Event
+from libnacl import crypto_sign_keypair
+from libnacl.encode import base64_encode
 
 
 class Member:
@@ -10,9 +10,9 @@ class Member:
     A Member is a participant in the Hashgraph
     """
 
-    def __init__(self, verify_key: VerifyKey):
+    def __init__(self, verify_key, signing_key):
         # The key used to sign data
-        self.signing_key = None
+        self.signing_key = signing_key
 
         # The key to verify data
         self.verify_key = verify_key
@@ -32,9 +32,10 @@ class Member:
         """
         Creates new member with a signing (private) key
         """
-        signing_key = SigningKey.generate()
-        new_member = Member(signing_key.verify_key)
-        new_member.signing_key = signing_key
+        verify_key_bytes, signing_key_bytes = crypto_sign_keypair()
+        verify_key = base64_encode(verify_key_bytes).decode("UTF-8")
+        signing_key = base64_encode(signing_key_bytes).decode("UTF-8")
+        new_member = Member(verify_key, signing_key)
 
         logger.info("Created new Member: " + str(new_member))
 
@@ -47,19 +48,14 @@ class Member:
     def __str__(self):
         return "Member({})".format(self.id)
 
-    @classmethod
-    def from_verifykey_string(cls, string_verify_key):
-        verify_key = VerifyKey.from_base64_string(string_verify_key)
-        return cls(verify_key)
-
     def to_verifykey_string(self):
-        return self.verify_key.to_base64_string()
+        return self.verify_key
 
     @classmethod
     def from_db_tuple(cls, db: Tuple) -> "Member":
-        member = Member.from_verifykey_string(db[0])
-        member.signing_key = SigningKey.from_base64_string(db[1]) if db[1] is not None else None
-        member.head = db[2] # TODO: Make this an Event object
+        member = Member(db[0], None)
+        member.signing_key = db[1] if db[1] is not None else None
+        member.head = db[2]  # TODO: Make this an Event object
         member.stake = db[3]
         if db[4] is not None and db[5] is not None:
             member.address = IPv4Address('TCP', db[4], db[5])
@@ -73,8 +69,8 @@ class Member:
             host = self.address.host
             port = self.address.port
 
-        return (self.verify_key.to_base64_string(),
-                self.signing_key.to_base64_string() if self.signing_key is not None else None,
+        return (self.verify_key,
+                self.signing_key if self.signing_key is not None else None,
                 self.head,
                 self.stake,
                 host,
