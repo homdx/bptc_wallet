@@ -1,8 +1,9 @@
 import kivy
-kivy.require('1.0.7')
-
 from kivy.uix.gridlayout import GridLayout
-from utilities.log_helper import logger
+
+from bptc.utils import logger
+
+kivy.require('1.0.7')
 
 
 class Client(GridLayout):
@@ -41,7 +42,7 @@ class Client(GridLayout):
         # This is used for limiting the input length
         return lambda text, from_undo: text[:n - len(widget.text)]
 
-    def get_widet_id(self, widget):
+    def get_widget_id(self, widget):
         for id_, obj in self.ids.items():
             if obj == widget:
                 return id_

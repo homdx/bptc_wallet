@@ -2,25 +2,23 @@ import os
 import threading
 
 from kivy.app import App
+from kivy.config import Config
 from kivy.lang import Builder
 from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
-from kivy.uix.gridlayout import GridLayout
+from bptc.networking.push_protocol import PushServerFactory
+from bptc.networking.query_members_protocol import QueryMembersClientFactory
+from bptc.networking.register_protocol import RegisterClientFactory
+from twisted.internet import reactor, threads
 
+from bptc.data.db import DB
+from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.network import Network
-from bptc.data.hashgraph import Hashgraph
-
-from networking.push_protocol import PushServerFactory
-from networking.pull_protocol import PullServerFactory
-from twisted.internet import reactor, threads
-import random
-from networking.query_members_protocol import QueryMembersClientFactory
-from networking.register_protocol import RegisterClientFactory
-from utilities.log_helper import logger
-from kivy.config import Config
-from bptc.data.db import DB
+from bptc.networking.pull_protocol import PullServerFactory
+from bptc.utils import logger
 
 Config.set('graphics', 'width', '600')
 Config.set('graphics', 'height', '150')
@@ -43,7 +41,7 @@ class Core(GridLayout):
 
         # Set up UI
         self.stop = threading.Event()
-        self.add_widget(Label(text='Member ID: {}'.format(self.me.id)))
+        self.add_widget(Label(text='Member ID: {}...'.format(self.me.id[:6])))
         self.add_widget(Button(text='start listening on', on_press=self.start_listening))
         self.listening_port_input = TextInput(text='8000')
         self.add_widget(self.listening_port_input)

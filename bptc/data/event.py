@@ -12,10 +12,17 @@ from typing import Dict, List, Tuple
 import json
 from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
 from libnacl.encode import base64_encode, base64_decode
-from utilities.log_helper import logger
+from bptc.utils import logger
 
 # The parents of an event
-Parents = collections.namedtuple('Parents', 'self_parent other_parent')
+#Parents = collections.namedtuple('Parents', 'self_parent other_parent')
+
+
+class Parents(collections.namedtuple("Parents", ["self_parent", "other_parent"])):
+
+    def __str__(self):
+        return 'Parents(self_parent: {}, other_parent: {})'.format(None if self.self_parent is None else self.self_parent[:6] + '...',
+                                                                       None if self.other_parent is None else self.other_parent[:6] + '...')
 
 
 class Event:
@@ -57,9 +64,12 @@ class Event:
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
 
+        # debug
+        logger.info('New Event: {}'.format(self))
+
     def __str__(self):
-        return "Event({}...) by Member({}), Height({}), Round({}), {}, Data({}), Time({})".format(
-            self.id[:6], self.verify_key, self.height, self.round, self.parents, self.data, self.time)
+        return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
+            self.id[:6], self.verify_key[:6], self.height, self.round, self.parents, self.data, self.time)
 
     def __repr__(self):
         return self.__str__()
@@ -163,8 +173,8 @@ class Event:
         """
         signature_byte = base64_decode(self.signature.encode("UTF-8"))
         verify_key_byte = base64_decode(self.verify_key.encode("UTF-8"))
-        valid = self.body == crypto_sign_open(signature_byte, verify_key_byte)
-        if valid:
+        msg_from_sig = crypto_sign_open(signature_byte, verify_key_byte)
+        if self.body == msg_from_sig:
             return True
         else:
             return False  # TODO: raise Error

@@ -1,18 +1,14 @@
-from bptc.data.member import Member
-from bptc.data.hashgraph import Hashgraph
-from bptc.data.event import Event, Parents
-from bptc.data.transaction import MoneyTransaction, StakeTransaction
-
-import bptc.data.db
+from random import choice
+from typing import List
 
 from twisted.internet import threads, reactor
-from networking.push_protocol import PushClientFactory
 
-from utilities.log_helper import logger
-
-from random import choice
-
-from typing import List
+from bptc.data.event import Event, Parents
+from bptc.data.hashgraph import Hashgraph
+from bptc.data.member import Member
+from bptc.data.transaction import MoneyTransaction
+from bptc.networking.push_protocol import PushClientFactory
+from bptc.utils import logger
 
 
 class Network:

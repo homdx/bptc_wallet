@@ -1,8 +1,9 @@
 import threading
+
 from twisted.internet import reactor
 
-from networking.query_members_protocol import QueryMembersServerFactory
-from networking.register_protocol import RegisterServerFactory
+from bptc.networking.query_members_protocol import QueryMembersServerFactory
+from bptc.networking.register_protocol import RegisterServerFactory
 
 
 class MemberRegistry:

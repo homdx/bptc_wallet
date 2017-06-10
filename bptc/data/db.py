@@ -1,9 +1,9 @@
 import sqlite3
-from utilities.log_helper import logger
-from bptc.data.member import Member
+
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
-from typing import Dict
+from bptc.data.member import Member
+from bptc.utils import logger
 
 
 class DB:

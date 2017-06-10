@@ -1,8 +1,10 @@
-from utilities.log_helper import logger
-from twisted.internet.address import IPv4Address
 from typing import Tuple
+
 from libnacl import crypto_sign_keypair
 from libnacl.encode import base64_encode
+from twisted.internet.address import IPv4Address
+
+from bptc.utils import logger
 
 
 class Member:
@@ -46,7 +48,7 @@ class Member:
         return self.verify_key
 
     def __str__(self):
-        return "Member({})".format(self.id)
+        return "Member({}...)".format(self.id[:6])
 
     def to_verifykey_string(self):
         return self.verify_key

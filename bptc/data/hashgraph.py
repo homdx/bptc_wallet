@@ -1,16 +1,14 @@
 import math
-
 from collections import defaultdict
 from functools import reduce
+from typing import List, Dict
+
+from libnacl.encode import base64_decode
 
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
-
-from utilities.utils import bfs
-from utilities.log_helper import logger
-
-from typing import List, Dict
-from libnacl.encode import base64_decode
+from bptc.utils import bfs
+from bptc.utils import logger
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -337,7 +335,7 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
-        logger.info("Processing {} events from {}".format(len(events), from_member.verify_key))
+        logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)

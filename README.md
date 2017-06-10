@@ -8,7 +8,7 @@
 
 ## Start UI client
 ```shell
-  python -m hptaler.client
+  python -m bptc.client
 ```
 
 ## Build Android package

@@ -10,6 +10,7 @@ Config.set('graphics', 'height', '736')
 class Mobile(Client):
     pass
 
+
 class MobileApp(App):
     def build(self):
         return Mobile()
