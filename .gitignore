@@ -23,3 +23,9 @@ share/
 
 # Buildozer module
 buildozer/
+
+# Database
+data.db
+
+# apk
+bin/

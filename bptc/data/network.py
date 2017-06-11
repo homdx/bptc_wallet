@@ -1,15 +1,14 @@
-from hptaler.data.member import Member
-from hptaler.data.hashgraph import Hashgraph
-from hptaler.data.event import Event, Parents
+from random import choice
+from typing import List
 
 from twisted.internet import threads, reactor
-from networking.push_protocol import PushClientFactory
 
-from utilities.log_helper import logger
-
-from random import choice
-
-from typing import List
+from bptc.data.event import Event, Parents
+from bptc.data.hashgraph import Hashgraph
+from bptc.data.member import Member
+from bptc.data.transaction import MoneyTransaction
+from bptc.networking.push_protocol import PushClientFactory
+from bptc.utils import logger
 
 
 class Network:
@@ -18,13 +17,14 @@ class Network:
     This should be the main API of the
     """
 
-    def __init__(self, hashgraph: Hashgraph):
+    def __init__(self, hashgraph: Hashgraph, create_initial_event: bool = True):
         # The current hashgraph
         self.hashgraph = hashgraph
         self.me = self.hashgraph.me
 
         # Create first own event
-        self.create_own_first_event()
+        if create_initial_event:
+            self.create_own_first_event()
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
@@ -91,7 +91,9 @@ class Network:
         Creates a heartbeat (= own, empty) event and adds it to the hashgraph
         :return: The newly created event
         """
-        event = Event(self.hashgraph.me.verify_key, None, Parents(self.hashgraph.me.head.id, None))
+        # TODO: Remove test transaction
+        event = Event(self.hashgraph.me.verify_key, [MoneyTransaction(self.me.to_verifykey_string(), 1)],
+                      Parents(self.hashgraph.me.head, None))
         self.hashgraph.add_own_event(event)
         return event
 

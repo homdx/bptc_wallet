@@ -1,5 +1,5 @@
 from .client import Client
-from kivy.app import App
+from .bptc_wallet import BPTCWallet
 
 from kivy.config import Config
 # size of an iPhone 6 Plus
@@ -10,9 +10,9 @@ Config.set('graphics', 'height', '736')
 class Mobile(Client):
     pass
 
-class MobileApp(App):
+class MobileApp(BPTCWallet):
     def build(self):
-        return Mobile()
+        return Mobile(self.network)
 
 if __name__ == '__main__':
     MobileApp().run()

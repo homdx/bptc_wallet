@@ -1,15 +1,14 @@
 import math
-
 from collections import defaultdict
 from functools import reduce
-
-from hptaler.data.event import Event, Parents
-from hptaler.data.member import Member
-
-from utilities.utils import bfs
-from utilities.log_helper import logger
-
 from typing import List, Dict
+
+from libnacl.encode import base64_decode
+
+from bptc.data.event import Event, Parents
+from bptc.data.member import Member
+from bptc.utils import bfs
+from bptc.utils import logger
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -21,10 +20,11 @@ class Hashgraph:
 
     def __init__(self, me):
         # Member: A reference to the current user. For convenience (e.g. signing)
-        self.me: Member = me
+        self.me = me
 
         # {member-id => Member}: All members we know
-        self.known_members = {me.id: me}
+        if me is not None:
+            self.known_members = {me.id: me}
 
         # {event-hash => event}: Dictionary mapping hashes to events
         self.lookup_table = {}
@@ -59,9 +59,9 @@ class Hashgraph:
         """
         return int(math.floor(2 * self.total_stake / 3))
 
-    def get_head_of(self, member: Member):
+    def get_head_of(self, member: Member) -> str:
         """
-        Returns the head of a given member
+        Returns the id of the head of a given member
         :param member:
         :return:
         """
@@ -72,7 +72,7 @@ class Hashgraph:
                 if item.height > height:
                     head = item
                     height = item.height
-        return head
+        return head.id
 
     def add_own_first_event(self, event: Event):
         """
@@ -105,20 +105,20 @@ class Hashgraph:
         event.height = max(self_parent_height, other_parent_height) + 1
 
         # Sign event body
-        event.signature = self.me.signing_key.sign(event.body).signature
+        event.sign(self.me.signing_key)
 
         # Add event to graph
         self.lookup_table[event.id] = event
 
         # Update cached head
-        self.me.head = event
+        self.me.head = event.id
 
         # Figure out rounds, fame, etc.
         self.divide_rounds([event])
         new_c = self.decide_fame()
         self.find_order(new_c)
 
-        logger.info("Added own event to hashgraph: " + str(event))
+        #logger.info("Added own event to hashgraph: " + str(event))
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -138,7 +138,7 @@ class Hashgraph:
             return [p for p in u.parents
                     if (p.verify_key not in info) or (p.height > info[p.verify_key])]
 
-        subset = [h for h in bfs((self.head,), succ)]
+        subset = [h for h in bfs((self.lookup_table[self.head],), succ)]
         return subset
 
     @staticmethod
@@ -183,7 +183,7 @@ class Hashgraph:
         :param events: Topologicaly sorted sequence of new event to process.
         """
 
-        logger.info("Dividing rounds for {} events".format(len(events)))
+        #logger.info("Dividing rounds for {} events".format(len(events)))
 
         for event in events:
             # Check if this is a root event or not
@@ -195,7 +195,7 @@ class Hashgraph:
             else:
                 # This is a normal event
                 # Estimate round (= maximum round of parents)
-                logger.info("Checking {}".format(str(event.parents)))
+                #logger.info("Checking {}".format(str(event.parents)))
                 calculated_round = 0
                 for parent in event.parents:
                     if parent is not None and self.lookup_table[parent].round > calculated_round:
@@ -286,7 +286,8 @@ class Hashgraph:
                             witness.votes[x] = v
                         else:
                             # the 1st bit is same as any other bit right? # TODO not!
-                            witness.votes[x] = bool(witness.signature[0] // 128)
+                            witness_signature_byte = base64_decode(witness.signature.encode("UTF-8"))
+                            witness.votes[x] = bool(witness_signature_byte[0] // 128)
 
         new_c = {r for r in done
                  if all(w in self.famous for w in self.witnesses[r].values())}
@@ -334,12 +335,12 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
-        # Add all new events
-        logger.info("Processing {} events from {}".format(len(events), from_member.verify_key))
+        logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)
 
+        # Add all new events
         new_events = []
         for event_id, event in events.items():
             if event_id not in self.lookup_table:
@@ -347,7 +348,7 @@ class Hashgraph:
                 self.lookup_table[event_id] = event
 
         # Learn about other members
-        self.learn_members_from_events(new_events);
+        self.learn_members_from_events(new_events)
 
         # Figure out fame, order, etc.
         self.divide_rounds(new_events)
@@ -355,8 +356,35 @@ class Hashgraph:
         self.find_order(new_c)
 
         # Create a new event for the gossip
-        event = Event(self.me.verify_key, None, Parents(self.me.head.id, self.get_head_of(from_member).id))
+        event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
         self.add_own_event(event)
+
+    def add_events(self, events: Dict[str, Event]) -> None:
+        """
+        Adds a list of events to the hashgraph
+        :param events: The events to be added
+        :return: None
+        """
+        logger.info("Adding {} events".format(len(events)))
+
+        # Only deal with valid events
+        events = filter_valid_events(events)
+        logger.info("{} events are valid".format(len(events)))
+
+        # Add all new events
+        new_events = []
+        for event_id, event in events.items():
+            if event_id not in self.lookup_table:
+                new_events.append(event)
+                self.lookup_table[event_id] = event
+
+        # Learn about other members
+        self.learn_members_from_events(new_events)
+
+        # Figure out fame, order, etc.
+        self.divide_rounds(new_events)
+        new_c = self.decide_fame()
+        self.find_order(new_c)
 
     def learn_members_from_events(self, events: List[Event]) -> None:
         """

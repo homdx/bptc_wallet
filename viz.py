@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 import threading
 from functools import partial
-import sys
+
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.plotting import figure
-from bokeh.palettes import plasma, small_palettes
 from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText)
-from networking.pull_protocol import PullClientFactory
+from bokeh.palettes import plasma, small_palettes
+from bokeh.plotting import figure
 from twisted.internet import threads, reactor
+
+from bptc.networking.pull_protocol import PullClientFactory
 
 R_COLORS = small_palettes['Set2'][8]
 

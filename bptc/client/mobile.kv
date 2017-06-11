@@ -1,9 +1,9 @@
 #:kivy 1.0
 
-<Desktop>:
-    id: DesktopApp
+<Mobile>:
+    id: MobileApp
     cols: 1
-    rows: 11
+    rows: 10
     cols: 1
     row: 8
     BoxLayout:
@@ -15,7 +15,7 @@
                 size: self.size
                 source: "res/images/black-and-gray-background.jpg"
         Label:
-            text: 'HPTaler'
+            text: 'BPTC Wallet'
             text_size: self.width, 200
             font: 'Calibri Light'
             font_size: 20
@@ -51,11 +51,16 @@
             padding_y: ( self.height - self.line_height ) / 2
             multiline: False
             input_filter: root.generate_limited_input(self, 6)
-    Button:
-        id: start_listening
-        text: 'Start listening to events'
+    BoxLayout:
         size_hint: 1, 1
-        on_press: root.start_listening()
+        Button:
+            id: start_listening
+            text: 'Start listening to events'
+            on_press: root.start_listening()
+        Button:
+            id: send_heartbeat
+            text: 'Send heartbeat'
+            on_press: root.heartbeat()
     BoxLayout:
         size_hint: 1, 0.3
     BoxLayout:
