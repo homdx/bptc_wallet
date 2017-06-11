@@ -11,10 +11,10 @@ class Client(GridLayout):
     def __init__(self, network):
         self.defaults = {
             'listening_port': 8000,
-            'registering_address': 'localhost:8000',
-            'members_address': 'localhost:8001',
-            'member_id': 'Some-ID',
             'push_address': 'localhost:8000',
+            'registering_address': 'localhost:8010',
+            'query_members_address': 'localhost:8011',
+            'member_id': 'Some-ID'
         }
         self.network = network
         self.hashgraph = network.hashgraph
