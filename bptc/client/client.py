@@ -19,6 +19,7 @@ class Client(GridLayout):
         self.network = network
         self.hashgraph = network.hashgraph
         self.me = network.hashgraph.me
+        self.defaults['member_id'] = self.me.verify_key[:6] + '...'
         self.stop = threading.Event()
         super().__init__()
 
