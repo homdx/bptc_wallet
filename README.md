@@ -8,6 +8,8 @@
 
 ## Start UI client
 ```shell
+  python main.py
+  # Or you can execute
   python -m bptc.client
 ```
 
