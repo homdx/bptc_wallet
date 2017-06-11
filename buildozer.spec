@@ -32,7 +32,7 @@ version = 0.1
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
-# version.filename = %(source.dir)s/main.py
+# version.filename = ./bptc/client/__main__.py
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
@@ -103,7 +103,7 @@ fullscreen = 0
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = ~/bpt_coin/.buildozer/crystax-ndk 
+android.ndk_path = ~/bpt_coin/.buildozer/crystax-ndk
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =
