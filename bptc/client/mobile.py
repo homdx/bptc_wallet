@@ -13,6 +13,3 @@ class Mobile(Client):
 class MobileApp(BPTCWallet):
     def build(self):
         return Mobile(self.network)
-
-if __name__ == '__main__':
-    MobileApp().run()
