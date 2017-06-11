@@ -2,7 +2,7 @@
 
 ## Setup Linux
 ```shell
-  sudo apt-get install cython python-dev libffi-dev libgl1-mesa-dev
+  sudo apt install cython python-dev libffi-dev libgl1-mesa-dev
   pip install -r requirements.txt
 ```
 

@@ -5,6 +5,7 @@ Cython==0.25.2
 docutils==0.13.1
 Kivy==1.10.0
 Kivy-Garden==0.1.4
+libnacl==1.5.0
 olefile==0.44
 packaging==16.8
 pexpect==4.2.1

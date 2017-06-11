@@ -1,13 +1,14 @@
+import threading
 import kivy
 from kivy.uix.gridlayout import GridLayout
 
-from bptc.utils import logger
+import bptc.networking.utils as network_utils
 
 kivy.require('1.0.7')
 
 
 class Client(GridLayout):
-    def __init__(self):
+    def __init__(self, network):
         self.defaults = {
             'listening_port': 8000,
             'registering_address': 'localhost:8000',
@@ -15,6 +16,10 @@ class Client(GridLayout):
             'member_id': 'Some-ID',
             'push_address': 'localhost:8000',
         }
+        self.network = network
+        self.hashgraph = network.hashgraph
+        self.me = network.hashgraph.me
+        self.stop = threading.Event()
         super().__init__()
 
     # Get value for an attribute from its input element
@@ -24,19 +29,25 @@ class Client(GridLayout):
                 return obj.text
 
     def start_listening(self):
-        logger.info('Start: {}'.format(self.get('listening_port')))
+        network_utils.start_listening(self.network, self.get('listening_port'))
 
     def register(self):
-        logger.info('Register: {}'.format(self.get('registering_address')))
+        ip, port = self.get('registering_address').split(':')
+        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
 
     def query_members(self):
-        logger.info('Query members: {}'.format(self.get('members_address')))
+        ip, port = self.get('members_address').split(':')
+        network_utils.query_members(self, ip, port)
+
+    def heartbeat(self):
+        self.network.heartbeat()
 
     def push(self):
-        logger.info('Push to: {}'.format(self.get('push_address')))
+        ip, port = self.get('push_address').split(':')
+        self.network.push_to(ip, int(port))
 
     def push_random(self):
-        logger.info('Push to random node')
+        self.network.push_to_random()
 
     def generate_limited_input(self, widget, n):
         # This is used for limiting the input length
