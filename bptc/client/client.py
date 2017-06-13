@@ -12,8 +12,8 @@ class Client(GridLayout):
         self.defaults = {
             'listening_port': 8000,
             'push_address': 'localhost:8000',
-            'registering_address': 'localhost:8010',
-            'query_members_address': 'localhost:8011',
+            'registering_address': '172.20.3.10:9000',
+            'query_members_address': '172.20.3.10:9001',
             'member_id': 'Some-ID'
         }
         self.network = network
@@ -37,7 +37,7 @@ class Client(GridLayout):
         network_utils.register(self.me.id, self.get('listening_port'), ip, port)
 
     def query_members(self):
-        ip, port = self.get('members_address').split(':')
+        ip, port = self.get('query_members_address').split(':')
         network_utils.query_members(self, ip, port)
 
     def heartbeat(self):

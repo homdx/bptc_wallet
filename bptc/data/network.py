@@ -69,6 +69,7 @@ class Network:
         return
 
     def push_to_member(self, member: Member) -> None:
+        logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
         self.push_to(member.address.host, member.address.port)
 
     def push_to_random(self) -> None:
@@ -81,10 +82,9 @@ class Network:
             # Don't send messages to ourselves
             while member_id == self.me.id:
                 member_id, member = choice(list(self.hashgraph.known_members.items()))
-
             self.push_to_member(member)
         else:
-            logger.info("Don't know any other members. Get them from the registry!")
+            logger.info("Don't know any other members. Get them from the registry!")  # one self is always in known_members, right?
 
     def heartbeat(self) -> Event:
         """
@@ -123,53 +123,3 @@ class Network:
 
         # Let the hashgraph process the events
         self.hashgraph.process_events(from_member, events)
-
-
-    # TODO: remove
-    def ask_sync(self, member, fingerprint):
-        """Respond to someone wanting to sync"""
-
-        # TODO: only send a diff? maybe with the help of self.height
-        # TODO: thread safe? (allow to run while mainloop is running)
-
-        subset = self.hashgraph.difference(fingerprint)
-
-        # TODO Clear response from internal information !!!
-
-        return self.hashgraph.me.head, subset
-
-    # TODO: remove
-    def heartbeat_callback(self):
-        """Main working loop."""
-
-        logger.info("{} heartbeat...".format(self))
-
-        # payload = [event.id for event in self.new]
-        payload = ()
-        self.new = []
-
-        logger.debug("{}.payload = {}".format(self, payload))
-
-        # pick a random member to sync with but not me
-        if len(list(self.hashgraph.known_members.values())) == 0:
-            logger.error("No known neighbours!")
-            return None
-
-        member = choice(list(self.hashgraph.known_members.values()))
-        logger.info("{}.sync with {}".format(self, member))
-        new = self.push_to(member, payload)
-
-        logger.info("{}.new = {}".format(self, new))
-
-        self.new = list(new)
-
-        self.hashgraph.divide_rounds(new)
-
-        new_c = self.hashgraph.decide_fame()
-        self.hashgraph.find_order(new_c)
-
-        logger.info("{}.new_c = {}".format(self, new_c))
-        logger.info("{}.heartbeat exits.".format(self))
-
-        # return payload
-        return self.new

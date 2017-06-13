@@ -1,14 +1,16 @@
 import math
 from collections import defaultdict
-from functools import reduce
+from functools import reduce, partial
 from typing import List, Dict
 
 from libnacl.encode import base64_decode
 
+from bptc.data import hg_algorithm
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils import bfs
 from bptc.utils import logger
+
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -44,6 +46,9 @@ class Hashgraph:
         self.witnesses = defaultdict(dict)
 
         self.famous = {}
+
+        # add functions of hashgraph algorithm
+        self.divide_rounds = partial(hg_algorithm.divide_rounds, self)
 
     @property
     def total_stake(self) -> int:
@@ -114,7 +119,7 @@ class Hashgraph:
         self.me.head = event.id
 
         # Figure out rounds, fame, etc.
-        self.divide_rounds([event])
+        self.divide_rounds({event.id: event})
         new_c = self.decide_fame()
         self.find_order(new_c)
 
@@ -176,58 +181,6 @@ class Hashgraph:
         :return: boolean: Whether a is higher than b
         """
         return a is not None and (b is None or a.height >= b.height)
-
-    def divide_rounds(self, events):
-        """Restore invariants for `can_see`, `witnesses` and `round`.
-
-        :param events: Topologicaly sorted sequence of new event to process.
-        """
-
-        #logger.info("Dividing rounds for {} events".format(len(events)))
-
-        for event in events:
-            # Check if this is a root event or not
-            if event.parents == () or (event.parents.self_parent is None and event.parents.other_parent is None):
-                # This is a root event
-                event.round = 0
-                self.witnesses[0][event.verify_key] = event
-                event.can_see = {event.verify_key: event}
-            else:
-                # This is a normal event
-                # Estimate round (= maximum round of parents)
-                #logger.info("Checking {}".format(str(event.parents)))
-                calculated_round = 0
-                for parent in event.parents:
-                    if parent is not None and self.lookup_table[parent].round > calculated_round:
-                        calculated_round = self.lookup_table[parent].round
-
-                # recurrence relation to update can_see
-                p0 = self.lookup_table[event.parents.self_parent].can_see if event.parents.self_parent is not None else dict()
-                p1 = self.lookup_table[event.parents.other_parent].can_see if event.parents.other_parent is not None else dict()
-                event.can_see = {c: self.get_higher(p0.get(c), p1.get(c))
-                             for c in p0.keys() | p1.keys()}
-
-                # Count distinct paths to distinct nodes
-                # TODO: What exactly happens here? Why two levels of visible events?
-                hits = defaultdict(int)
-                for verify_key, visible_event in event.can_see.items():
-                    if visible_event.round == calculated_round:
-                        for c_, k_ in visible_event.can_see.items():
-                            if k_.round == calculated_round:
-                                hits[c_] += self.known_members[verify_key].stake
-
-                # check if i can strongly see enough events
-                if sum(1 for x in hits.values() if x > self.supermajority_stake) > self.supermajority_stake:
-                    event.round = calculated_round + 1
-                else:
-                    event.round = calculated_round
-
-                # Events can always see themselves
-                event.can_see[event.verify_key] = event
-
-                # An event becomes a witness if it is the first of that round
-                if event.round > self.lookup_table[event.parents.self_parent].round:
-                    self.witnesses[event.round][event.verify_key] = event
 
     def decide_fame(self):
         max_r = max(self.witnesses)
@@ -341,10 +294,10 @@ class Hashgraph:
         events = filter_valid_events(events)
 
         # Add all new events
-        new_events = []
+        new_events = {}
         for event_id, event in events.items():
             if event_id not in self.lookup_table:
-                new_events.append(event)
+                new_events[event.id] = event
                 self.lookup_table[event_id] = event
 
         # Learn about other members
@@ -372,10 +325,10 @@ class Hashgraph:
         logger.info("{} events are valid".format(len(events)))
 
         # Add all new events
-        new_events = []
+        new_events = {}
         for event_id, event in events.items():
             if event_id not in self.lookup_table:
-                new_events.append(event)
+                new_events[event.id] = event
                 self.unordered_events.add(event)
                 self.lookup_table[event_id] = event
 
@@ -393,7 +346,7 @@ class Hashgraph:
         :param events: The list of events
         :return: None
         """
-        for event in events:
+        for event in events.values():
             if event.verify_key not in self.known_members:
                 self.known_members[event.verify_key] = Member(event.verify_key)
 

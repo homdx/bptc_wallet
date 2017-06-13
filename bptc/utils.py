@@ -5,6 +5,7 @@
 
 import logging
 import sys
+from random import random
 
 stdout_logger = logging.StreamHandler(sys.stdout)
 stdout_logger.setFormatter(logging.Formatter('%(message)s'))
@@ -22,23 +23,6 @@ logger.addHandler(file_logger)
 # Algorithms
 
 from collections import deque
-
-
-def toposort(nodes, parents):
-    seen = {}
-
-    def visit(u):
-        if u in seen:
-            if seen[u] == 0:
-                raise ValueError('not a DAG')
-        elif u in nodes:
-            seen[u] = 0
-            for v in parents(u):
-                yield from visit(v)
-            seen[u] = 1
-            yield u
-    for u in nodes:
-        yield from visit(u)
 
 
 def bfs(s, succ):
