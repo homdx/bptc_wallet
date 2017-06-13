@@ -69,6 +69,7 @@ class Network:
         return
 
     def push_to_member(self, member: Member) -> None:
+        logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
         self.push_to(member.address.host, member.address.port)
 
     def push_to_random(self) -> None:
@@ -81,7 +82,6 @@ class Network:
             # Don't send messages to ourselves
             while member_id == self.me.id:
                 member_id, member = choice(list(self.hashgraph.known_members.items()))
-
             self.push_to_member(member)
         else:
             logger.info("Don't know any other members. Get them from the registry!")
