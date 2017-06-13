@@ -340,7 +340,7 @@ class Hashgraph:
         new_c = self.decide_fame()
         self.find_order(new_c)
 
-    def learn_members_from_events(self, events: List[Event]) -> None:
+    def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
         Goes through a list of events and learns their creators if they are not already known
         :param events: The list of events
