@@ -376,6 +376,7 @@ class Hashgraph:
         for event_id, event in events.items():
             if event_id not in self.lookup_table:
                 new_events.append(event)
+                self.unordered_events.add(event)
                 self.lookup_table[event_id] = event
 
         # Learn about other members

@@ -57,7 +57,7 @@ class Member:
     def from_db_tuple(cls, db: Tuple) -> "Member":
         member = Member(db[0], None)
         member.signing_key = db[1] if db[1] is not None else None
-        member.head = db[2]  # TODO: Make this an Event object
+        member.head = db[2]
         member.stake = db[3]
         if db[4] is not None and db[5] is not None:
             member.address = IPv4Address('TCP', db[4], db[5])

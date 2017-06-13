@@ -116,7 +116,10 @@ class Network:
         :return:
         """
         # Store/Update member
-        self.hashgraph.known_members[from_member.id] = from_member
+        if from_member in self.hashgraph.known_members:
+            self.hashgraph.known_members[from_member.id].address = from_member.address
+        else:
+            self.hashgraph.known_members[from_member.id] = from_member
 
         # Let the hashgraph process the events
         self.hashgraph.process_events(from_member, events)
