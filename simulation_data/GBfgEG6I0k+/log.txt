@@ -1,0 +1,114 @@
+Created new Member: Member(GBfgEG...)
+New Event: Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Stopping...
+New Event: Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Adding 1 events
+1 events are valid
+Stopping...
+New Event: Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Adding 1 events
+1 events are valid
+Push server listens on port 8004
+[Pull server (for viz tool) listens on port 8005]
+Disconnected
+Connected to server. Waiting for data...
+Member update: 6r5fTD... to (172.18.2.21, 8006)
+Member update: Nx9oxf... to (172.18.2.21, 8000)
+Member update: y1pEJg... to (172.18.2.21, 8002)
+Disconnected
+Client connected. Waiting for data...
+New Event: Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+New Event: Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+New Event: Event(7xa84j...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Received:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Processing 3 events from y1pEJg...
+New Event: Event(+68swU...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+Client disconnected
+Push to y1pEJg... (172.18.2.21, 41930)
+Client connected. Waiting for data...
+New Event: Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Received:
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Processing 1 events from Nx9oxf...
+New Event: Event(PINKk/...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+Client disconnected
+Push to Nx9oxf... (172.18.2.21, 41936)
+Push to 6r5fTD... (172.18.2.21, 8006)
+Connected to server.
+Sending:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(+68swU...) by Member(GBfgEG...), Height(2), Round(0), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Event(PINKk/...) by Member(GBfgEG...), Height(3), Round(0), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(0), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Sent data
+Disconnected
+Push to Nx9oxf... (172.18.2.21, 41936)
+Push to 6r5fTD... (172.18.2.21, 8006)
+Connected to server.
+Sending:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(+68swU...) by Member(GBfgEG...), Height(2), Round(0), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Event(PINKk/...) by Member(GBfgEG...), Height(3), Round(0), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(0), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Sent data
+Disconnected
+Client connected. Waiting for data...
+New Event: Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+New Event: Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+New Event: Event(YA8/qD...) by Member(6r5fTD...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:25.780789)
+New Event: Event(T9ZIjp...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: 7xa84j..., other_parent: YA8/qD...), Data(None), Time(2017-06-13T15:40:39.711421)
+New Event: Event(7xa84j...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Received:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(YA8/qD...) by Member(6r5fTD...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:25.780789)
+Event(T9ZIjp...) by Member(y1pEJg...), Height(2), Round(None), Parents(self_parent: 7xa84j..., other_parent: YA8/qD...), Data(None), Time(2017-06-13T15:40:39.711421)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Processing 5 events from y1pEJg...
+New Event: Event(Nyrxxg...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: PINKk/..., other_parent: T9ZIjp...), Data(None), Time(2017-06-13T15:40:47.796350)
+Client disconnected
+Push to 6r5fTD... (172.18.2.21, 8006)
+Connected to server.
+Sending:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(+68swU...) by Member(GBfgEG...), Height(2), Round(0), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+Event(YA8/qD...) by Member(6r5fTD...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:25.780789)
+Event(T9ZIjp...) by Member(y1pEJg...), Height(2), Round(0), Parents(self_parent: 7xa84j..., other_parent: YA8/qD...), Data(None), Time(2017-06-13T15:40:39.711421)
+Event(Nyrxxg...) by Member(GBfgEG...), Height(4), Round(0), Parents(self_parent: PINKk/..., other_parent: T9ZIjp...), Data(None), Time(2017-06-13T15:40:47.796350)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Event(PINKk/...) by Member(GBfgEG...), Height(3), Round(0), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(0), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Sent data
+Disconnected
+Client connected. Waiting for data...
+New Event: Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+New Event: Event(+68swU...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+New Event: Event(PINKk/...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+New Event: Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+New Event: Event(S4+Aa4...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: yGLjRW..., other_parent: YA8/qD...), Data(None), Time(2017-06-13T15:40:42.120815)
+New Event: Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+New Event: Event(YA8/qD...) by Member(6r5fTD...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:25.780789)
+New Event: Event(5zcrJu...) by Member(6r5fTD...), Height(0), Round(None), Parents(self_parent: YA8/qD..., other_parent: PINKk/...), Data(None), Time(2017-06-13T15:40:46.349666)
+New Event: Event(7xa84j...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Received:
+Event(oRDf3F...) by Member(y1pEJg...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:31.515678)
+Event(+68swU...) by Member(GBfgEG...), Height(2), Round(None), Parents(self_parent: XO0II1..., other_parent: 7xa84j...), Data(None), Time(2017-06-13T15:40:38.323594)
+Event(yGLjRW...) by Member(Nx9oxf...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:33:27.909400)
+Event(PINKk/...) by Member(GBfgEG...), Height(3), Round(None), Parents(self_parent: +68swU..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:40.484722)
+Event(S4+Aa4...) by Member(Nx9oxf...), Height(1), Round(None), Parents(self_parent: yGLjRW..., other_parent: YA8/qD...), Data(None), Time(2017-06-13T15:40:42.120815)
+Event(XO0II1...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:50.147189)
+Event(YA8/qD...) by Member(6r5fTD...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-13T14:36:25.780789)
+Event(5zcrJu...) by Member(6r5fTD...), Height(4), Round(None), Parents(self_parent: YA8/qD..., other_parent: PINKk/...), Data(None), Time(2017-06-13T15:40:46.349666)
+Event(7xa84j...) by Member(y1pEJg...), Height(1), Round(None), Parents(self_parent: oRDf3F..., other_parent: yGLjRW...), Data(None), Time(2017-06-13T15:40:36.597510)
+Processing 9 events from Nx9oxf...
+New Event: Event(0ULmxI...) by Member(GBfgEG...), Height(0), Round(None), Parents(self_parent: Nyrxxg..., other_parent: S4+Aa4...), Data(None), Time(2017-06-13T15:40:51.604914)
+Client disconnected
+Stopping...
