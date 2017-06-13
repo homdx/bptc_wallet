@@ -72,7 +72,7 @@ class Hashgraph:
                 if item.height > height:
                     head = item
                     height = item.height
-        return head.id
+        return head.id if head is not None else None
 
     def add_own_first_event(self, event: Event):
         """

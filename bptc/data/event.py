@@ -1,11 +1,4 @@
 import datetime
-"""
-Warning:
-The pickle module is not secure against erroneous or maliciously constructed data.
-Never unpickle data received from an untrusted or unauthenticated source.
-https://docs.python.org/2/library/pickle.html
-"""
-import pickle
 import collections
 from bptc.data.transaction import Transaction
 from typing import Dict, List, Tuple
@@ -14,15 +7,14 @@ from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
 from libnacl.encode import base64_encode, base64_decode
 from bptc.utils import logger
 
+
 # The parents of an event
-#Parents = collections.namedtuple('Parents', 'self_parent other_parent')
-
-
 class Parents(collections.namedtuple("Parents", ["self_parent", "other_parent"])):
 
     def __str__(self):
-        return 'Parents(self_parent: {}, other_parent: {})'.format(None if self.self_parent is None else self.self_parent[:6] + '...',
-                                                                       None if self.other_parent is None else self.other_parent[:6] + '...')
+        return 'Parents(self_parent: {}, other_parent: {})'.format(
+            None if self.self_parent is None else self.self_parent[:6] + '...',
+            None if self.other_parent is None else self.other_parent[:6] + '...')
 
 
 class Event:
@@ -38,11 +30,8 @@ class Event:
         self.verify_key = verify_key
         # End of immutable body
 
-        # Calculate the body (relevant data for hashing and signing)
-        self.__body = pickle.dumps((self.data, parents, self.time, self.verify_key))
-
         # Compute Event hash and ID
-        self.__id = base64_encode(crypto_hash_sha512(self.__body)).decode("UTF-8")
+        self.__id = base64_encode(crypto_hash_sha512(self.body.encode("UTF-8"))).decode("UTF-8")
 
         # Event is always created with height 0
         # The real height is determined once the event is added to the hashgraph
@@ -76,7 +65,13 @@ class Event:
 
     @property
     def body(self):
-        return self.__body
+        return json.dumps(dict(
+            data=[x.to_dict() for x in self.data] if self.data is not None else None,
+            self_parent=self.parents.self_parent,
+            other_parent=self.parents.other_parent,
+            time=self.time,
+            verify_key=self.verify_key
+        ))
 
     @property
     def id(self):
@@ -163,7 +158,7 @@ class Event:
         :return: None
         """
         signing_key_byte = base64_decode(signing_key.encode("UTF-8"))
-        self.signature = base64_encode(crypto_sign(self.body, signing_key_byte)).decode("UTF-8")
+        self.signature = base64_encode(crypto_sign(self.body.encode("UTF-8"), signing_key_byte)).decode("UTF-8")
 
     @property
     def has_valid_signature(self) -> bool:
@@ -173,8 +168,8 @@ class Event:
         """
         signature_byte = base64_decode(self.signature.encode("UTF-8"))
         verify_key_byte = base64_decode(self.verify_key.encode("UTF-8"))
-        msg_from_sig = crypto_sign_open(signature_byte, verify_key_byte)
-        if self.body == msg_from_sig:
-            return True
-        else:
-            return False  # TODO: raise Error
+        try:
+            message = crypto_sign_open(signature_byte, verify_key_byte)
+            return message.decode('utf-8') == self.body
+        except ValueError:
+            return False
