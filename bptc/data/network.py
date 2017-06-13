@@ -1,8 +1,6 @@
 from random import choice
-from typing import List
-
+from typing import Dict
 from twisted.internet import threads, reactor
-
 from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
@@ -108,7 +106,7 @@ class Network:
         self.hashgraph.add_own_first_event(event)
         return event
 
-    def receive_events_callback(self, from_member: Member, events: List[Event]) -> None:
+    def receive_events_callback(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
         Used as a callback when events are received from the outside
         :param from_member: The member from which the events were received
