@@ -1,5 +1,7 @@
 import datetime
 import collections
+from collections import OrderedDict
+
 from bptc.data.transaction import Transaction
 from typing import Dict, List, Tuple
 import json
@@ -65,12 +67,12 @@ class Event:
 
     @property
     def body(self):
-        return json.dumps(dict(
-            data=[x.to_dict() for x in self.data] if self.data is not None else None,
-            self_parent=self.parents.self_parent,
-            other_parent=self.parents.other_parent,
-            time=self.time,
-            verify_key=self.verify_key
+        return json.dumps(OrderedDict([
+            ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
+            ('self_parent', self.parents.self_parent),
+            ('other_parent', self.parents.other_parent),
+            ('time', self.time),
+            ('verify_key', self.verify_key)]
         ))
 
     @property
