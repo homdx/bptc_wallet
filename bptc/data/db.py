@@ -1,14 +1,17 @@
+import os
 import sqlite3
 
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 class DB:
 
     __connection = None
+    __listening_port = None
+    __output_dir = None
 
     @classmethod
     def __connect(cls) -> None:
@@ -18,7 +21,8 @@ class DB:
         """
         if cls.__connection is None:
             # Connect to DB
-            cls.__connection = sqlite3.connect('data.db')
+            database_file = os.path.join(cls.__output_dir, 'data.db')
+            cls.__connection = sqlite3.connect(database_file)
 
             # Create tables if necessary
             c = cls.__connection.cursor()
@@ -26,7 +30,7 @@ class DB:
             c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT)')
 
         else:
-            logger.error("Database has already been connected")
+            utils.logger.error("Database has already been connected")
 
     @classmethod
     def __get_cursor(cls) -> sqlite3:
@@ -80,10 +84,12 @@ class DB:
             for _, event in obj.lookup_table.items():
                 cls.__save_event(event)
         else:
-            logger.error("Could not persist object because its type is not supported")
+            utils.logger.error("Could not persist object because its type is not supported")
 
     @classmethod
-    def load_hashgraph(cls) -> Hashgraph:
+    def load_hashgraph(cls, listening_port, output_dir) -> Hashgraph:
+        cls.__listening_port = listening_port
+        cls.__output_dir = output_dir
         c = cls.__get_cursor()
 
         # Load members

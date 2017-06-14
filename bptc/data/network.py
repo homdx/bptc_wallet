@@ -6,7 +6,7 @@ from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction
 from bptc.networking.push_protocol import PushClientFactory
-from bptc.utils import logger
+import bptc.utils as utils
 from bptc.data.utils import filter_members_with_address
 
 
@@ -41,15 +41,15 @@ class Network:
         # NOTE: communication channel security must be provided in standard way: SSL
 
         # remote_head, difference = member.ask_sync(self, fingerprint)
-        # logger.info("  remote_head = {}".format(remote_head))
-        # logger.info("  difference  = {}".format(difference))
+        # utils.logger.info("  remote_head = {}".format(remote_head))
+        # utils.logger.info("  difference  = {}".format(difference))
         #
         # # TODO move to hashgraph
         # new = tuple(toposort([event for event in difference if event.id not in self.hashgraph.lookup_table],
         #                      # difference.keys() - self.hashgraph.keys(),
         #                      lambda u: u.parents))
         #
-        # logger.info("{}.sync:new = \n{}".format(self, pformat(new)))
+        # utils.logger.info("{}.sync:new = \n{}".format(self, pformat(new)))
         #
         # # TODO move to hashgraph
         # for event in new:
@@ -64,13 +64,13 @@ class Network:
         #     self.hashgraph.head = event
         #     h = event.id
         #
-        # logger.info("{}.sync exits.".format(self))
+        # utils.logger.info("{}.sync exits.".format(self))
         #
         # return new + (event,)
         return
 
     def push_to_member(self, member: Member) -> None:
-        logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
+        utils.logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
         self.push_to(member.address.host, member.address.port)
 
     def push_to_random(self) -> None:
@@ -85,7 +85,7 @@ class Network:
                 member_id, member = choice(list(self.hashgraph.known_members.items()))
             self.push_to_member(member)
         else:
-            logger.info("Don't know any other members. Get them from the registry!")  # one self is always in known_members, right?
+            utils.logger.info("Don't know any other members. Get them from the registry!")  # one self is always in known_members, right?
 
     def heartbeat(self) -> Event:
         """

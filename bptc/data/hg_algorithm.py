@@ -29,7 +29,7 @@ def divide_rounds(self, events):
         else:
             # This is a normal event
             # Estimate round (= maximum round of parents)
-            # logger.info("Checking {}".format(str(event.parents)))
+            # utils.logger.info("Checking {}".format(str(event.parents)))
             calculated_round = 0
             for parent in event.parents:
                 if parent is not None and self.lookup_table[parent].round > calculated_round:

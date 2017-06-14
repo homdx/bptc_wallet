@@ -9,7 +9,7 @@ from bptc.data import hg_algorithm
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils import bfs
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
@@ -123,7 +123,7 @@ class Hashgraph:
         new_c = self.decide_fame()
         self.find_order(new_c)
 
-        #logger.info("Added own event to hashgraph: " + str(event))
+        #utils.logger.info("Added own event to hashgraph: " + str(event))
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -288,7 +288,7 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
-        logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
+        utils.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)
@@ -318,11 +318,11 @@ class Hashgraph:
         :param events: The events to be added
         :return: None
         """
-        logger.info("Adding {} events".format(len(events)))
+        utils.logger.info("Adding {} events".format(len(events)))
 
         # Only deal with valid events
         events = filter_valid_events(events)
-        logger.info("{} events are valid".format(len(events)))
+        utils.logger.info("{} events are valid".format(len(events)))
 
         # Add all new events
         new_events = {}
@@ -372,6 +372,6 @@ def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
         if event.has_valid_signature:
             result[event_id] = event
         else:
-            logger.warn("Event had invalid signature: {}".format(event))
+            utils.logger.warn("Event had invalid signature: {}".format(event))
 
     return result
