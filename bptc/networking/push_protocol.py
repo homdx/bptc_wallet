@@ -24,9 +24,11 @@ class PushServer(protocol.Protocol):
         received_data = json.loads(data.decode('UTF-8'))
 
         # Generate Member object
-        from_member_id = received_data['from']
+        from_member_id = received_data['from']['verify_key']
+        from_member_port = int(received_data['from']['listening_port'])
         from_member = Member(from_member_id, None)
         from_member.address = self.transport.getPeer()
+        from_member.address.port = from_member_port
 
         s_events = received_data['events']
         events = {}
@@ -64,7 +66,10 @@ class PushClient(protocol.Protocol):
             serialized_events[event_id] = event.to_dict()
 
         data_to_send = {
-            'from': self.factory.from_member.verify_key,
+            'from': {
+                'verify_key': self.factory.from_member.verify_key,
+                'listening_port': self.factory.from_member.address.port
+            },
             'events': serialized_events
         }
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))

@@ -49,6 +49,7 @@ def start_listening(network, listening_port):
     logger.info("Push server listens on port {}".format(listening_port))
     push_server_factory = PushServerFactory(network.receive_events_callback)
     reactor.listenTCP(int(listening_port), push_server_factory)
+    network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 
     logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
     pull_server_factory = PullServerFactory(network)

@@ -170,6 +170,6 @@ class Event:
         verify_key_byte = base64_decode(self.verify_key.encode("UTF-8"))
         try:
             message = crypto_sign_open(signature_byte, verify_key_byte)
-            return message.decode('utf-8') == self.body
+            return message.decode('UTF-8') == self.body
         except ValueError:
             return False
