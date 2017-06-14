@@ -2,7 +2,7 @@ import json
 from twisted.internet import protocol
 from bptc.data.event import Event
 from bptc.data.member import Member
-from bptc.utils import logger
+import bptc.utils as utils
 from typing import Dict, List
 
 
@@ -17,7 +17,7 @@ class PushServerFactory(protocol.ServerFactory):
 class PushServer(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Client connected. Waiting for data...')
+        utils.logger.info('Client connected. Waiting for data...')
 
     def dataReceived(self, data):
         # Decode received JSON data
@@ -37,9 +37,9 @@ class PushServer(protocol.Protocol):
             for event_id, dict_event in s_events.items():
                 events[event_id] = Event.from_dict(dict_event)
 
-            logger.info('Received Events:')
+            utils.logger.info('Received Events:')
             for event_id, event in events.items():
-                logger.info('{}'.format(event))
+                utils.logger.info('{}'.format(event))
 
             self.factory.receive_events_callback(from_member, events)
 
@@ -48,13 +48,13 @@ class PushServer(protocol.Protocol):
         if len(s_members) > 0:
             members = [Member.from_dict(m) for m in s_members]
 
-            logger.info('Received Members:')
-            [logger.info('{}'.format(m)) for m in members]
+            utils.logger.info('Received Members:')
+            [utils.logger.info('{}'.format(m)) for m in members]
 
             self.factory.receive_members_callback(members)
 
     def connectionLost(self, reason):
-        logger.info('Client disconnected')
+        utils.logger.info('Client disconnected')
 
 
 class PushClientFactory(protocol.ClientFactory):
@@ -69,10 +69,10 @@ class PushClientFactory(protocol.ClientFactory):
 class PushClient(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Connected to server.')
-        logger.info('Sending:')
+        utils.logger.info('Connected to server.')
+        utils.logger.info('Sending:')
         for event_id, event in self.factory.events.items():
-            logger.info('{}'.format(event))
+            utils.logger.info('{}'.format(event))
 
         serialized_events = {}
         if self.factory.events is not None:
@@ -94,8 +94,8 @@ class PushClient(protocol.Protocol):
         }
 
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
-        logger.info("Sent data")
+        utils.logger.info("Sent data")
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        logger.info('Disconnected')
+        utils.logger.info('Disconnected')

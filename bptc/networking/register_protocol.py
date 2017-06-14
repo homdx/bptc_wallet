@@ -2,7 +2,7 @@ import json
 
 from twisted.internet import protocol
 
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 class RegisterServerFactory(protocol.ServerFactory):
@@ -15,7 +15,7 @@ class RegisterServerFactory(protocol.ServerFactory):
 class RegisterServer(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Client connected. Waiting for data...')
+        utils.logger.info('Client connected. Waiting for data...')
 
     def dataReceived(self, data):
         data_received = json.loads(data.decode('UTF-8'))
@@ -25,7 +25,7 @@ class RegisterServer(protocol.Protocol):
         self.factory.callback(member_id, port, info)
 
     def connectionLost(self, reason):
-        logger.info('Client disconnected')
+        utils.logger.info('Client disconnected')
 
 
 class RegisterClientFactory(protocol.ClientFactory):
@@ -44,4 +44,4 @@ class RegisterClient(protocol.Protocol):
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        logger.info('Disconnected')
+        utils.logger.info('Disconnected')

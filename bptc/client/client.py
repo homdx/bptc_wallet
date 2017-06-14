@@ -8,9 +8,9 @@ kivy.require('1.0.7')
 
 
 class Client(GridLayout):
-    def __init__(self, network, cl_args):
+    def __init__(self, network, listening_port):
         self.defaults = {
-            'listening_port': cl_args.port,
+            'listening_port': listening_port,
             'push_address': 'localhost:8000',
             'registering_address': '172.20.3.10:9000',
             'query_members_address': '172.20.3.10:9001',

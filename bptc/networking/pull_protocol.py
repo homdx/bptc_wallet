@@ -4,7 +4,7 @@ from twisted.internet import protocol
 
 from bptc.data.event import Event
 from bptc.data.network import Network
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 class PullServerFactory(protocol.ServerFactory):
@@ -17,10 +17,10 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Client connected')
-        logger.info('Sending:')
+        utils.logger.info('Client connected')
+        utils.logger.info('Sending:')
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
-            logger.info('{}'.format(event))
+            utils.logger.info('{}'.format(event))
 
         serialized_events = {}
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
@@ -31,7 +31,7 @@ class PullServer(protocol.Protocol):
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        logger.info('Client disconnected')
+        utils.logger.info('Client disconnected')
 
 
 class PullClientFactory(protocol.ClientFactory):
@@ -45,7 +45,7 @@ class PullClientFactory(protocol.ClientFactory):
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
-        logger.info('Connected to server. Waiting for data...')
+        utils.logger.info('Connected to server. Waiting for data...')
 
     def dataReceived(self, data):
         received_data = json.loads(data.decode('UTF-8'))
@@ -55,11 +55,11 @@ class PullClient(protocol.Protocol):
         for event_id, dict_event in s_events.items():
             events[event_id] = Event.from_debug_dict(dict_event)
 
-        logger.info('Received:')
+        utils.logger.info('Received:')
         for event_id, event in events.items():
-            logger.info('{}'.format(event))
+            utils.logger.info('{}'.format(event))
 
         self.factory.callback(self.factory.callback_obj, from_member, events)
 
     def connectionLost(self, reason):
-        logger.info('Disconnected')
+        utils.logger.info('Disconnected')

@@ -1,6 +1,6 @@
 from typing import Dict
 
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 class Transaction:
@@ -33,7 +33,7 @@ class Transaction:
                                     transaction_dict['amount'],
                                     transaction_dict['comment'] if 'comment' in transaction_dict else "")
         else:
-            logger.error("Received invalid transaction type: {}".format(transaction_dict['type']))
+            utils.logger.error("Received invalid transaction type: {}".format(transaction_dict['type']))
             return None
 
 

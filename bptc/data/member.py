@@ -4,7 +4,7 @@ from libnacl import crypto_sign_keypair
 from libnacl.encode import base64_encode
 from twisted.internet.address import IPv4Address
 
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 class Member:
@@ -39,7 +39,7 @@ class Member:
         signing_key = base64_encode(signing_key_bytes).decode("UTF-8")
         new_member = Member(verify_key, signing_key)
 
-        logger.info("Created new Member: " + str(new_member))
+        utils.logger.info("Created new Member: " + str(new_member))
 
         return new_member
 

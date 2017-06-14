@@ -6,7 +6,7 @@ from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.network import Network
 from bptc.networking.pull_protocol import PullServerFactory
-from bptc.utils import logger
+import bptc.utils as utils
 import bptc.networking.utils as network_utils
 
 
@@ -18,7 +18,8 @@ class BPTCWallet(App):
         self.title = 'BPTC Wallet'
 
         # Try to load the Hashgraph from the database
-        self.hashgraph = DB.load_hashgraph()
+        self.hashgraph = DB.load_hashgraph(
+            self.cl_args.port, self.cl_args.output)
 
         # Create a new hashgraph if it could not be loaded
         if self.hashgraph is None or self.hashgraph.me is None:
@@ -35,7 +36,7 @@ class BPTCWallet(App):
         # The Kivy event loop is about to stop, set a stop signal;
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
-        logger.info("Stopping...")
+        utils.logger.info("Stopping...")
         DB.save(self.network.hashgraph)
         network_utils.stop_reactor_thread()
         self.root.stop.set()

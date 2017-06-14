@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 import json
 from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
 from libnacl.encode import base64_encode, base64_decode
-from bptc.utils import logger
+import bptc.utils as utils
 
 
 # The parents of an event
@@ -54,7 +54,7 @@ class Event:
         self.signature = None
 
         # debug
-        logger.info('New Event: {}'.format(self))
+        utils.logger.info('New Event: {}'.format(self))
 
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(

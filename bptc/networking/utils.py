@@ -3,7 +3,7 @@ from twisted.internet import reactor, threads
 from twisted.internet.address import IPv4Address
 
 from bptc.data.member import Member
-from bptc.utils import logger
+import bptc.utils as utils
 from .push_protocol import PushServerFactory
 from .query_members_protocol import QueryMembersClientFactory
 from .register_protocol import RegisterClientFactory
@@ -34,7 +34,7 @@ def process_query(client, members):
             if member_id not in client.hashgraph.known_members:
                 client.hashgraph.known_members[member_id] = Member(member_id, None)
             client.hashgraph.known_members[member_id].address = IPv4Address('TCP', ip, port)
-            logger.info('Member update: {}... to ({}, {})'.format(member_id[:6], ip, port))
+            utils.logger.info('Member update: {}... to ({}, {})'.format(member_id[:6], ip, port))
 
 
 def query_members(client, query_members_ip, query_members_port):
@@ -46,12 +46,12 @@ def query_members(client, query_members_ip, query_members_port):
 
 
 def start_listening(network, listening_port):
-    logger.info("Push server listens on port {}".format(listening_port))
+    utils.logger.info("Push server listens on port {}".format(listening_port))
     push_server_factory = PushServerFactory(network.receive_events_callback,
                                             network.receive_members_callback)
     reactor.listenTCP(int(listening_port), push_server_factory)
     network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 
-    logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
+    utils.logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
     pull_server_factory = PullServerFactory(network)
     reactor.listenTCP(int(listening_port) + 1, pull_server_factory)
