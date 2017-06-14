@@ -12,4 +12,4 @@ class Mobile(Client):
 
 class MobileApp(BPTCWallet):
     def build(self):
-        return Mobile(self.network)
+        return Mobile(self.network, self.cl_args)

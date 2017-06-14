@@ -11,7 +11,9 @@ import bptc.networking.utils as network_utils
 
 
 class BPTCWallet(App):
-    def __init__(self):
+    def __init__(self, cl_args):
+        self.cl_args = cl_args
+
         super().__init__()
         self.title = 'BPTC Wallet'
 

@@ -31,32 +31,6 @@
             text_size: self.width, None
     BoxLayout:
         size_hint: 1, 1
-        id: listening_port_container
-        canvas.before:
-            Color:
-                rgba: 1, 1, 1, 1
-            Rectangle:
-                pos: [x + 1 for x in self.pos]
-                size: [x - 2 for x in self.size]
-        Label:
-            text: 'Port Pull-Server: '
-            valign: 'middle'
-            padding: 20, 20
-            text_size: self.width, None
-            color: 0, 0, 0, 1
-        TextInput:
-            id: listening_port
-            text: str(root.defaults['listening_port'])
-            padding_x: 20
-            padding_y: ( self.height - self.line_height ) / 2
-            multiline: False
-            input_filter: root.generate_limited_input(self, 6)
-    BoxLayout:
-        size_hint: 1, 1
-        Button:
-            id: start_listening
-            text: 'Start Push/Pull Servers'
-            on_press: root.start_listening()
         Button:
             id: send_heartbeat
             text: 'Create heartbeat event'

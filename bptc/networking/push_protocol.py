@@ -79,7 +79,7 @@ class PushClient(protocol.Protocol):
             for event_id, event in self.factory.events.items():
                 serialized_events[event_id] = event.to_dict()
 
-        serialized_members: List[Member] = []
+        serialized_members = []
         if self.factory.members is not None:
             for member in self.factory.members:
                 serialized_members.append(member.to_dict())

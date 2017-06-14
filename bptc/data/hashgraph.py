@@ -183,7 +183,7 @@ class Hashgraph:
         return a is not None and (b is None or a.height >= b.height)
 
     def decide_fame(self):
-        max_r = max(self.witnesses)
+        max_r = max(self.witnesses or [0])
         max_c = 0
         while max_c in self.consensus:
             max_c += 1

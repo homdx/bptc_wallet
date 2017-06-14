@@ -8,9 +8,9 @@ kivy.require('1.0.7')
 
 
 class Client(GridLayout):
-    def __init__(self, network):
+    def __init__(self, network, cl_args):
         self.defaults = {
-            'listening_port': 8000,
+            'listening_port': cl_args.port,
             'push_address': 'localhost:8000',
             'registering_address': '172.20.3.10:9000',
             'query_members_address': '172.20.3.10:9001',
@@ -22,12 +22,14 @@ class Client(GridLayout):
         self.defaults['member_id'] = self.me.verify_key[:6] + '...'
         self.stop = threading.Event()
         super().__init__()
+        self.start_listening()
 
     # Get value for an attribute from its input element
     def get(self, key):
         for id_, obj in self.ids.items():
             if id_ == key:
                 return obj.text
+        return self.defaults[key]
 
     def start_listening(self):
         network_utils.start_listening(self.network, self.get('listening_port'))
