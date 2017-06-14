@@ -26,7 +26,7 @@ class DB:
 
             # Create tables if necessary
             c = cls.__connection.cursor()
-            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT)')
+            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT, name TEXT)')
             c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT)')
 
         else:
@@ -46,7 +46,7 @@ class DB:
         :param m: The Member object to be saved
         :return: None
         """
-        statement = 'INSERT OR REPLACE INTO members VALUES(?, ?, ?, ?, ?, ?)'
+        statement = 'INSERT OR REPLACE INTO members VALUES(?, ?, ?, ?, ?, ?, ?)'
         values = m.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)

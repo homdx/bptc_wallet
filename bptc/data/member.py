@@ -29,6 +29,9 @@ class Member:
         # The networking data
         self.address = None
 
+        # The name associated with this member (for display in the UI)
+        self.name = None
+
     @classmethod
     def create(cls) -> 'Member':
         """
@@ -38,6 +41,7 @@ class Member:
         verify_key = base64_encode(verify_key_bytes).decode("UTF-8")
         signing_key = base64_encode(signing_key_bytes).decode("UTF-8")
         new_member = Member(verify_key, signing_key)
+        new_member.name = "Me"
 
         utils.logger.info("Created new Member: " + str(new_member))
 
@@ -47,8 +51,18 @@ class Member:
     def id(self):
         return self.verify_key
 
+    @property
+    def formatted_name(self):
+        if self.name is None or len(self.name) == 0:
+            return "{}...".format(self.id[:6])
+        else:
+            return "{} ({}...)".format(self.name, self.id[:6])
+
     def __str__(self):
-        return "Member({}...)".format(self.id[:6])
+        if self.name is None or len(self.name) == 0:
+            return "Member({}...)".format(self.id[:6])
+        else:
+            return "Member({}, {}...)".format(self.name, self.id[:6])
 
     def to_verifykey_string(self):
         return self.verify_key
@@ -61,6 +75,7 @@ class Member:
         member.stake = db[3]
         if db[4] is not None and db[5] is not None:
             member.address = IPv4Address('TCP', db[4], db[5])
+        member.name = db[6]
 
         return member
 
@@ -76,7 +91,8 @@ class Member:
                 self.head,
                 self.stake,
                 host,
-                port)
+                port,
+                self.name)
 
     def to_dict(self) -> Dict:
         host = None
