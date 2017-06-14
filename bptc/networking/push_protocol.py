@@ -70,6 +70,7 @@ class PushClient(protocol.Protocol):
 
     def connectionMade(self):
         utils.logger.info('Connected to server.')
+        print(self.factory.events)
         utils.logger.info('Sending:')
         for event_id, event in self.factory.events.items():
             utils.logger.info('{}'.format(event))

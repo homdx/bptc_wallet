@@ -1,17 +1,18 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
 
-# Logging
-
 import logging
 import sys
 import os
 from random import random
+from collections import deque
 
 stdout_logger = None
 file_logger = None
 logger = None
 
+
+# Logging
 def init_logger(output_dir):
     global stdout_logger, file_logger, logger
     
@@ -29,11 +30,8 @@ def init_logger(output_dir):
     logger.addHandler(stdout_logger)
     logger.addHandler(file_logger)
 
+
 # Algorithms
-
-from collections import deque
-
-
 def bfs(s, succ):
     s = tuple(s)
     seen = set(s)
@@ -42,7 +40,7 @@ def bfs(s, succ):
         u = q.popleft()
         yield u
         for v in succ(u):
-            if not v in seen:
+            if v not in seen:
                 seen.add(v)
                 q.append(v)
 
