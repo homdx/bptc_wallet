@@ -1,5 +1,5 @@
 from random import choice
-from typing import Dict
+from typing import Dict, List
 from twisted.internet import threads, reactor
 from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
@@ -7,6 +7,7 @@ from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction
 from bptc.networking.push_protocol import PushClientFactory
 from bptc.utils import logger
+from bptc.data.utils import filter_members_with_address
 
 
 class Network:
@@ -28,7 +29,9 @@ class Network:
         """Update hg and return new event ids in topological order."""
         fingerprint = self.hashgraph.get_fingerprint(self)
 
-        factory = PushClientFactory(self.hashgraph.me, self.hashgraph.lookup_table)
+        factory = PushClientFactory(self.hashgraph.me,
+                                    self.hashgraph.lookup_table,
+                                    filter_members_with_address(self.hashgraph.known_members.values()))
 
         def push():
             reactor.connectTCP(ip, port, factory)
@@ -111,7 +114,7 @@ class Network:
         Used as a callback when events are received from the outside
         :param from_member: The member from which the events were received
         :param events: The list of events
-        :return:
+        :return: None
         """
         # Store/Update member
         if from_member in self.hashgraph.known_members:
@@ -121,3 +124,15 @@ class Network:
 
         # Let the hashgraph process the events
         self.hashgraph.process_events(from_member, events)
+
+    def receive_members_callback(self, members: List[Member]) -> None:
+        """
+        Used as a callback when member are received from the outside
+        :param members: The ist of members
+        :return: None
+        """
+        for member in members:
+            if member.id not in self.hashgraph.known_members:
+                self.hashgraph.known_members[member.id] = member
+            elif self.hashgraph.known_members[member.id].address is None:
+                self.hashgraph.known_members[member.id].address = member.address

@@ -47,7 +47,8 @@ def query_members(client, query_members_ip, query_members_port):
 
 def start_listening(network, listening_port):
     logger.info("Push server listens on port {}".format(listening_port))
-    push_server_factory = PushServerFactory(network.receive_events_callback)
+    push_server_factory = PushServerFactory(network.receive_events_callback,
+                                            network.receive_members_callback)
     reactor.listenTCP(int(listening_port), push_server_factory)
     network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 

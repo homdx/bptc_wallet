@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict
 
 from libnacl import crypto_sign_keypair
 from libnacl.encode import base64_encode
@@ -77,3 +77,22 @@ class Member:
                 self.stake,
                 host,
                 port)
+
+    def to_dict(self) -> Dict:
+        host = None
+        port = None
+        if self.address is not None:
+            host = self.address.host
+            port = self.address.port
+
+        return dict(
+            verify_key=self.verify_key,
+            host=host,
+            port=port
+        )
+
+    @classmethod
+    def from_dict(cls, member_dict):
+        member = Member(member_dict['verify_key'], None)
+        member.address = IPv4Address('TCP', member_dict['host'], int(member_dict['port']))
+        return member

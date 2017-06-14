@@ -1,16 +1,16 @@
 import json
-
 from twisted.internet import protocol
-
 from bptc.data.event import Event
 from bptc.data.member import Member
 from bptc.utils import logger
+from typing import Dict, List
 
 
 class PushServerFactory(protocol.ServerFactory):
 
-    def __init__(self, callback):
-        self.callback = callback
+    def __init__(self, receive_events_callback, receive_members_callback):
+        self.receive_events_callback = receive_events_callback
+        self.receive_members_callback = receive_members_callback
         self.protocol = PushServer
 
 
@@ -30,16 +30,28 @@ class PushServer(protocol.Protocol):
         from_member.address = self.transport.getPeer()
         from_member.address.port = from_member_port
 
+        # Check if the sender sent any events
         s_events = received_data['events']
-        events = {}
-        for event_id, dict_event in s_events.items():
-            events[event_id] = Event.from_dict(dict_event)
+        if len(s_events) > 0:
+            events = {}
+            for event_id, dict_event in s_events.items():
+                events[event_id] = Event.from_dict(dict_event)
 
-        logger.info('Received:')
-        for event_id, event in events.items():
-            logger.info('{}'.format(event))
+            logger.info('Received Events:')
+            for event_id, event in events.items():
+                logger.info('{}'.format(event))
 
-        self.factory.callback(from_member, events)
+            self.factory.receive_events_callback(from_member, events)
+
+        # Check if the sender sent any members
+        s_members = received_data['members']
+        if len(s_members) > 0:
+            members = [Member.from_dict(m) for m in s_members]
+
+            logger.info('Received Members:')
+            [logger.info('{}'.format(m)) for m in members]
+
+            self.factory.receive_members_callback(members)
 
     def connectionLost(self, reason):
         logger.info('Client disconnected')
@@ -47,9 +59,10 @@ class PushServer(protocol.Protocol):
 
 class PushClientFactory(protocol.ClientFactory):
 
-    def __init__(self, from_member: Member, events):
+    def __init__(self, from_member: Member, events: Dict[str, Event], members: List[Member]):
         self.from_member = from_member
         self.events = events
+        self.members = members
         self.protocol = PushClient
 
 
@@ -62,16 +75,24 @@ class PushClient(protocol.Protocol):
             logger.info('{}'.format(event))
 
         serialized_events = {}
-        for event_id, event in self.factory.events.items():
-            serialized_events[event_id] = event.to_dict()
+        if self.factory.events is not None:
+            for event_id, event in self.factory.events.items():
+                serialized_events[event_id] = event.to_dict()
+
+        serialized_members: List[Member] = []
+        if self.factory.members is not None:
+            for member in self.factory.members:
+                serialized_members.append(member.to_dict())
 
         data_to_send = {
             'from': {
                 'verify_key': self.factory.from_member.verify_key,
                 'listening_port': self.factory.from_member.address.port
             },
-            'events': serialized_events
+            'events': serialized_events,
+            'members': serialized_members
         }
+
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         logger.info("Sent data")
         self.transport.loseConnection()
