@@ -93,7 +93,8 @@ class Network:
         :return: The newly created event
         """
         # TODO: Remove test transaction
-        event = Event(self.hashgraph.me.verify_key, [MoneyTransaction(self.me.to_verifykey_string(), 1)],
+        event = Event(self.hashgraph.me.verify_key,
+                      [MoneyTransaction(self.me.to_verifykey_string(), 1, "Test transaction")],
                       Parents(self.hashgraph.me.head, None))
         self.hashgraph.add_own_event(event)
         return event
