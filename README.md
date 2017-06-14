@@ -5,6 +5,7 @@
   sudo apt install cython python-dev libffi-dev libgl1-mesa-dev
   pip install -r requirements.txt
 ```
+You also need the libsodium.so for libnacl - Therefore download it from [here](https://download.libsodium.org/libsodium/releases/).
 
 ## Start UI client
 ```shell

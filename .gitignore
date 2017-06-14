@@ -26,3 +26,5 @@ share/
 
 # apk
 bin/
+
+libsodium.so

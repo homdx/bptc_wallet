@@ -19,3 +19,4 @@ requests==2.14.2
 six==1.10.0
 virtualenv==15.1.0
 toposort
+typing==3.6.1
