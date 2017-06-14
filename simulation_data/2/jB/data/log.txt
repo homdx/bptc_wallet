@@ -1,0 +1,20 @@
+Created new Member: Member(Me, jBehQe...)
+New Event: Event(JZJzDo...) by Member(jBehQe...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-14T22:19:44.067984)
+Push server listens on port 8004
+[Pull server (for viz tool) listens on port 8005]
+Stopping...
+New Event: Event(JZJzDo...) by Member(jBehQe...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-14T22:19:44.067984)
+Adding 1 events
+1 events are valid
+Push server listens on port 8004
+[Pull server (for viz tool) listens on port 8005]
+Member update: M+AwUP... to (127.0.0.1, 8000)
+Member update: M5NcP0... to (127.0.0.1, 8002)
+Member update: NJ/CPx... to (127.0.0.1, 8006)
+Push to M+AwUP... (127.0.0.1, 8000)
+Connected to server.
+Sending:
+Event(JZJzDo...) by Member(jBehQe...), Height(0), Round(0), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-14T22:19:44.067984)
+Sent data
+Disconnected
+Stopping...

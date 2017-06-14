@@ -12,8 +12,8 @@ class Client(GridLayout):
         self.defaults = {
             'listening_port': listening_port,
             'push_address': 'localhost:8000',
-            'registering_address': '172.20.3.10:9000',
-            'query_members_address': '172.20.3.10:9001',
+            'registering_address': 'localhost:9000',
+            'query_members_address': 'localhost:9001',
             'member_id': 'Some-ID'
         }
         self.network = network
