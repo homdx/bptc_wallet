@@ -12,3 +12,9 @@ Member update: M+AwUP... to (127.0.0.1, 8000)
 Member update: M5NcP0... to (127.0.0.1, 8002)
 Member update: jBehQe... to (127.0.0.1, 8004)
 Stopping...
+New Event: Event(l/6hAO...) by Member(NJ/CPx...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-14T22:19:40.215135)
+Adding 1 events
+1 events are valid
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Stopping...
