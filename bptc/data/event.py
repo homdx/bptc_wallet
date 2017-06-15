@@ -40,7 +40,7 @@ class Event:
         self.height = 0
 
         # assigned round number of each event
-        self.round = None  # TODO
+        self.round = 0
 
         # {event-hash => bool}
         self.votes = dict()
@@ -134,7 +134,8 @@ class Event:
             self.time,
             self.verify_key,
             self.height,
-            self.signature
+            self.signature,
+            self.round
         )
 
     @classmethod
@@ -150,6 +151,7 @@ class Event:
 
         event.height = e[6]
         event.signature = e[7]
+        event.round = e[8]
 
         return event
 
