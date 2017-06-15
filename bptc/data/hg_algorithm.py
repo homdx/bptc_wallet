@@ -2,10 +2,10 @@ from collections import defaultdict
 from toposort import toposort_flatten
 
 
-def divide_rounds(self, events):
+def divide_rounds(hashgraph, events):
     """Restore invariants for `can_see`, `witnesses` and `round`.
 
-    :param self: Hashgraph
+    :param hashgraph: Hashgraph
     :param events: Topologically sorted sequence of new event to process.
     """
 
@@ -19,12 +19,12 @@ def divide_rounds(self, events):
         graph[event.id] = parents
 
     for event_id in reversed(list(toposort_flatten(graph))):
-        event = events[event_id]
+        event = hashgraph.lookup_table[event_id]
         # Check if this is a root event or not
         if event.parents == (None, None):
             # This is a root event
             event.round = 0
-            self.witnesses[0][event.verify_key] = event
+            hashgraph.witnesses[0][event.verify_key] = event
             event.can_see = {event.verify_key: event}
         else:
             # This is a normal event
@@ -32,15 +32,15 @@ def divide_rounds(self, events):
             # utils.logger.info("Checking {}".format(str(event.parents)))
             calculated_round = 0
             for parent in event.parents:
-                if parent is not None and self.lookup_table[parent].round > calculated_round:
-                    calculated_round = self.lookup_table[parent].round
+                if parent is not None and hashgraph.lookup_table[parent].round > calculated_round:
+                    calculated_round = hashgraph.lookup_table[parent].round
 
             # recurrence relation to update can_see
-            p0 = self.lookup_table[
+            p0 = hashgraph.lookup_table[
                 event.parents.self_parent].can_see if event.parents.self_parent is not None else dict()
-            p1 = self.lookup_table[
+            p1 = hashgraph.lookup_table[
                 event.parents.other_parent].can_see if event.parents.other_parent is not None else dict()
-            event.can_see = {c: self.get_higher(p0.get(c), p1.get(c))
+            event.can_see = {c: hashgraph.get_higher(p0.get(c), p1.get(c))
                              for c in p0.keys() | p1.keys()}
 
             # Count distinct paths to distinct nodes
@@ -50,10 +50,10 @@ def divide_rounds(self, events):
                 if visible_event.round == calculated_round:
                     for c_, k_ in visible_event.can_see.items():
                         if k_.round == calculated_round:
-                            hits[c_] += self.known_members[verify_key].stake
+                            hits[c_] += hashgraph.known_members[verify_key].stake
 
             # check if i can strongly see enough events
-            if sum(1 for x in hits.values() if x > self.supermajority_stake) > self.supermajority_stake:
+            if sum(1 for x in hits.values() if x > hashgraph.supermajority_stake) > hashgraph.supermajority_stake:
                 event.round = calculated_round + 1
             else:
                 event.round = calculated_round
@@ -62,5 +62,5 @@ def divide_rounds(self, events):
             event.can_see[event.verify_key] = event
 
             # An event becomes a witness if it is the first of that round
-            if event.round > self.lookup_table[event.parents.self_parent].round:
-                self.witnesses[event.round][event.verify_key] = event
+            if event.round > hashgraph.lookup_table[event.parents.self_parent].round:
+                hashgraph.witnesses[event.round][event.verify_key] = event
