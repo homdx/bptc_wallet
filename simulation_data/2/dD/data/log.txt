@@ -1,0 +1,16 @@
+Created new Member: Member(Me, dDDxje...)
+New Event: Event(yK9tXp...) by Member(dDDxje...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-15T22:18:58.184201)
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Stopping...
+New Event: Event(yK9tXp...) by Member(dDDxje...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-15T22:18:58.184201)
+Adding 1 events
+1 events are valid
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Stopping...
+New Event: Event(yK9tXp...) by Member(dDDxje...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-15T22:18:58.184201)
+Adding 1 events
+1 events are valid
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
