@@ -1,0 +1,10 @@
+Created new Member: Member(Me, rbG4sK...)
+New Event: Event(UmR+b2...) by Member(rbG4sK...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-15T21:40:07.921852)
+Push server listens on port 8004
+[Pull server (for viz tool) listens on port 8005]
+Stopping...
+New Event: Event(UmR+b2...) by Member(rbG4sK...), Height(0), Round(None), Parents(self_parent: None, other_parent: None), Data(None), Time(2017-06-15T21:40:07.921852)
+Adding 1 events
+1 events are valid
+Push server listens on port 8004
+[Pull server (for viz tool) listens on port 8005]
