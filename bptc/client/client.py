@@ -31,6 +31,20 @@ class Client(GridLayout):
                 return obj.text
         return self.defaults[key]
 
+    def generate_limited_input(self, widget, n):
+        # This is used for limiting the input length
+        return lambda text, from_undo: text[:n - len(widget.text)]
+
+    def get_widget_id(self, widget):
+        for id_, obj in self.ids.items():
+            if obj == widget:
+                return id_
+        return None
+
+    # --------------------------------------------------------------------------
+    # Hashgraph actions
+    # --------------------------------------------------------------------------
+
     def start_listening(self):
         network_utils.start_listening(self.network, self.get('listening_port'))
 
@@ -51,13 +65,3 @@ class Client(GridLayout):
 
     def push_random(self):
         self.network.push_to_random()
-
-    def generate_limited_input(self, widget, n):
-        # This is used for limiting the input length
-        return lambda text, from_undo: text[:n - len(widget.text)]
-
-    def get_widget_id(self, widget):
-        for id_, obj in self.ids.items():
-            if obj == widget:
-                return id_
-        return None

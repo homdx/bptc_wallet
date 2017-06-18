@@ -10,6 +10,7 @@ olefile==0.44
 packaging==16.8
 pexpect==4.2.1
 Pillow==4.1.1
+prompt-toolkit==1.0.14
 ptyprocess==0.5.1
 pycparser==2.17
 Pygments==2.2.0
