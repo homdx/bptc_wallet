@@ -3,6 +3,7 @@ import argparse
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import style_from_dict
 from prompt_toolkit.token import Token
+from prompt_toolkit.history import InMemoryHistory
 
 class InteractiveShell:
     def __init__(self, title='Interactive Shell', add_help=True):
@@ -14,6 +15,7 @@ class InteractiveShell:
             self.commands['help'] = dict(
                 help = 'Show this help message',
             )
+        self.history = InMemoryHistory()
         self.parser = self._create_parser()
 
     def _create_parser(self):
@@ -36,9 +38,12 @@ class InteractiveShell:
 
     def _process_input(self):
         input_ = prompt('> ', get_bottom_toolbar_tokens=self._get_toolbar,
-                        style=self.style).split(' ')
+                        style=self.style, history=self.history)
+        input_ = input_.split(' ')
         cmd = input_[0]
         args = input_[1:]
+        if cmd == '':
+            return
         try:
             args = self.parser.parse_args(input_)
             result = getattr(self, 'cmd_{}'.format(cmd))(args)
