@@ -10,8 +10,11 @@ You also need the libsodium.so for libnacl - Therefore download it from [here](h
 ## Start UI client
 ```shell
   python main.py
-  # Or you can execute
-  python -m bptc.client
+```
+
+## Start CLI client
+```shell
+  python main.py -cli
 ```
 
 ## Build Android package
