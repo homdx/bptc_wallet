@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import threading
 from functools import partial
+from time import sleep
 
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
@@ -11,6 +12,7 @@ from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 
 from bptc.networking.pull_protocol import PullClientFactory
+from bptc.utils import init_logger
 
 R_COLORS = small_palettes['Set2'][8]
 
@@ -33,6 +35,8 @@ class App:
         print('Started reactor')
 
     def __init__(self):
+        init_logger('.')
+
         if not reactor.running:
             self.start_reactor_thread()
 
@@ -42,7 +46,7 @@ class App:
                             width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
-        self.update_button = Button(label="Pull from", width=60)
+        self.update_button = Button(label="Start pulling...", width=60)
         self.update_button.on_click(partial(self.pull_from, self.ip_text_input, self.port_text_input))
 
         self.all_events = {}
@@ -93,21 +97,23 @@ class App:
                 self.all_events[event_id] = event
                 self.new_events[event_id] = event
         self.n_nodes = len(self.verify_key_to_x)
-        self.log.text += "Received data from member {}\n".format(from_member)
+        self.log.text += "Updated member {}...\n".format(from_member[:6])
         self.data_received.set()
 
     def pull_from(self, ip_text_input, port_text_input):
         ip = ip_text_input.value
         port = int(port_text_input.value)
         factory = PullClientFactory(self, self.received_data_callback)
-        self.data_received.clear()
+        while True:
+            self.data_received.clear()
 
-        def sync_with_member():
-            reactor.connectTCP(ip, port, factory)
-        threads.blockingCallFromThread(reactor, sync_with_member)
+            def sync_with_member():
+                reactor.connectTCP(ip, port, factory)
+            threads.blockingCallFromThread(reactor, sync_with_member)
 
-        self.data_received.wait()
-        self.draw()
+            self.data_received.wait()
+            self.draw()
+            sleep(1)
 
     def draw(self):
         tr, links = self.extract_data(self.new_events)
@@ -131,7 +137,7 @@ class App:
             tr_data['payload'].append("".format(event.data))
             tr_data['time'].append(event.time)
             tr_data['line_alpha'].append(1)
-            tr_data['member_id'].append(str(event.verify_key))
+            tr_data['member_id'].append(event.verify_key[:6] + '...')
             tr_data['height'].append(event.height)
 
             if event.parents.self_parent is not None:
