@@ -78,14 +78,13 @@ class Network:
         Pushes to a random, known member
         :return: None
         """
-        if self.hashgraph.known_members:
-            member_id, member = choice(list(self.hashgraph.known_members.items()))
-            # Don't send messages to ourselves
-            while member_id == self.me.id:
-                member_id, member = choice(list(self.hashgraph.known_members.items()))
+        filtered_known_members = dict(self.hashgraph.known_members)
+        filtered_known_members.pop(self.hashgraph.me.verify_key, None)
+        if filtered_known_members:
+            member_id, member = choice(list(filtered_known_members.items()))
             self.push_to_member(member)
         else:
-            utils.logger.info("Don't know any other members. Get them from the registry!")  # one self is always in known_members, right?
+            utils.logger.info("Don't know any other members. Get them from the registry!")
 
     def heartbeat(self) -> Event:
         """

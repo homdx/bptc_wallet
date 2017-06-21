@@ -41,6 +41,12 @@ class PullClientFactory(protocol.ClientFactory):
         self.callback = callback
         self.protocol = PullClient
 
+    def clientConnectionLost(self, connector, reason):
+        utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+
+    def clientConnectionFailed(self, connector, reason):
+        utils.logger.info('Connection failed. Reason: {}'.format(reason))
+
 
 class PullClient(protocol.Protocol):
 

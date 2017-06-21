@@ -25,7 +25,9 @@ def initial_checks(app):
 def start_reactor_thread():
     def start_reactor():
         reactor.run(installSignalHandlers=0)
-    threading.Thread(target=start_reactor).start()
+    thread = threading.Thread(target=start_reactor)
+    thread.daemon = True
+    thread.start()
 
 
 def stop_reactor_thread():
