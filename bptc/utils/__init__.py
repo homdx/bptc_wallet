@@ -3,7 +3,6 @@ import sys
 import os
 
 from .algorithms import *
-from .interactive_shell import InteractiveShell
 
 
 stdout_logger = None

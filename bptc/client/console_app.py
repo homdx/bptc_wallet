@@ -1,5 +1,5 @@
 from main import __version__
-from bptc.utils import InteractiveShell
+from bptc.utils.interactive_shell import InteractiveShell
 from bptc.data.hashgraph import init_hashgraph
 import bptc.networking.utils as network_utils
 
