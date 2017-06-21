@@ -7,7 +7,7 @@ import bptc.networking.utils as network_utils
 kivy.require('1.0.7')
 
 
-class Client(GridLayout):
+class KivyCore(GridLayout):
     def __init__(self, network, listening_port):
         self.defaults = {
             'listening_port': listening_port,
@@ -31,7 +31,8 @@ class Client(GridLayout):
                 return obj.text
         return self.defaults[key]
 
-    def generate_limited_input(self, widget, n):
+    @staticmethod
+    def generate_limited_input(widget, n):
         # This is used for limiting the input length
         return lambda text, from_undo: text[:n - len(widget.text)]
 

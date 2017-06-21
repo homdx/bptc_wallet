@@ -20,8 +20,8 @@ if __name__ == '__main__':
     from bptc.utils import init_logger
     init_logger(cl_args.output)
     if cl_args.console:
-        from bptc.client.cli import ConsoleApp
+        from bptc.client.console_app import ConsoleApp
         ConsoleApp(cl_args)()
     else:
-        from bptc.client.mobile import MobileApp
-        MobileApp(cl_args).run()
+        from bptc.client.kivy_app import KivyApp
+        KivyApp(cl_args).run()

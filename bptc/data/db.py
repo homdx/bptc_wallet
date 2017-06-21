@@ -1,6 +1,5 @@
 import os
 import sqlite3
-
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member

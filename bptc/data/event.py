@@ -55,9 +55,6 @@ class Event:
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
 
-        # debug
-        utils.logger.info('New Event: {}'.format(self))
-
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
             self.id[:6], self.verify_key[:6], self.height, self.round, self.parents, self.data, self.time)

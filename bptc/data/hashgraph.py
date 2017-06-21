@@ -260,3 +260,20 @@ def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
             utils.logger.warn("Event had invalid signature: {}".format(event))
 
     return result
+
+
+def init_hashgraph(app):
+    from bptc.data.db import DB
+    from bptc.data.network import Network
+
+    # Try to load the Hashgraph from the database
+    app.hashgraph = DB.load_hashgraph(
+        app.cl_args.port, app.cl_args.output)
+    # Create a new hashgraph if it could not be loaded
+    if app.hashgraph is None or app.hashgraph.me is None:
+        app.me = Member.create()
+        app.hashgraph = Hashgraph(app.me)
+        app.network = Network(app.hashgraph, create_initial_event=True)
+    else:
+        app.network = Network(app.hashgraph, create_initial_event=False)
+        app.me = app.hashgraph.me
