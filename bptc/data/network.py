@@ -8,7 +8,7 @@ from bptc.data.transaction import MoneyTransaction
 from bptc.networking.push_protocol import PushClientFactory
 import bptc.utils as utils
 from bptc.data.utils import filter_members_with_address
-
+import time, threading
 
 class Network:
     """
@@ -137,3 +137,14 @@ class Network:
                 self.hashgraph.known_members[member.id] = member
             elif self.hashgraph.known_members[member.id].address is None:
                 self.hashgraph.known_members[member.id].address = member.address
+
+    def start_background_pushes(self) -> None:
+        def do_push():
+            while True:
+                self.push_to_random()
+                utils.logger.info("Performed automatic push to random at {}".format(time.ctime()))
+                time.sleep(1)
+
+        background_push_thread = threading.Thread(target=do_push)
+        background_push_thread.daemon = True
+        background_push_thread.start()

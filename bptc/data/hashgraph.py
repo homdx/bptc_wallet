@@ -143,7 +143,7 @@ class Hashgraph:
     @staticmethod
     def ancestors(event: Event):
         """
-        A Generator returning the ancesors of a given event
+        A Generator returning the ancestors of a given event
         :param event: The event
         :return: A Generator for the event's parents
         """

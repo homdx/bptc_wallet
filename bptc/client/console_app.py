@@ -16,7 +16,7 @@ class ConsoleApp(InteractiveShell):
                 ],
             ),
             push_random=dict(
-                help='Send local hashgraph to another random chosen client',
+                help='Start pushing to randomly chosen clients',
             ),
             register=dict(
                 help='Register this hashgraph member at the registry',
@@ -73,4 +73,4 @@ class ConsoleApp(InteractiveShell):
         self.network.push_to(ip, int(port))
 
     def cmd_push_random(self, args):
-        self.network.push_to_random()
+        self.network.start_background_pushes()
