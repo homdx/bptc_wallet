@@ -42,6 +42,14 @@ Starting bokeh and browser
   bokeh serve --show viz.py
 ```
 
+## Debugging
+Start registry, multiple clients and bokeh on Windows:
+```
+  tools\scripts\start_clients
+```
+The clients will automatically start listening on events, register at the
+registry and query other members.
+
 
 # py-swirld
 

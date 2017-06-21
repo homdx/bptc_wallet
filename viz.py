@@ -1,6 +1,7 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
 import threading
+import os
 from functools import partial
 from time import sleep
 
@@ -35,7 +36,9 @@ class App:
         print('Started reactor')
 
     def __init__(self):
-        init_logger('.')
+        log_directory = 'data/viz'
+        os.makedirs(log_directory, exist_ok=True)
+        init_logger(log_directory)
 
         if not reactor.running:
             self.start_reactor_thread()
