@@ -65,6 +65,12 @@ class PushClientFactory(protocol.ClientFactory):
         self.members = members
         self.protocol = PushClient
 
+    def clientConnectionLost(self, connector, reason):
+        utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+
+    def clientConnectionFailed(self, connector, reason):
+        utils.logger.info('Connection failed. Reason: {}'.format(reason))
+
 
 class PushClient(protocol.Protocol):
 
