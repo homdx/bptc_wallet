@@ -65,4 +65,4 @@ class KivyCore(GridLayout):
         self.network.push_to(ip, int(port))
 
     def push_random(self):
-        self.network.push_to_random()
+        self.network.start_background_pushes()
