@@ -8,9 +8,9 @@ kivy.require('1.0.7')
 
 
 class KivyCore(GridLayout):
-    def __init__(self, network, listening_port):
+    def __init__(self, network, cl_args):
         self.defaults = {
-            'listening_port': listening_port,
+            'listening_port': cl_args.port,
             'push_address': 'localhost:8000',
             'registering_address': 'localhost:9000',
             'query_members_address': 'localhost:9001',
@@ -22,7 +22,6 @@ class KivyCore(GridLayout):
         self.defaults['member_id'] = self.me.formatted_name
         self.stop = threading.Event()
         super().__init__()
-        self.start_listening()
 
     # Get value for an attribute from its input element
     def get(self, key):

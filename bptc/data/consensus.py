@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from functools import reduce
 
 from libnacl.encode import base64_decode
@@ -18,14 +18,10 @@ def divide_rounds(hashgraph, events):
 
     graph = {}
     for event_id, event in events.items():
-        parents = set()
-        if event.parents.self_parent:
-            parents.add(event.parents.self_parent)
-        if event.parents.other_parent:
-            parents.add(event.parents.other_parent)
-        graph[event.id] = parents
+        parents = set([event.parents.self_parent, event.parents.other_parent])
+        graph[event.id] = parents - set([None])  # Remove empty entries
 
-    for event_id in reversed(list(toposort_flatten(graph))):
+    for event_id in reversed(toposort_flatten(graph)):
         event = hashgraph.lookup_table[event_id]
         # Check if this is a root event or not
         if event.parents == (None, None):
@@ -35,23 +31,34 @@ def divide_rounds(hashgraph, events):
             event.can_see = {event.verify_key: event}
         else:
             # This is a normal event
-            # Estimate round (= maximum round of parents)
             # utils.logger.info("Checking {}".format(str(event.parents)))
-            calculated_round = 0
-            for parent in event.parents:
-                if parent is not None and hashgraph.lookup_table[parent].round > calculated_round:
-                    calculated_round = hashgraph.lookup_table[parent].round
+            # Estimate round (= maximum round of parents)
+            calculated_round = max([hashgraph.lookup_table[parent].round
+                                    for parent in event.parents if parent is not None])
 
             # recurrence relation to update can_see
-            p0 = hashgraph.lookup_table[
-                event.parents.self_parent].can_see if event.parents.self_parent is not None else dict()
-            p1 = hashgraph.lookup_table[
-                event.parents.other_parent].can_see if event.parents.other_parent is not None else dict()
+            empty_event = namedtuple("Event", ["can_see"])(dict())
+            p0 = hashgraph.lookup_table.get(event.parents.self_parent, empty_event).can_see
+            p1 = hashgraph.lookup_table.get(event.parents.other_parent, empty_event).can_see
             event.can_see = {c: hashgraph.get_higher(p0.get(c), p1.get(c))
                              for c in p0.keys() | p1.keys()}
 
             # Count distinct paths to distinct nodes
             # TODO: What exactly happens here? Why two levels of visible events?
+            '''
+                My guess(Thomas):
+                Generates a counter which is required for checking if i can
+                strongly see enough events. Therefore these two loops check
+                each path which ends in i by looking at the visible events
+                of the visible events of i. It sums up for each event which
+                can be seen indirectly through another "intermediate" event
+                the stake values of all "intermediate" events of all paths
+                reaching this event.
+
+                This might be a bug, because it assumes that you only have
+                to go two steps back (if there are only 2 nodes it would be
+                fine).
+            '''
             hits = defaultdict(int)
             for verify_key, visible_event in event.can_see.items():
                 if visible_event.round == calculated_round:
@@ -60,7 +67,7 @@ def divide_rounds(hashgraph, events):
                             hits[c_] += hashgraph.known_members[verify_key].stake
 
             # check if i can strongly see enough events
-            if sum(1 for x in hits.values() if x > hashgraph.supermajority_stake) > hashgraph.supermajority_stake:
+            if sum(x > hashgraph.supermajority_stake for x in hits.values()) > hashgraph.supermajority_stake:
                 event.round = calculated_round + 1
             else:
                 event.round = calculated_round

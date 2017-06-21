@@ -9,6 +9,18 @@ from .query_members_protocol import QueryMembersClientFactory
 from .register_protocol import RegisterClientFactory
 from .pull_protocol import PullServerFactory
 
+def initial_checks(app):
+    # starts network client in a new thread
+    start_reactor_thread()
+    # listen to hashgraph actions
+    start_listening(app.network, app.cl_args.port)
+    if app.cl_args.register:
+        ip, port = app.cl_args.register.split(':')
+        register(app.me.id, app.cl_args.port, ip, port)
+        port = str(int(port) + 1)
+        threading.Timer(2, query_members,
+                        args=(app, ip, port)).start()
+
 
 def start_reactor_thread():
     def start_reactor():

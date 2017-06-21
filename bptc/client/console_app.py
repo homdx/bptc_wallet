@@ -41,11 +41,10 @@ class ConsoleApp(InteractiveShell):
         self.hashgraph = None
         self.network = None
         init_hashgraph(self)
-        network_utils.start_reactor_thread()  # starts network client in a new thread
-        self.start_listening()  # listen to hashgraph actions
 
     def __call__(self):
         try:
+            network_utils.initial_checks(self)
             super().__call__()
         finally:
             network_utils.stop_reactor_thread()

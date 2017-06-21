@@ -11,6 +11,7 @@ def parse_args():
     parser.add_argument('-o', '--output', type=str, default='data',
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
+    parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')
     return parser.parse_args()
 
 if __name__ == '__main__':
