@@ -1,5 +1,5 @@
 from kivy.app import App
-from bptc.client.kivy_core import MainScreen, NewTransactionScreen
+from bptc.client.kivy_core import MainScreen, NewTransactionScreen, TransactionsScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 import bptc.utils as utils
@@ -27,6 +27,7 @@ class KivyApp(App):
         sm = ScreenManager()
         sm.add_widget(MainScreen(self.network, self.cl_args))
         sm.add_widget(NewTransactionScreen(self.network))
+        sm.add_widget(TransactionsScreen(self.network))
         return sm
 
     def on_stop(self):

@@ -8,7 +8,7 @@
     id: MainScreen
     GridLayout:
         cols: 1
-        rows: 10
+        rows: 13
         BoxLayout:
             size_hint: 1, 2
             orientation: 'vertical'
@@ -40,6 +40,18 @@
                 on_press:
                     root.manager.transition.direction = 'left'
                     root.manager.current = 'new_transaction'
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
+            Button:
+                id: new_transaction_button
+                text: 'Transactions'
+                on_press:
+                    root.manager.transition.direction = 'left'
+                    root.manager.current = 'transactions'
+        BoxLayout:
+            size_hint: 1, 0.3
         BoxLayout:
             size_hint: 1, 1
             Button:
@@ -177,12 +189,25 @@
 	        background_color: 0.5, 1, 0.5, 1
 	        on_release:
 	            root.send_transaction()
-	            root.manager.transition.direction = 'right'
-                root.manager.current = 'main'
+	            root.manager.transition.direction = 'left'
+                root.manager.current = 'transactions'
         Button:
             id: cancel_button
             text: "Cancel"
             background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+<TransactionsScreen>:
+    name: "transactions"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        Button:
+            id: cancel_button
+            text: "Back"
+            #background_color: 1, 0.5, 0.5, 1
             on_release:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'main'

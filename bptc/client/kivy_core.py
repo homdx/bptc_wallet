@@ -2,7 +2,9 @@ import threading
 import kivy
 from kivy.uix.screenmanager import Screen
 from kivy.adapters.listadapter import ListAdapter
+from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.listview import ListItemButton, ListView
+from kivy.uix.label import Label
 import bptc.networking.utils as network_utils
 import bptc.utils as utils
 
@@ -106,8 +108,7 @@ class NewTransactionScreen(Screen):
 
         list_adapter.bind(on_selection_change=selection_change_callback)
 
-        self.list_view = ListView(adapter=list_adapter,
-                                  size_hint_y=1)
+        self.list_view = ListView(adapter=list_adapter)
 
         self.ids.receiver_layout.add_widget(self.list_view)
 
@@ -127,3 +128,57 @@ class NewTransactionScreen(Screen):
             self.network.send_transaction(amount, comment, receiver)
         except ValueError:
             print("Error parsing values")
+
+
+class TransactionsScreen(Screen):
+
+    def __init__(self, network):
+        self.network = network
+        self.list_view = None
+        super().__init__()
+
+    def on_pre_enter(self, *args):
+        # Load relevant transactions
+        transactions = []
+        events = list(self.network.hashgraph.lookup_table.values())
+        for e in events:
+            if e.data is not None:
+                for t in e.data:
+                    if self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
+                        transactions.append({
+                            'receiver': self.network.hashgraph.known_members[t.receiver].formatted_name if t.receiver in self.network.hashgraph.known_members else t.receiver,
+                            'sender': self.network.hashgraph.known_members[e.verify_key].formatted_name if e.verify_key in self.network.hashgraph.known_members else e.verify_key,
+                            'amount': t.amount,
+                            'comment': t.comment,
+                            'time': e.time,
+                            'is_confirmed': e in self.network.hashgraph.ordered_events,
+                            'is_received': t.receiver == self.network.hashgraph.me.to_verifykey_string()
+                        })
+
+        transactions.sort(key=lambda x: x['time'], reverse=True)
+
+        # Create updated list
+        args_converter = lambda row_index, rec: {
+            'height': 60,
+            'markup': True,
+            'halign': 'center',
+            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] {}\n{}'.format(
+                'Received' if rec['is_received'] else 'Sent',
+                rec['amount'],
+                'from' if rec['is_received'] else 'to',
+                rec['sender'] if rec['is_received'] else rec['receiver'],
+                '(Confirmed)' if rec['is_confirmed'] else '(Uncomfirmed)',
+                '"{}"'.format(rec['comment']) if rec['comment'] is not None and len(rec['comment']) > 0 else ''
+            )
+        }
+
+        list_adapter = SimpleListAdapter(data=transactions,
+                                   args_converter=args_converter,
+                                   cls=Label)
+
+        self.list_view = ListView(adapter=list_adapter, size_hint_y=8)
+
+        self.ids.box_layout.add_widget(self.list_view, index=1)
+
+    def on_leave(self, *args):
+        self.ids.box_layout.remove_widget(self.list_view)
