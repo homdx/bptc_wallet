@@ -2,7 +2,7 @@
 .idea
 
 # Log
-./log.txt
+/log.txt
 
 # Python
 *__pycache__/
@@ -22,11 +22,11 @@ share/
 .buildozer/
 
 # Database
-./data.db
+/data.db
 
 # apk
 bin/
 
 libsodium.so
 
-data/
+/data/
