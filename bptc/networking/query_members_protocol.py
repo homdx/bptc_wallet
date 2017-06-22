@@ -1,6 +1,8 @@
 import json
 from twisted.internet import protocol
 
+from bptc.data import utils
+
 
 class QueryMembersServerFactory(protocol.ServerFactory):
 
@@ -25,6 +27,12 @@ class QueryMembersClientFactory(protocol.ClientFactory):
         self.callback_obj = callback_obj
         self.callback = callback
         self.protocol = QueryMembersClient
+
+    def clientConnectionLost(self, connector, reason):
+        utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+
+    def clientConnectionFailed(self, connector, reason):
+        utils.logger.info('Connection failed. Reason: {}'.format(reason))
 
 
 class QueryMembersClient(protocol.Protocol):

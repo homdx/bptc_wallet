@@ -2,20 +2,31 @@ import threading
 from twisted.internet import reactor
 from bptc.networking.query_members_protocol import QueryMembersServerFactory
 from bptc.networking.register_protocol import RegisterServerFactory
-
+from prompt_toolkit import prompt
 
 class MemberRegistry:
     def __init__(self):
         self.members = {}
-        self.start_reactor_thread()
-        self.start_listening()
-        print('Listening for registrations...')
+
+    def __call__(self):
+        try:
+            self.start_reactor_thread()
+            self.start_listening()
+            print('Listening for registrations...')
+            while True:
+                prompt()
+        except (EOFError, KeyboardInterrupt):
+            print('Good bye!')
+        except:
+            print('{} thrown -> GoodBye!'.format(sys.exc_info()[0].__name__))
+            raise
+        finally:
+            reactor.callFromThread(reactor.stop)
 
     @staticmethod
     def start_reactor_thread():
         def start_reactor():
             reactor.run(installSignalHandlers=0)
-
         threading.Thread(target=start_reactor).start()
 
     def received_data_callback(self, member_id, port, info):
@@ -30,7 +41,7 @@ class MemberRegistry:
 
 
 def main():
-    MemberRegistry()
+    MemberRegistry()()
 
 if __name__ == '__main__':
     main()

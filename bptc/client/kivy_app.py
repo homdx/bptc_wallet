@@ -21,10 +21,10 @@ class KivyApp(App):
         self.hashgraph = None
         self.network = None
         init_hashgraph(self)
-        network_utils.start_reactor_thread()  # starts network client in a new thread
+        network_utils.initial_checks(self)
 
     def build(self):
-        return KivyCore(self.network, self.cl_args.port)
+        return KivyCore(self.network, self.cl_args)
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;

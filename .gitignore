@@ -10,7 +10,7 @@
 # virtualenv (Windows)
 Include/
 Lib/
-Scripts/
+./Scripts/
 pip-selfcheck.json
 tcl/
 venv/
