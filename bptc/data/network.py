@@ -92,10 +92,20 @@ class Network:
         Creates a heartbeat (= own, empty) event and adds it to the hashgraph
         :return: The newly created event
         """
-        # TODO: Remove test transaction
-        event = Event(self.hashgraph.me.verify_key,
-                      [MoneyTransaction(self.me.to_verifykey_string(), 1, "Test transaction")],
-                      Parents(self.hashgraph.me.head, None))
+        event = Event(self.hashgraph.me.verify_key, None, Parents(self.hashgraph.me.head, None))
+        self.hashgraph.add_own_event(event)
+        return event
+
+    def send_transaction(self, amount: int, comment: str, receiver: Member) -> Event:
+        """
+        Create a new event with a transaction
+        :param amount: The amount of BBTC to send
+        :param comment: The comment to be included in the transaction
+        :param receiver: The receiver of the transaction
+        :return:
+        """
+        transaction = MoneyTransaction(receiver.to_verifykey_string(), amount, comment)
+        event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
         self.hashgraph.add_own_event(event)
         return event
 

@@ -1,7 +1,10 @@
 import threading
 import kivy
 from kivy.uix.screenmanager import Screen
+from kivy.adapters.listadapter import ListAdapter
+from kivy.uix.listview import ListItemButton, ListView
 import bptc.networking.utils as network_utils
+import bptc.utils as utils
 
 kivy.require('1.0.7')
 
@@ -67,4 +70,60 @@ class MainScreen(Screen):
 
 
 class NewTransactionScreen(Screen):
-    pass
+
+    class MemberListItemButton(ListItemButton):
+
+        def __init__(self, **kwargs):
+
+            self.deselected_color = [1, 1, 1, 1]
+            self.selected_color = [0.2, 0.5, 1, 1]
+            super().__init__(**kwargs)
+
+    def __init__(self, network):
+        self.network = network
+        self.list_adapter = None
+        self.list_view = None
+        self.data = None
+        super().__init__()
+
+    def on_pre_enter(self, *args):
+        members = list(self.network.hashgraph.known_members.values())
+        members.sort(key=lambda x: x.formatted_name)
+        self.data = [{'member': m, 'is_selected': False} for m in members]
+
+        args_converter = lambda row_index, rec: {'text': rec['member'].formatted_name}
+
+        list_adapter = ListAdapter(data=self.data,
+                                   args_converter=args_converter,
+                                   cls=self.MemberListItemButton,
+                                   selection_mode='single',
+                                   propagate_selection_to_data=True,
+                                   allow_empty_selection=True)
+
+        def selection_change_callback(adapter):
+            if len(adapter.selection) == 1:
+                self.ids.send_button.disabled = False
+
+        list_adapter.bind(on_selection_change=selection_change_callback)
+
+        self.list_view = ListView(adapter=list_adapter,
+                                  size_hint_y=1)
+
+        self.ids.receiver_layout.add_widget(self.list_view)
+
+    def on_leave(self, *args):
+        self.ids.comment_field.text = ''
+        self.ids.amount_field.text = ''
+        self.ids.receiver_layout.remove_widget(self.list_view)
+
+    def send_transaction(self):
+        try:
+            amount = int(self.ids.amount_field.text)
+            comment = self.ids.comment_field.text
+            receiver = next(x['member'] for x in self.data if x['is_selected'])
+
+            utils.logger.info("Transfering {} BBTC to {} with comment '{}'".format(amount, receiver, comment))
+
+            self.network.send_transaction(amount, comment, receiver)
+        except ValueError:
+            print("Error parsing values")

@@ -26,7 +26,7 @@ class KivyApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MainScreen(self.network, self.cl_args))
-        sm.add_widget(NewTransactionScreen())
+        sm.add_widget(NewTransactionScreen(self.network))
         return sm
 
     def on_stop(self):

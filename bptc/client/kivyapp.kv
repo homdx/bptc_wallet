@@ -1,8 +1,11 @@
 #:kivy 1.0
+#:import label kivy.uix.label
+#:import da kivy.adapters.dictadapter
+#:import lv kivy.uix.listview
 
 <MainScreen>:
     name: 'main'
-    id: KivyCore
+    id: MainScreen
     GridLayout:
         cols: 1
         rows: 10
@@ -32,11 +35,17 @@
         BoxLayout:
             size_hint: 1, 1
             Button:
-                id: send_heartbeat
-                text: 'Create heartbeat event'
+                id: new_transaction_button
+                text: 'New Transaction'
                 on_press:
                     root.manager.transition.direction = 'left'
                     root.manager.current = 'new_transaction'
+        BoxLayout:
+            size_hint: 1, 1
+            Button:
+                id: send_heartbeat
+                text: 'Create heartbeat event'
+                on_press: root.heartbeat()
         BoxLayout:
             size_hint: 1, 0.3
         BoxLayout:
@@ -134,22 +143,46 @@
 	name: "new_transaction"
 	BoxLayout:
 	    orientation: 'vertical'
-	    TextInput:
-	        text: "Amount"
-	        padding_x: 20
-            padding_y: ( self.height - self.line_height ) / 2
-	    TextInput:
-	        text: "Comment"
-	        padding_x: 20
-            padding_y: ( self.height - self.line_height ) / 2
+	    BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Amount:'
+	            size_hint: 0.3, 1
+            TextInput:
+                id: amount_field
+                input_filter: 'int'
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Comment:'
+	            size_hint: 0.3, 1
+            TextInput:
+                id: comment_field
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+        BoxLayout:
+            id: receiver_layout
+            size_hint: 1, 5
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Receiver:'
+	            size_hint: 0.3, 1
+	            padding_x: 100
 	    Button:
-	        size_hint: 1, 5
-	        text: "Receiver"
-	    Button:
+	        id: send_button
 	        text: "Send"
+	        disabled: True
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.send_transaction()
+	            root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
         Button:
+            id: cancel_button
             text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
             on_release:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'main'
-            pos_hint: {"right":1, "top":1}
