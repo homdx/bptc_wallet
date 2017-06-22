@@ -1,11 +1,11 @@
 from kivy.app import App
-
-from bptc.client.kivy_core import KivyCore
+from bptc.client.kivy_core import MainScreen, NewTransactionScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 import bptc.utils as utils
 import bptc.networking.utils as network_utils
 from kivy.config import Config
+from kivy.uix.screenmanager import ScreenManager
 
 # size of an iPhone 6 Plus
 Config.set('graphics', 'width', '414')
@@ -24,7 +24,10 @@ class KivyApp(App):
         network_utils.initial_checks(self)
 
     def build(self):
-        return KivyCore(self.network, self.cl_args)
+        sm = ScreenManager()
+        sm.add_widget(MainScreen(self.network, self.cl_args))
+        sm.add_widget(NewTransactionScreen())
+        return sm
 
     def on_stop(self):
         # The Kivy event loop is about to stop, set a stop signal;
@@ -33,4 +36,4 @@ class KivyApp(App):
         utils.logger.info("Stopping...")
         DB.save(self.network.hashgraph)
         network_utils.stop_reactor_thread()
-        self.root.stop.set()
+        #self.root.stop.set()

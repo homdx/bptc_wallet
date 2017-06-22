@@ -10,6 +10,7 @@ import bptc.utils as utils
 from bptc.data.utils import filter_members_with_address
 import time, threading
 
+
 class Network:
     """
     An abstraction of the P2P network

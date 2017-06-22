@@ -1,13 +1,12 @@
 import threading
 import kivy
-from kivy.uix.gridlayout import GridLayout
-
+from kivy.uix.screenmanager import Screen
 import bptc.networking.utils as network_utils
 
 kivy.require('1.0.7')
 
 
-class KivyCore(GridLayout):
+class MainScreen(Screen):
     def __init__(self, network, cl_args):
         self.defaults = {
             'listening_port': cl_args.port,
@@ -65,3 +64,7 @@ class KivyCore(GridLayout):
 
     def push_random(self):
         self.network.start_background_pushes()
+
+
+class NewTransactionScreen(Screen):
+    pass
