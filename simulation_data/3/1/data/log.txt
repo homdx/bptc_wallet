@@ -1,0 +1,17 @@
+Created new Member: Member(Me, 3mTXQJ...)
+Push server listens on port 8000
+[Pull server (for viz tool) listens on port 8001]
+Stopping...
+Adding 1 events
+1 events are valid
+Push server listens on port 8000
+[Pull server (for viz tool) listens on port 8001]
+Stopping...
+Adding 1 events
+1 events are valid
+Push server listens on port 8000
+[Pull server (for viz tool) listens on port 8001]
+Member update: HuE54L... to (127.0.0.1, 8006)
+Member update: MN/tlT... to (127.0.0.1, 8004)
+Member update: 56SS3x... to (127.0.0.1, 8002)
+Stopping...

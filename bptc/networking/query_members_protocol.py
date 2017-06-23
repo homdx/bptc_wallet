@@ -29,7 +29,8 @@ class QueryMembersClientFactory(protocol.ClientFactory):
         self.protocol = QueryMembersClient
 
     def clientConnectionLost(self, connector, reason):
-        utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        #utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        return
 
     def clientConnectionFailed(self, connector, reason):
         utils.logger.info('Connection failed. Reason: {}'.format(reason))

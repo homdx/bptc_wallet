@@ -1,0 +1,19 @@
+Created new Member: Member(Me, HuE54L...)
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Stopping...
+Adding 1 events
+1 events are valid
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Lost connection.  Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
+]
+Stopping...
+Adding 1 events
+1 events are valid
+Push server listens on port 8006
+[Pull server (for viz tool) listens on port 8007]
+Member update: 3mTXQJ... to (127.0.0.1, 8000)
+Member update: MN/tlT... to (127.0.0.1, 8004)
+Member update: 56SS3x... to (127.0.0.1, 8002)
+Stopping...
