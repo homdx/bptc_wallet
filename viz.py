@@ -4,19 +4,19 @@ import threading
 import os
 from functools import partial
 from time import sleep
-
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
 from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText)
 from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
-
+from tornado import gen
 from bptc.networking.pull_protocol import PullClientFactory
 from bptc.utils import init_logger
 
 R_COLORS = small_palettes['Set2'][8]
 
+doc = curdoc()
 
 # shuffle(R_COLORS)
 def round_color(r):
@@ -32,10 +32,13 @@ class App:
         def start_reactor():
             reactor.run(installSignalHandlers=0)
 
-        threading.Thread(target=start_reactor).start()
+        thread = threading.Thread(target=start_reactor)
+        thread.daemon = True
+        thread.start()
         print('Started reactor')
 
     def __init__(self):
+        self.pull_thread = None
         log_directory = 'data/viz'
         os.makedirs(log_directory, exist_ok=True)
         init_logger(log_directory)
@@ -49,8 +52,11 @@ class App:
                             width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
-        self.update_button = Button(label="Start pulling...", width=60)
-        self.update_button.on_click(partial(self.pull_from, self.ip_text_input, self.port_text_input))
+        self.pulling = False
+        self.start_pulling_button = Button(label="Start pulling...", width=60)
+        self.start_pulling_button.on_click(partial(self.start_pulling, self.ip_text_input, self.port_text_input))
+        self.stop_pulling_button = Button(label="Stop pulling...", width=60)
+        self.stop_pulling_button.on_click(self.stop_pulling)
 
         self.all_events = {}
         self.new_events = {}
@@ -85,12 +91,12 @@ class App:
 
         self.log = PreText(text='')
 
-        control_column = column(self.text, self.ip_text_input, self.port_text_input, self.update_button, self.log)
+        control_column = column(self.text, self.ip_text_input,
+                                self.port_text_input, self.start_pulling_button, self.stop_pulling_button, self.log)
         main_row = row([control_column, plot], sizing_mode='fixed')
-        curdoc().add_root(main_row)
-        self.data_received = threading.Event()
+        doc.add_root(main_row)
 
-    @staticmethod
+    @gen.coroutine
     def received_data_callback(self, from_member, events):
         for event_id, event in events.items():
             if event_id not in self.all_events:
@@ -101,23 +107,29 @@ class App:
                 self.new_events[event_id] = event
         self.n_nodes = len(self.verify_key_to_x)
         self.log.text += "Updated member {}...\n".format(from_member[:6])
-        self.data_received.set()
 
-    def pull_from(self, ip_text_input, port_text_input):
+    def start_pulling(self, ip_text_input, port_text_input):
+        self.pulling = True
         ip = ip_text_input.value
         port = int(port_text_input.value)
-        factory = PullClientFactory(self, self.received_data_callback)
-        while True:
-            self.data_received.clear()
+        factory = PullClientFactory(self, doc)
 
-            def sync_with_member():
-                reactor.connectTCP(ip, port, factory)
-            threads.blockingCallFromThread(reactor, sync_with_member)
+        def pull_and_draw():
+            while self.pulling:
+                def sync_with_member():
+                    reactor.connectTCP(ip, port, factory)
 
-            self.data_received.wait()
-            self.draw()
-            sleep(1)
+                threads.blockingCallFromThread(reactor, sync_with_member)
+                sleep(1)
 
+        self.pull_thread = threading.Thread(target=pull_and_draw)
+        self.pull_thread.daemon = True
+        self.pull_thread.start()
+
+    def stop_pulling(self):
+        self.pulling = False
+
+    @gen.coroutine
     def draw(self):
         tr, links = self.extract_data(self.new_events)
         self.new_events = {}

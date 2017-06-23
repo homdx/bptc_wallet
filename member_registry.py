@@ -27,7 +27,10 @@ class MemberRegistry:
     def start_reactor_thread():
         def start_reactor():
             reactor.run(installSignalHandlers=0)
-        threading.Thread(target=start_reactor).start()
+
+        thread = threading.Thread(target=start_reactor)
+        thread.daemon = True
+        thread.start()
 
     def received_data_callback(self, member_id, port, info):
         print('Member {}... registered with ({}, {})'.format(member_id[:6], info.host, port))

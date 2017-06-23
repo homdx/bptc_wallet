@@ -1,7 +1,6 @@
 import json
-
 from twisted.internet import protocol
-
+from functools import partial
 from bptc.data.event import Event
 from bptc.data.network import Network
 import bptc.utils as utils
@@ -17,10 +16,7 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        utils.logger.info('Client connected')
-        utils.logger.info('Sending:')
-        for event_id, event in self.factory.network.hashgraph.lookup_table.items():
-            utils.logger.info('{}'.format(event))
+        #utils.logger.info('Client connected')
 
         serialized_events = {}
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
@@ -31,18 +27,20 @@ class PullServer(protocol.Protocol):
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        utils.logger.info('Client disconnected')
+        #utils.logger.info('Client disconnected')
+        return
 
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, callback):
+    def __init__(self, callback_obj, doc):
         self.callback_obj = callback_obj
-        self.callback = callback
+        self.doc = doc
         self.protocol = PullClient
 
     def clientConnectionLost(self, connector, reason):
-        utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        #utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        return
 
     def clientConnectionFailed(self, connector, reason):
         utils.logger.info('Connection failed. Reason: {}'.format(reason))
@@ -51,7 +49,8 @@ class PullClientFactory(protocol.ClientFactory):
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
-        utils.logger.info('Connected to server. Waiting for data...')
+        #utils.logger.info('Connected to server. Waiting for data...')
+        return
 
     def dataReceived(self, data):
         received_data = json.loads(data.decode('UTF-8'))
@@ -61,11 +60,10 @@ class PullClient(protocol.Protocol):
         for event_id, dict_event in s_events.items():
             events[event_id] = Event.from_debug_dict(dict_event)
 
-        utils.logger.info('Received:')
-        for event_id, event in events.items():
-            utils.logger.info('{}'.format(event))
-
-        self.factory.callback(self.factory.callback_obj, from_member, events)
+        self.factory.doc.add_next_tick_callback(
+            partial(self.factory.callback_obj.received_data_callback, from_member, events))
+        self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
 
     def connectionLost(self, reason):
-        utils.logger.info('Disconnected')
+        #utils.logger.info('Disconnected')
+        return
