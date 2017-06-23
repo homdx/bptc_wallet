@@ -14,6 +14,7 @@ class QueryMembersServerFactory(protocol.ServerFactory):
 class QueryMembersServer(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         self.transport.write(json.dumps(self.factory.members).encode('UTF-8'))
         self.transport.loseConnection()
 
@@ -39,6 +40,7 @@ class QueryMembersClientFactory(protocol.ClientFactory):
 class QueryMembersClient(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         return
 
     def dataReceived(self, data):

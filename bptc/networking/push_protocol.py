@@ -1,4 +1,6 @@
 import json
+
+import zlib
 from twisted.internet import protocol
 from bptc.data.event import Event
 from bptc.data.member import Member
@@ -17,11 +19,21 @@ class PushServerFactory(protocol.ServerFactory):
 class PushServer(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         utils.logger.info('Client connected. Waiting for data...')
 
     def dataReceived(self, data):
+        try:
+            data = zlib.decompress(data)
+        except zlib.error as err:
+            utils.logger.error(err)
+
         # Decode received JSON data
-        received_data = json.loads(data.decode('UTF-8'))
+        try:
+            received_data = json.loads(data.decode('UTF-8'))
+        except json.decoder.JSONDecodeError as err:
+            utils.logger.error(err)
+            utils.logger.error(data.decode('UTF-8'))
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
@@ -76,6 +88,7 @@ class PushClientFactory(protocol.ClientFactory):
 class PushClient(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         utils.logger.info('Connected to server.')
         utils.logger.info('Sending:')
         for event_id, event in self.factory.events.items():
@@ -100,7 +113,7 @@ class PushClient(protocol.Protocol):
             'members': serialized_members
         }
 
-        self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
+        self.transport.write(zlib.compress(json.dumps(data_to_send).encode('UTF-8')))
         utils.logger.info("Sent data")
         self.transport.loseConnection()
 

@@ -1,4 +1,6 @@
 import json
+
+import zlib
 from twisted.internet import protocol
 from functools import partial
 from bptc.data.event import Event
@@ -17,13 +19,14 @@ class PullServer(protocol.Protocol):
 
     def connectionMade(self):
         #utils.logger.info('Client connected')
+        self.transport.setTcpNoDelay(True)
 
         serialized_events = {}
         for event_id, event in self.factory.network.hashgraph.lookup_table.items():
             serialized_events[event_id] = event.to_debug_dict()
 
         data_to_send = {'from': str(self.factory.network.me.id), 'events': serialized_events}
-        self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
+        self.transport.write(zlib.compress(json.dumps(data_to_send).encode('UTF-8')))
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
@@ -50,10 +53,21 @@ class PullClient(protocol.Protocol):
 
     def connectionMade(self):
         #utils.logger.info('Connected to server. Waiting for data...')
+        self.transport.setTcpNoDelay(True)
         return
 
     def dataReceived(self, data):
-        received_data = json.loads(data.decode('UTF-8'))
+        try:
+            data = zlib.decompress(data)
+        except zlib.error as err:
+            utils.logger.error(err)
+
+        try:
+            received_data = json.loads(data.decode('UTF-8'))
+        except json.decoder.JSONDecodeError as err:
+            utils.logger.error(err)
+            utils.logger.error(data.decode('UTF-8'))
+
         from_member = received_data['from']
         s_events = received_data['events']
         events = {}

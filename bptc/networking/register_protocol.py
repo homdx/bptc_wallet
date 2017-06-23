@@ -13,6 +13,7 @@ class RegisterServerFactory(protocol.ServerFactory):
 class RegisterServer(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         return
 
     def dataReceived(self, data):
@@ -44,6 +45,7 @@ class RegisterClientFactory(protocol.ClientFactory):
 class RegisterClient(protocol.Protocol):
 
     def connectionMade(self):
+        self.transport.setTcpNoDelay(True)
         data_to_send = {'member_id': self.factory.member_id, 'port': self.factory.port}
         self.transport.write(json.dumps(data_to_send).encode('UTF-8'))
         self.transport.loseConnection()
