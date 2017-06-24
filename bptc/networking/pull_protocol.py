@@ -3,9 +3,9 @@ import json
 import zlib
 from twisted.internet import protocol
 from functools import partial
+import bptc
 from bptc.data.event import Event
 from bptc.data.network import Network
-import bptc.utils as utils
 
 
 class PullServerFactory(protocol.ServerFactory):
@@ -18,7 +18,7 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        #utils.logger.info('Client connected')
+        #bptc.logger.info('Client connected')
         self.transport.setTcpNoDelay(True)
 
         serialized_events = {}
@@ -30,7 +30,7 @@ class PullServer(protocol.Protocol):
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        #utils.logger.info('Client disconnected')
+        #bptc.logger.info('Client disconnected')
         return
 
 
@@ -42,17 +42,17 @@ class PullClientFactory(protocol.ClientFactory):
         self.protocol = PullClient
 
     def clientConnectionLost(self, connector, reason):
-        #utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
-        utils.logger.info('Connection failed. Reason: {}'.format(reason))
+        bptc.logger.info('Connection failed. Reason: {}'.format(reason))
 
 
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
-        #utils.logger.info('Connected to server. Waiting for data...')
+        #bptc.logger.info('Connected to server. Waiting for data...')
         self.transport.setTcpNoDelay(True)
         return
 
@@ -60,13 +60,13 @@ class PullClient(protocol.Protocol):
         try:
             data = zlib.decompress(data)
         except zlib.error as err:
-            utils.logger.error(err)
+            bptc.logger.error(err)
 
         try:
             received_data = json.loads(data.decode('UTF-8'))
         except json.decoder.JSONDecodeError as err:
-            utils.logger.error(err)
-            utils.logger.error(data.decode('UTF-8'))
+            bptc.logger.error(err)
+            bptc.logger.error(data.decode('UTF-8'))
 
         from_member = received_data['from']
         s_events = received_data['events']
@@ -79,5 +79,5 @@ class PullClient(protocol.Protocol):
         self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
 
     def connectionLost(self, reason):
-        #utils.logger.info('Disconnected')
+        #bptc.logger.info('Disconnected')
         return

@@ -1,10 +1,9 @@
 from collections import defaultdict, namedtuple
 from functools import reduce
-
 from libnacl.encode import base64_decode
 from toposort import toposort_flatten
 
-from bptc.utils import bfs
+from bptc.data.utils import bfs
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -31,7 +30,7 @@ def divide_rounds(hashgraph, events):
             event.can_see = {event.verify_key: event}
         else:
             # This is a normal event
-            # utils.logger.info("Checking {}".format(str(event.parents)))
+            # bptc.logger.info("Checking {}".format(str(event.parents)))
             # Estimate round (= maximum round of parents)
             calculated_round = max([hashgraph.lookup_table[parent].round
                                     for parent in event.parents if parent is not None])

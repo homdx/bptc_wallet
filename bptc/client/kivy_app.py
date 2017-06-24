@@ -1,8 +1,9 @@
 from kivy.app import App
+
+import bptc
 from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
-import bptc.utils as utils
 import bptc.networking.utils as network_utils
 from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
@@ -34,6 +35,6 @@ class KivyApp(App):
         # The Kivy event loop is about to stop, set a stop signal;
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
-        utils.logger.info("Stopping...")
+        bptc.logger.info("Stopping...")
         DB.save(self.network.hashgraph)
         network_utils.stop_reactor_thread()

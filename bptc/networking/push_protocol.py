@@ -1,10 +1,9 @@
 import json
-
 import zlib
 from twisted.internet import protocol
+import bptc
 from bptc.data.event import Event
 from bptc.data.member import Member
-import bptc.utils as utils
 from typing import Dict, List
 
 
@@ -20,20 +19,20 @@ class PushServer(protocol.Protocol):
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)
-        utils.logger.info('Client connected. Waiting for data...')
+        bptc.logger.info('Client connected. Waiting for data...')
 
     def dataReceived(self, data):
         try:
             data = zlib.decompress(data)
         except zlib.error as err:
-            utils.logger.error(err)
+            bptc.logger.error(err)
 
         # Decode received JSON data
         try:
             received_data = json.loads(data.decode('UTF-8'))
         except json.decoder.JSONDecodeError as err:
-            utils.logger.error(err)
-            utils.logger.error(data.decode('UTF-8'))
+            bptc.logger.error(err)
+            bptc.logger.error(data.decode('UTF-8'))
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
@@ -49,9 +48,9 @@ class PushServer(protocol.Protocol):
             for event_id, dict_event in s_events.items():
                 events[event_id] = Event.from_dict(dict_event)
 
-            utils.logger.info('Received Events:')
+            bptc.logger.info('Received Events:')
             for event_id, event in events.items():
-                utils.logger.info('{}'.format(event))
+                bptc.logger.info('{}'.format(event))
 
             self.factory.receive_events_callback(from_member, events)
 
@@ -60,13 +59,13 @@ class PushServer(protocol.Protocol):
         if len(s_members) > 0:
             members = [Member.from_dict(m) for m in s_members]
 
-            utils.logger.info('Received Members:')
-            [utils.logger.info('{}'.format(m)) for m in members]
+            bptc.logger.info('Received Members:')
+            [bptc.logger.info('{}'.format(m)) for m in members]
 
             self.factory.receive_members_callback(members)
 
     def connectionLost(self, reason):
-        utils.logger.info('Client disconnected')
+        bptc.logger.info('Client disconnected')
 
 
 class PushClientFactory(protocol.ClientFactory):
@@ -78,21 +77,21 @@ class PushClientFactory(protocol.ClientFactory):
         self.protocol = PushClient
 
     def clientConnectionLost(self, connector, reason):
-        #utils.logger.info('Lost connection.  Reason: {}'.format(reason))
+        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
-        utils.logger.info('Connection failed. Reason: {}'.format(reason))
+        bptc.logger.info('Connection failed. Reason: {}'.format(reason))
 
 
 class PushClient(protocol.Protocol):
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)
-        utils.logger.info('Connected to server.')
-        utils.logger.info('Sending:')
+        bptc.logger.info('Connected to server.')
+        bptc.logger.info('Sending:')
         for event_id, event in self.factory.events.items():
-            utils.logger.info('{}'.format(event))
+            bptc.logger.info('{}'.format(event))
 
         serialized_events = {}
         if self.factory.events is not None:
@@ -114,8 +113,8 @@ class PushClient(protocol.Protocol):
         }
 
         self.transport.write(zlib.compress(json.dumps(data_to_send).encode('UTF-8')))
-        utils.logger.info("Sent data")
+        bptc.logger.info("Sent data")
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        utils.logger.info('Disconnected')
+        bptc.logger.info('Disconnected')

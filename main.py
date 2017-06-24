@@ -1,5 +1,6 @@
-import os
 import argparse
+import os
+from bptc import init_logger
 
 __version__ = '0.1'
 
@@ -18,7 +19,6 @@ if __name__ == '__main__':
     # Right now there is only one app designed for mobile devices
     cl_args = parse_args()
     os.makedirs(cl_args.output, exist_ok=True)
-    from bptc.utils import init_logger
     init_logger(cl_args.output)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp

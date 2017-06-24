@@ -1,11 +1,9 @@
 from collections import OrderedDict
 from typing import Tuple, Dict
-
 from libnacl import crypto_sign_keypair
 from libnacl.encode import base64_encode
 from twisted.internet.address import IPv4Address
-
-import bptc.utils as utils
+import bptc
 
 
 class Member:
@@ -44,7 +42,7 @@ class Member:
         new_member = Member(verify_key, signing_key)
         new_member.name = "Me"
 
-        utils.logger.info("Created new Member: " + str(new_member))
+        bptc.logger.info("Created new Member: " + str(new_member))
 
         return new_member
 

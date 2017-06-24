@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from typing import Dict
-
-import bptc.utils as utils
+import bptc
 
 
 class Transaction:
@@ -33,7 +32,7 @@ class Transaction:
                                     transaction_dict['amount'],
                                     transaction_dict['comment'] if 'comment' in transaction_dict else "")
         else:
-            utils.logger.error("Received invalid transaction type: {}".format(transaction_dict['type']))
+            bptc.logger.error("Received invalid transaction type: {}".format(transaction_dict['type']))
             return None
 
 

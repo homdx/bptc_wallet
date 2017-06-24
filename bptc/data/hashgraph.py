@@ -2,11 +2,11 @@ import math
 from collections import defaultdict
 from functools import partial
 from typing import Dict
+import bptc
 from bptc.data import consensus
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
-from bptc.utils import bfs
-import bptc.utils as utils
+from bptc.data.utils import bfs
 
 
 class Hashgraph:
@@ -183,7 +183,7 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
-        utils.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
+        bptc.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)
@@ -213,11 +213,11 @@ class Hashgraph:
         :param events: The events to be added
         :return: None
         """
-        utils.logger.info("Adding {} events".format(len(events)))
+        bptc.logger.info("Adding {} events".format(len(events)))
 
         # Only deal with valid events
         events = filter_valid_events(events)
-        utils.logger.info("{} events are valid".format(len(events)))
+        bptc.logger.info("{} events are valid".format(len(events)))
 
         # Add all new events
         new_events = {}
@@ -257,7 +257,7 @@ def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
         if event.has_valid_signature:
             result[event_id] = event
         else:
-            utils.logger.warn("Event had invalid signature: {}".format(event))
+            bptc.logger.warn("Event had invalid signature: {}".format(event))
 
     return result
 

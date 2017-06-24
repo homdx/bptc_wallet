@@ -1,9 +1,9 @@
 import os
 import sqlite3
+import bptc
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
-import bptc.utils as utils
 
 
 class DB:
@@ -29,7 +29,7 @@ class DB:
             c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT)')
 
         else:
-            utils.logger.error("Database has already been connected")
+            bptc.logger.error("Database has already been connected")
 
     @classmethod
     def __get_cursor(cls) -> sqlite3:
@@ -83,7 +83,7 @@ class DB:
             for _, event in obj.lookup_table.items():
                 cls.__save_event(event)
         else:
-            utils.logger.error("Could not persist object because its type is not supported")
+            bptc.logger.error("Could not persist object because its type is not supported")
 
     @classmethod
     def load_hashgraph(cls, listening_port, output_dir) -> Hashgraph:

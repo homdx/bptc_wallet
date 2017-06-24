@@ -1,12 +1,11 @@
-import threading
 import kivy
 from kivy.uix.screenmanager import Screen
 from kivy.adapters.listadapter import ListAdapter
 from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.label import Label
+import bptc
 import bptc.networking.utils as network_utils
-import bptc.utils as utils
 
 kivy.require('1.0.7')
 
@@ -128,7 +127,7 @@ class NewTransactionScreen(Screen):
             comment = self.ids.comment_field.text
             receiver = next(x['member'] for x in self.data if x['is_selected'])
 
-            utils.logger.info("Transfering {} BPTC to {} with comment '{}'".format(amount, receiver, comment))
+            bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(amount, receiver, comment))
 
             self.network.send_transaction(amount, comment, receiver)
         except ValueError:
