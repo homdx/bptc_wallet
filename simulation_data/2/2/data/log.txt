@@ -1,0 +1,7 @@
+Created new Member: Member(Me, c5VEbJ...)
+Push server listens on port 8002
+[Pull server (for viz tool) listens on port 8003]
+Member update: aTHqpy... to (127.0.0.1, 8006)
+Member update: SAFi+l... to (127.0.0.1, 8004)
+Member update: 9tg8zv... to (127.0.0.1, 8000)
+Stopping...

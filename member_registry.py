@@ -1,8 +1,11 @@
+#!/usr/bin/python3
+
 import threading
 from twisted.internet import reactor
 from bptc.networking.query_members_protocol import QueryMembersServerFactory
 from bptc.networking.register_protocol import RegisterServerFactory
 from prompt_toolkit import prompt
+
 
 class MemberRegistry:
     def __init__(self):
