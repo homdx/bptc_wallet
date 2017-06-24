@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import Tuple, Dict
 
 from libnacl import crypto_sign_keypair
@@ -101,11 +102,10 @@ class Member:
             host = self.address.host
             port = self.address.port
 
-        return dict(
-            verify_key=self.verify_key,
-            host=host,
-            port=port
-        )
+        return OrderedDict([
+            ('verify_key', self.verify_key),
+            ('host', host),
+            ('port', port)])
 
     @classmethod
     def from_dict(cls, member_dict):

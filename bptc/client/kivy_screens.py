@@ -24,8 +24,8 @@ class MainScreen(Screen):
         self.hashgraph = network.hashgraph
         self.me = network.hashgraph.me
         self.defaults['member_id'] = self.me.formatted_name
-        self.stop = threading.Event()
         super().__init__()
+        self.pushing = False
 
     # Get value for an attribute from its input element
     def get(self, key):
@@ -46,7 +46,7 @@ class MainScreen(Screen):
         return None
 
     # --------------------------------------------------------------------------
-    # Hashgraph actions
+    # MainScreen actions
     # --------------------------------------------------------------------------
 
     def start_listening(self):
@@ -68,7 +68,12 @@ class MainScreen(Screen):
         self.network.push_to(ip, int(port))
 
     def push_random(self):
-        self.network.start_background_pushes()
+        if not self.pushing:
+            self.network.start_background_pushes()
+            self.pushing = True
+        else:
+            self.network.stop_background_pushes()
+            self.pushing = False
 
 
 class NewTransactionScreen(Screen):

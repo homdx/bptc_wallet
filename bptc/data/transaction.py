@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import Dict
 
 import bptc.utils as utils
@@ -17,10 +18,9 @@ class Transaction:
         return self.__str__()
 
     def to_dict(self) -> Dict:
-        return dict(
-            receiver=self.receiver,
-            amount=self.amount
-        )
+        return OrderedDict([
+            ('receiver', self.receiver),
+            ('amount', self.amount)])
 
     @classmethod
     def from_dict(cls, transaction_dict):
@@ -43,12 +43,11 @@ class MoneyTransaction(Transaction):
         return "MoneyTransaction(receiver={}, amount={}, comment={})".format(self.receiver, self.amount, self.comment)
 
     def to_dict(self) -> Dict:
-        return dict(
-            type='money',
-            receiver=self.receiver,
-            amount=self.amount,
-            comment=self.comment
-        )
+        return OrderedDict([
+            ('type', 'money'),
+            ('receiver', self.receiver),
+            ('amount', self.amount),
+            ('comment', self.comment)])
 
 
 class StakeTransaction(Transaction):
@@ -57,9 +56,8 @@ class StakeTransaction(Transaction):
         return "StakeTransaction(receiver={}, amount={}, comment={})".format(self.receiver, self.amount, self.comment)
 
     def to_dict(self) -> Dict:
-        return dict(
-            type='stake',
-            receiver=self.receiver,
-            amount=self.amount,
-            comment=self.comment
-        )
+        return OrderedDict([
+            ('type', 'stake'),
+            ('receiver', self.receiver),
+            ('amount', self.amount),
+            ('comment', self.comment)])

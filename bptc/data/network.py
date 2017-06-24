@@ -21,6 +21,7 @@ class Network:
         # The current hashgraph
         self.hashgraph = hashgraph
         self.me = self.hashgraph.me
+        self.background_push_thread = None
 
         # Create first own event
         if create_initial_event:
@@ -149,12 +150,31 @@ class Network:
                 self.hashgraph.known_members[member.id].address = member.address
 
     def start_background_pushes(self) -> None:
-        def do_push():
-            while True:
-                self.push_to_random()
-                utils.logger.info("Performed automatic push to random at {}".format(time.ctime()))
-                time.sleep(1)
+        self.background_push_thread = PushingThread(self)
+        self.background_push_thread.daemon = True
+        self.background_push_thread.start()
 
-        background_push_thread = threading.Thread(target=do_push)
-        background_push_thread.daemon = True
-        background_push_thread.start()
+    def stop_background_pushes(self) -> None:
+        self.background_push_thread.stop()
+
+
+class PushingThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self, network):
+        super(PushingThread, self).__init__()
+        self.network = network
+        self._stop_event = threading.Event()
+
+    def run(self):
+        while not self.stopped():
+            self.network.push_to_random()
+            utils.logger.info("Performed automatic push to random at {}".format(time.ctime()))
+            time.sleep(1)
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()

@@ -102,14 +102,13 @@ class Event:
         return event
 
     def to_dict(self) -> Dict:
-        return dict(
-            data=[x.to_dict() for x in self.data] if self.data is not None else None,
-            parents=self.parents,
-            height=self.height,
-            time=self.time,
-            verify_key=self.verify_key,
-            signature=self.signature
-        )
+        return OrderedDict([
+            ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
+            ('parents', self.parents),
+            ('height', self.height),
+            ('time', self.time),
+            ('verify_key', self.verify_key),
+            ('signature', self.signature)])
 
     def to_debug_dict(self) -> Dict:
         return dict(

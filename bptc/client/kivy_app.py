@@ -1,5 +1,5 @@
 from kivy.app import App
-from bptc.client.kivy_core import MainScreen, NewTransactionScreen, TransactionsScreen
+from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 import bptc.utils as utils
@@ -21,7 +21,7 @@ class KivyApp(App):
         self.hashgraph = None
         self.network = None
         init_hashgraph(self)
-        network_utils.initial_checks(self)
+        network_utils.initial_checks(self)  # c: name is misleading
 
     def build(self):
         sm = ScreenManager()
@@ -37,4 +37,3 @@ class KivyApp(App):
         utils.logger.info("Stopping...")
         DB.save(self.network.hashgraph)
         network_utils.stop_reactor_thread()
-        #self.root.stop.set()
