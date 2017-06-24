@@ -128,7 +128,7 @@ class NewTransactionScreen(Screen):
             comment = self.ids.comment_field.text
             receiver = next(x['member'] for x in self.data if x['is_selected'])
 
-            utils.logger.info("Transfering {} BBTC to {} with comment '{}'".format(amount, receiver, comment))
+            utils.logger.info("Transfering {} BPTC to {} with comment '{}'".format(amount, receiver, comment))
 
             self.network.send_transaction(amount, comment, receiver)
         except ValueError:

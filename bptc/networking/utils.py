@@ -1,4 +1,6 @@
 import threading
+from functools import partial
+
 from twisted.internet import reactor, threads
 from twisted.internet.address import IPv4Address
 
@@ -23,9 +25,7 @@ def initial_checks(app):
 
 
 def start_reactor_thread():
-    def start_reactor():
-        reactor.run(installSignalHandlers=0)
-    thread = threading.Thread(target=start_reactor)
+    thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
     thread.daemon = True
     thread.start()
 
