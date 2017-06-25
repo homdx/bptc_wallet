@@ -2,10 +2,12 @@
 
 ## Setup Linux
 ```shell
-  sudo apt install cython python-dev libffi-dev libgl1-mesa-dev
+  sudo apt install cython python3-dev libffi-dev libgl1-mesa-dev
   pip install -r requirements.txt
 ```
 You also need the libsodium.so for libnacl - Therefore download it from [here](https://download.libsodium.org/libsodium/releases/).
+If you only want to run the application via the CLI you don't have to install all modules
+named in requirements.txt. Instead you can use requirements_cli.txt.
 
 ## Start UI client
 ```shell
@@ -15,6 +17,16 @@ You also need the libsodium.so for libnacl - Therefore download it from [here](h
 ## Start CLI client
 ```shell
   python main.py -cli
+```
+
+## Start CLI client as a docker container
+```shell
+  docker run --tty --interactive chaoste/bptc
+```
+
+## Build docker image
+```shell
+  docker build . -t chaoste/bptc
 ```
 
 ## Build Android package
