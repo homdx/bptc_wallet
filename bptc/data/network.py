@@ -31,7 +31,7 @@ class Network:
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
-        fingerprint = self.hashgraph.get_fingerprint(self)
+        #fingerprint = self.hashgraph.get_fingerprint(self)
 
         factory = PushClientFactory(self.hashgraph.me,
                                     self.hashgraph.lookup_table,
@@ -75,7 +75,15 @@ class Network:
 
     def push_to_member(self, member: Member) -> None:
         bptc.logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
-        self.push_to(member.address.host, member.address.port)
+
+        factory = PushClientFactory(self.hashgraph.me,
+                                    self.hashgraph.get_unknown_events_of(member),
+                                    filter_members_with_address(self.hashgraph.known_members.values()))
+
+        def push():
+            reactor.connectTCP(member.address.host, member.address.port, factory)
+
+        threads.blockingCallFromThread(reactor, push)
 
     def push_to_random(self) -> None:
         """
