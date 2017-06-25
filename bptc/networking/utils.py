@@ -2,7 +2,6 @@ import threading
 from functools import partial
 from twisted.internet import reactor, threads
 from twisted.internet.address import IPv4Address
-
 import bptc
 from bptc.data.member import Member
 from .push_protocol import PushServerFactory

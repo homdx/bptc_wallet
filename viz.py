@@ -11,8 +11,9 @@ from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 from tornado import gen
+
+from bptc import init_logger
 from bptc.networking.pull_protocol import PullClientFactory
-from bptc.utils import init_logger
 
 R_COLORS = small_palettes['Set2'][8]
 
@@ -146,19 +147,23 @@ class App:
             events_data['height'].append(event.height)
             events_data['data'].append('None' if event.data is None else str(event.data))
 
-            if event.parents.self_parent is not None:
+            if event.parents.self_parent is not None and event.parents.self_parent in self.all_events:
                 links_data['x0'].append(x)
                 links_data['y0'].append(y)
                 links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.self_parent].height)
                 links_data['width'].append(3)
+            else:
+                print('{} is not in self.all_events'.format(str(event.parents.self_parent)))
 
-            if event.parents.other_parent is not None:
+            if event.parents.other_parent is not None and event.parents.other_parent in self.all_events:
                 links_data['x0'].append(x)
                 links_data['y0'].append(y)
                 links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.other_parent].height)
                 links_data['width'].append(1)
+            else:
+                print('{} is not in self.all_events'.format(str(event.parents.other_parent)))
 
         return events_data, links_data
 

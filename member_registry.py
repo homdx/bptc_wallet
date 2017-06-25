@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import threading
+import sys
+from functools import partial
 from twisted.internet import reactor
 from bptc.networking.query_members_protocol import QueryMembersServerFactory
 from bptc.networking.register_protocol import RegisterServerFactory
@@ -28,10 +30,7 @@ class MemberRegistry:
 
     @staticmethod
     def start_reactor_thread():
-        def start_reactor():
-            reactor.run(installSignalHandlers=0)
-
-        thread = threading.Thread(target=start_reactor)
+        thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
         thread.daemon = True
         thread.start()
 
