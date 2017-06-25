@@ -75,6 +75,34 @@ class Hashgraph:
                     height = item.height
         return head.id if head is not None else None
 
+    def get_unknown_events_of(self, member: Member) -> Dict[str, Event]:
+        """
+        Returns the presumably unknown events of a given member, in the same format as lookup_table
+        :param member: The member for which to return unknown events
+        :return: Dictionary mapping hashes to events
+        """
+        result = dict(self.lookup_table)
+        head = self.get_head_of(member)
+
+        if head is None:
+            return result
+
+        to_visit = {head}
+        visited = set()
+
+        while len(to_visit) > 0:
+            event_id = to_visit.pop()
+            if event_id not in visited:
+                event = result[event_id]
+                del result[event_id]
+                if event.parents.self_parent is not None:
+                    to_visit.add(event.parents.self_parent)
+                if event.parents.other_parent is not None:
+                    to_visit.add(event.parents.other_parent)
+                visited.add(event_id)
+
+        return result
+
     def add_own_first_event(self, event: Event):
         """
         Adds the own initial event to the hashgraph
