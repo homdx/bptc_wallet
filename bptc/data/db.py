@@ -108,7 +108,19 @@ class DB:
         # Create hashgraph
         hg = Hashgraph(me)
         hg.known_members = members
-        if len(events.items()) > 0:
-            hg.add_events(events)
 
+        # check parent links and signatures
+        for event_id, event in events.items():
+            if event.parents.self_parent is not None:
+                if event.parents.self_parent not in events:
+                    raise AssertionError
+            if event.parents.other_parent is not None:
+                if event.parents.other_parent not in events:
+                    raise AssertionError
+            if not event.has_valid_signature:
+                bptc.logger.warn("Event had invalid signature: {}".format(event))
+                raise AssertionError
+
+        hg.lookup_table = events
+        bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
         return hg

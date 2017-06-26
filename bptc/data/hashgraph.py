@@ -3,10 +3,11 @@ from collections import defaultdict
 from functools import partial
 from typing import Dict
 import bptc
-from bptc.data import consensus
+from bptc.data import consensus, consensus_new
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.data.utils import bfs
+from bptc.utils.toposort import toposort
 
 
 class Hashgraph:
@@ -42,7 +43,7 @@ class Hashgraph:
         self.famous = {}
 
         # add functions of hashgraph algorithm
-        self.divide_rounds = partial(consensus.divide_rounds, self)
+        self.divide_rounds = partial(consensus_new.divide_rounds, self)
         self.decide_fame = partial(consensus.decide_fame, self)
         self.find_order = partial(consensus.find_order, self)
 
@@ -143,7 +144,7 @@ class Hashgraph:
         self.me.head = event.id
 
         # Figure out rounds, fame, etc.
-        self.divide_rounds({event.id: event})
+        self.divide_rounds([event])
         new_c = self.decide_fame()
         self.find_order(new_c)
 
@@ -227,41 +228,13 @@ class Hashgraph:
         self.learn_members_from_events(new_events)
 
         # Figure out fame, order, etc.
-        self.divide_rounds(new_events)
-        new_c = self.decide_fame()
-        self.find_order(new_c)
+        self.divide_rounds(toposort(self, new_events))
+        #new_c = self.decide_fame()
+        #self.find_order(new_c)
 
         # Create a new event for the gossip
         event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
         self.add_own_event(event)
-
-    def add_events(self, events: Dict[str, Event]) -> None:
-        """
-        Adds a list of events to the hashgraph
-        :param events: The events to be added
-        :return: None
-        """
-        bptc.logger.info("Adding {} events".format(len(events)))
-
-        # Only deal with valid events
-        events = filter_valid_events(events)
-        bptc.logger.info("{} events are valid".format(len(events)))
-
-        # Add all new events
-        new_events = {}
-        for event_id, event in events.items():
-            if event_id not in self.lookup_table:
-                new_events[event.id] = event
-                self.unordered_events.add(event)
-                self.lookup_table[event_id] = event
-
-        # Learn about other members
-        self.learn_members_from_events(new_events)
-
-        # Figure out fame, order, etc.
-        self.divide_rounds(new_events)
-        new_c = self.decide_fame()
-        self.find_order(new_c)
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
@@ -272,6 +245,9 @@ class Hashgraph:
         for event in events.values():
             if event.verify_key not in self.known_members:
                 self.known_members[event.verify_key] = Member(event.verify_key)
+
+    def can_stongly_see_enough_round_r_witnesses(self, event: Event):
+        return False
 
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
