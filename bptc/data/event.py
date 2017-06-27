@@ -55,6 +55,12 @@ class Event:
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
 
+        # Whether this event is a witness
+        self.is_witness = False
+
+        # Whether this event is famous
+        self.is_famous = False
+
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
             self.id[:6], self.verify_key[:6], self.height, self.round, self.parents, self.data, self.time)

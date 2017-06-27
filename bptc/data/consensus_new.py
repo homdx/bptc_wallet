@@ -22,6 +22,7 @@ def divide_rounds(hashgraph, events):
 
         if event.parents.self_parent is None or event.round > hashgraph.lookup_table[event.parents.self_parent].round:
             hashgraph.witnesses[r][event.verify_key] = event.id
+            event.is_witness = True
 
 
 def event_can_can_strongly_see_enough_round_r_witnesses(hashgraph, event: Event, r: int):
