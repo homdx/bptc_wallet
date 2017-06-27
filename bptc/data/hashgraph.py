@@ -145,8 +145,8 @@ class Hashgraph:
 
         # Figure out rounds, fame, etc.
         self.divide_rounds([event])
-        new_c = self.decide_fame()
-        self.find_order(new_c)
+        #new_c = self.decide_fame()
+        #self.find_order(new_c)
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -245,9 +245,6 @@ class Hashgraph:
         for event in events.values():
             if event.verify_key not in self.known_members:
                 self.known_members[event.verify_key] = Member(event.verify_key)
-
-    def can_stongly_see_enough_round_r_witnesses(self, event: Event):
-        return False
 
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
