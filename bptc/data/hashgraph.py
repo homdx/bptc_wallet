@@ -227,14 +227,15 @@ class Hashgraph:
         # Learn about other members
         self.learn_members_from_events(new_events)
 
+        # Create a new event for the gossip
+        event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
+        self.add_own_event(event)
+        new_events[event.id] = event
+
         # Figure out fame, order, etc.
         self.divide_rounds(toposort(self, new_events))
         #new_c = self.decide_fame()
         #self.find_order(new_c)
-
-        # Create a new event for the gossip
-        event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
-        self.add_own_event(event)
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
