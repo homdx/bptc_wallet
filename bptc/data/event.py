@@ -92,18 +92,12 @@ class Event:
                       data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
         event.height = dict_event['height']
         event.signature = dict_event['signature']
+        event.is_witness = dict_event['witness']
         return event
 
     @classmethod
     def from_debug_dict(cls, dict_event) -> "Event":
-        data = None
-        if dict_event['data'] is not None:
-            data = [Transaction.from_dict(x) for x in dict_event['data']]
-
-        event = Event(dict_event['verify_key'],
-                      data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
-        event.height = dict_event['height']
-        event.signature = dict_event['signature']
+        event = cls.from_dict(dict_event)
         event.round = dict_event['round']
         return event
 
@@ -114,18 +108,13 @@ class Event:
             ('height', self.height),
             ('time', self.time),
             ('verify_key', self.verify_key),
-            ('signature', self.signature)])
+            ('signature', self.signature),
+            ('witness', self.is_witness)])
 
     def to_debug_dict(self) -> Dict:
-        return dict(
-            data=[x.to_dict() for x in self.data] if self.data is not None else None,
-            parents=self.parents,
-            height=self.height,
-            time=self.time,
-            verify_key=self.verify_key,
-            signature=self.signature,
-            round=self.round
-        )
+        result = self.to_dict()
+        result['round'] = self.round
+        return result
 
     def to_db_tuple(self) -> Tuple:
         return (
@@ -137,7 +126,8 @@ class Event:
             self.verify_key,
             self.height,
             self.signature,
-            self.round
+            self.round,
+            self.is_witness
         )
 
     @classmethod
@@ -154,6 +144,7 @@ class Event:
         event.height = e[6]
         event.signature = e[7]
         event.round = e[8]
+        event.is_witness = e[9]
 
         return event
 

@@ -68,7 +68,8 @@ class App:
                 plot_height=1000, plot_width=900, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
-                           ('hash', '@hash'), ('member', '@member_id'), ('height', '@height'), ('round', '@round'), ('data', '@data')])])
+                           ('id', '@id'), ('member', '@member_id'), ('height', '@height'), ('witness', '@witness'),
+                           ('round', '@round'), ('data', '@data')])])
 
         plot.xgrid.grid_line_color = None
         plot.xaxis.minor_tick_line_color = None
@@ -84,7 +85,8 @@ class App:
 
         self.events_src = ColumnDataSource(
                 data={'x': [], 'y': [], 'round_color': [], 'line_alpha': [],
-                      'round': [], 'hash': [], 'payload': [], 'time': [], 'member_id': [], 'height': [], 'data': []})
+                      'round': [], 'id': [], 'payload': [], 'time': [], 'member_id': [], 'height': [], 'data': [],
+                      'witness': []})
 
         self.events_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                        line_alpha='line_alpha', source=self.events_src, line_width=5)
@@ -128,8 +130,8 @@ class App:
         self.events_src.stream(events)
 
     def extract_data(self, events):
-        events_data = {'x': [], 'y': [], 'round_color': [],
-                   'line_alpha': [], 'round': [], 'hash': [], 'payload': [], 'time': [], 'member_id': [], 'height': [], 'data': []}
+        events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
+                       'time': [], 'member_id': [], 'height': [], 'data': [], 'witness': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
 
         for event_id, event in events.items():
@@ -139,13 +141,14 @@ class App:
             events_data['y'].append(y)
             events_data['round_color'].append(round_color(event.round))
             events_data['round'].append(event.round)
-            events_data['hash'].append(event.id[:6] + "...")
+            events_data['id'].append(event.id[:6] + "...")
             events_data['payload'].append("".format(event.data))
             events_data['time'].append(event.time)
             events_data['line_alpha'].append(1)
             events_data['member_id'].append(event.verify_key[:6] + '...')
             events_data['height'].append(event.height)
             events_data['data'].append('None' if event.data is None else str(event.data))
+            events_data['witness'].append('Yes' if event.is_witness else 'No')
 
             if event.parents.self_parent is not None and event.parents.self_parent in self.all_events:
                 links_data['x0'].append(x)
