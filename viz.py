@@ -68,8 +68,10 @@ class App:
                 plot_height=1000, plot_width=900, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
-                           ('id', '@id'), ('member', '@member_id'), ('height', '@height'), ('witness', '@witness'),
-                           ('round', '@round'), ('data', '@data')])])
+                           ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
+                           ('round', '@round'), ('data', '@data'), ('famous', '@famous'),
+                           ('fame decided', '@fame_decided'), ('round_received', '@round_received'),
+                           ('consensus_timestamp', '@consensus_timestamp')])])
 
         plot.xgrid.grid_line_color = None
         plot.xaxis.minor_tick_line_color = None
@@ -85,8 +87,8 @@ class App:
 
         self.events_src = ColumnDataSource(
                 data={'x': [], 'y': [], 'round_color': [], 'line_alpha': [],
-                      'round': [], 'id': [], 'payload': [], 'time': [], 'member_id': [], 'height': [], 'data': [],
-                      'witness': []})
+                      'round': [], 'id': [], 'payload': [], 'time': [], 'from': [], 'height': [], 'data': [],
+                      'witness': [], 'famous': [], 'fame_decided': [], 'round_received': [], 'consensus_timestamp': []})
 
         self.events_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                        line_alpha='line_alpha', source=self.events_src, line_width=5)
@@ -131,7 +133,8 @@ class App:
 
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
-                       'time': [], 'member_id': [], 'height': [], 'data': [], 'witness': []}
+                       'time': [], 'from': [], 'height': [], 'data': [], 'witness': [], 'famous': [],
+                       'fame_decided': [], 'round_received': [], 'consensus_timestamp': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
 
         for event_id, event in events.items():
@@ -145,10 +148,14 @@ class App:
             events_data['payload'].append("".format(event.data))
             events_data['time'].append(event.time)
             events_data['line_alpha'].append(1)
-            events_data['member_id'].append(event.verify_key[:6] + '...')
+            events_data['from'].append(event.verify_key[:6] + '...')
             events_data['height'].append(event.height)
             events_data['data'].append('None' if event.data is None else str(event.data))
             events_data['witness'].append('Yes' if event.is_witness else 'No')
+            events_data['famous'].append('Yes' if event.is_famous else 'No')
+            events_data['fame_decided'].append('Yes' if event.fame_is_decided else 'No')
+            events_data['round_received'].append(event.round_received)
+            events_data['consensus_timestamp'].append(event.consensus_time)
 
             if event.parents.self_parent is not None and event.parents.self_parent in self.all_events:
                 links_data['x0'].append(x)
