@@ -122,5 +122,11 @@ class DB:
                 raise AssertionError
 
         hg.lookup_table = events
+
+        # Create witness lookup
+        for event_id, event in hg.lookup_table.items():
+            if event.is_witness:
+                hg.witnesses[event.round][event.verify_key] = event.id
+
         bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
         return hg
