@@ -40,7 +40,8 @@ class MemberRegistry:
 
     def start_listening(self, *args):
         factory1 = RegisterServerFactory(self.received_data_callback)
-        reactor.listenTCP(9000, factory1)
+        # Default host is 0.0.0.0
+        port = reactor.listenTCP(9000, factory1)
         factory2 = QueryMembersServerFactory(self.members)
         reactor.listenTCP(9001, factory2)
 
