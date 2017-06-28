@@ -1,7 +1,7 @@
 from random import choice
 from typing import Dict, List
 from twisted.internet import threads, reactor
-
+import json
 import bptc
 from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
@@ -31,54 +31,48 @@ class Network:
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
-        #fingerprint = self.hashgraph.get_fingerprint(self)
-
-        factory = PushClientFactory(self.hashgraph.me,
-                                    self.hashgraph.lookup_table,
-                                    filter_members_with_address(self.hashgraph.known_members.values()))
+        data_string = self.generate_data_string(self.hashgraph.me,
+                                                self.hashgraph.lookup_table,
+                                                filter_members_with_address(self.hashgraph.known_members.values()))
+        factory = PushClientFactory(data_string)
 
         def push():
             reactor.connectTCP(ip, port, factory)
 
         threads.blockingCallFromThread(reactor, push)
 
-        # NOTE: communication channel security must be provided in standard way: SSL
-
-        # remote_head, difference = member.ask_sync(self, fingerprint)
-        # bptc.logger.info("  remote_head = {}".format(remote_head))
-        # bptc.logger.info("  difference  = {}".format(difference))
-        #
-        # # TODO move to hashgraph
-        # new = tuple(toposort([event for event in difference if event.id not in self.hashgraph.lookup_table],
-        #                      # difference.keys() - self.hashgraph.keys(),
-        #                      lambda u: u.parents))
-        #
-        # bptc.logger.info("{}.sync:new = \n{}".format(self, pformat(new)))
-        #
-        # # TODO move to hashgraph
-        # for event in new:
-        #     if self.hashgraph.is_valid_event(event.id, event):  # TODO check?
-        #         self.hashgraph.add_event(event)  # (, h) ??
-        #
-        # # TODO move to hashgraph
-        # # TODO check DOUBLE add remote_head ?
-        # if self.hashgraph.is_valid_event(remote_head.id, remote_head):  # TODO move id check to communication part
-        #     event = self.hashgraph.new_event(payload, remote_head, self.signing_key)
-        #     self.hashgraph.add_event(event)
-        #     self.hashgraph.head = event
-        #     h = event.id
-        #
-        # bptc.logger.info("{}.sync exits.".format(self))
-        #
-        # return new + (event,)
         return
+
+    @staticmethod
+    def generate_data_string(me, events, members):
+        serialized_events = {}
+        if events is not None:
+            for event_id, event in events.items():
+                serialized_events[event_id] = event.to_dict()
+
+        serialized_members = []
+        if members is not None:
+            for member in members:
+                serialized_members.append(member.to_dict())
+
+        data_to_send = {
+            'from': {
+                'verify_key': me.verify_key,
+                'listening_port': me.address.port
+            },
+            'events': serialized_events,
+            'members': serialized_members
+        }
+
+        return json.dumps(data_to_send).encode('UTF-8')
 
     def push_to_member(self, member: Member) -> None:
         bptc.logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
-        factory = PushClientFactory(self.hashgraph.me,
-                                    self.hashgraph.get_unknown_events_of(member),
-                                    filter_members_with_address(self.hashgraph.known_members.values()))
+        data_string = self.generate_data_string(self.hashgraph.me,
+                                                self.hashgraph.get_unknown_events_of(member),
+                                                filter_members_with_address(self.hashgraph.known_members.values()))
+        factory = PushClientFactory(data_string)
 
         def push():
             reactor.connectTCP(member.address.host, member.address.port, factory)

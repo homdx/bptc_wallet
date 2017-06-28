@@ -54,8 +54,6 @@ class PushServer(protocol.Protocol):
                     events[event_id] = Event.from_dict(dict_event)
 
                 bptc.logger.info('- Received {} events'.format(len(events.items())))
-                #for event_id, event in events.items():
-                #    bptc.logger.info('{}'.format(event))
 
                 self.factory.receive_events_callback(from_member, events)
 
@@ -65,7 +63,6 @@ class PushServer(protocol.Protocol):
                 members = [Member.from_dict(m) for m in s_members]
 
                 bptc.logger.info('- Received {} members'.format(len(members)))
-                #[bptc.logger.info('{}'.format(m)) for m in members]
 
                 self.factory.receive_members_callback(members)
 
@@ -75,14 +72,11 @@ class PushServer(protocol.Protocol):
 
 class PushClientFactory(protocol.ClientFactory):
 
-    def __init__(self, from_member: Member, events: Dict[str, Event], members: List[Member]):
-        self.from_member = from_member
-        self.events = events
-        self.members = members
+    def __init__(self, string_to_send):
+        self.string_to_send = string_to_send
         self.protocol = PushClient
 
     def clientConnectionLost(self, connector, reason):
-        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
@@ -93,33 +87,10 @@ class PushClient(protocol.Protocol):
 
     def connectionMade(self):
         with network_lock:
-            self.transport.setTcpNoDelay(True)
             bptc.logger.info('Connected to server.')
-            bptc.logger.info('- Sending {} events'.format(len(self.factory.events.items())))
-            bptc.logger.info('- Sending {} members'.format(len(self.factory.members)))
-            #for event_id, event in self.factory.events.items():
-            #    bptc.logger.info('{}'.format(event))
-
-            serialized_events = {}
-            if self.factory.events is not None:
-                for event_id, event in self.factory.events.items():
-                    serialized_events[event_id] = event.to_dict()
-
-            serialized_members = []
-            if self.factory.members is not None:
-                for member in self.factory.members:
-                    serialized_members.append(member.to_dict())
-
-            data_to_send = {
-                'from': {
-                    'verify_key': self.factory.from_member.verify_key,
-                    'listening_port': self.factory.from_member.address.port
-                },
-                'events': serialized_events,
-                'members': serialized_members
-            }
-
-            self.transport.write(zlib.compress(json.dumps(data_to_send).encode('UTF-8')))
+            # bptc.logger.info('- Sending {} events'.format(len(self.factory.events.items())))
+            # bptc.logger.info('- Sending {} members'.format(len(self.factory.members)))
+            self.transport.write(zlib.compress(self.factory.string_to_send))
             bptc.logger.info("- Sent data")
             self.transport.loseConnection()
 

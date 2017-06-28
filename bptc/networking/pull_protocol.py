@@ -1,5 +1,4 @@
 import json
-
 import zlib
 from twisted.internet import protocol
 from functools import partial
@@ -18,7 +17,6 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        #bptc.logger.info('Client connected')
         self.transport.setTcpNoDelay(True)
 
         serialized_events = {}
@@ -30,7 +28,6 @@ class PullServer(protocol.Protocol):
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
-        #bptc.logger.info('Client disconnected')
         return
 
 
@@ -42,7 +39,6 @@ class PullClientFactory(protocol.ClientFactory):
         self.protocol = PullClient
 
     def clientConnectionLost(self, connector, reason):
-        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
@@ -52,7 +48,6 @@ class PullClientFactory(protocol.ClientFactory):
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
-        #bptc.logger.info('Connected to server. Waiting for data...')
         self.transport.setTcpNoDelay(True)
         return
 
@@ -79,5 +74,4 @@ class PullClient(protocol.Protocol):
         self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
 
     def connectionLost(self, reason):
-        #bptc.logger.info('Disconnected')
         return

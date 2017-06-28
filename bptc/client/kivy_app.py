@@ -36,5 +36,5 @@ class KivyApp(App):
         # otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
         bptc.logger.info("Stopping...")
-        DB.save(self.network.hashgraph)
         network_utils.stop_reactor_thread()
+        DB.save(self.network.hashgraph)
