@@ -70,8 +70,7 @@ class App:
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
-                           ('round', '@round'), ('data', '@data'), ('famous', '@famous'),
-                           ('fame decided', '@fame_decided'), ('round_received', '@round_received'),
+                           ('round', '@round'), ('data', '@data'), ('famous', '@famous'), ('round_received', '@round_received'),
                            ('consensus_timestamp', '@consensus_timestamp')])])
 
         plot.xgrid.grid_line_color = None
