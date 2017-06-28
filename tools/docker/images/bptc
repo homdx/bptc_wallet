@@ -6,7 +6,7 @@ MAINTAINER Thomas Kellermeier <t-kellermeier@hotmail.de>
 #-------------------------------------------------------------------------------
 
 # Install deep dependencies, build packages
-RUN apk add libsodium
+RUN apk add --no-cache --update libsodium
 
 #-------------------------------------------------------------------------------
 # Setup application
