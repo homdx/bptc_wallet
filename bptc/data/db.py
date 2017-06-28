@@ -26,7 +26,7 @@ class DB:
             # Create tables if necessary
             c = cls.__connection.cursor()
             c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT, name TEXT)')
-            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL)')
+            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL, is_famous BOOL, fame_is_decided BOOL)')
 
         else:
             bptc.logger.error("Database has already been connected")
@@ -58,7 +58,7 @@ class DB:
         :param e: The Event object to be saved
         :return: None
         """
-        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         values = e.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)
@@ -122,5 +122,21 @@ class DB:
                 raise AssertionError
 
         hg.lookup_table = events
+
+        # Create witness lookup
+        for event_id, event in hg.lookup_table.items():
+            if event.is_witness:
+                hg.witnesses[event.round][event.verify_key] = event.id
+
+        # Create fame lookup
+        for x_round in range(0, max(hg.witnesses) + 1):
+            decided_witnesses_in_round_x_count = 0
+            for x_id in hg.witnesses[x_round].values():
+                if hg.lookup_table[x_id].fame_is_decided:
+                    decided_witnesses_in_round_x_count += 1
+
+            if decided_witnesses_in_round_x_count == len(hg.witnesses[x_round].items()):
+                hg.rounds_with_decided_fame.add(x_round)
+
         bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
         return hg

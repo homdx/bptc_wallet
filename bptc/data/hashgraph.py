@@ -35,16 +35,14 @@ class Hashgraph:
         self.idx = {}
 
         # {round-num}: rounds where fame is fully decided
-        self.consensus = set()
+        self.rounds_with_decided_fame = set()
 
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
 
-        self.famous = {}
-
         # add functions of hashgraph algorithm
         self.divide_rounds = partial(consensus_new.divide_rounds, self)
-        self.decide_fame = partial(consensus.decide_fame, self)
+        self.decide_fame = partial(consensus_new.decide_fame, self)
         self.find_order = partial(consensus.find_order, self)
 
     @property
@@ -114,7 +112,7 @@ class Hashgraph:
         self.add_own_event(event)
 
         # Make the new event a witness for round 0
-        self.witnesses[0][event.verify_key] = event
+        self.witnesses[0][event.verify_key] = event.id
 
     def add_own_event(self, event: Event):
         """
@@ -145,7 +143,7 @@ class Hashgraph:
 
         # Figure out rounds, fame, etc.
         self.divide_rounds([event])
-        #new_c = self.decide_fame()
+        self.decide_fame()
         #self.find_order(new_c)
 
     @staticmethod
@@ -234,7 +232,7 @@ class Hashgraph:
 
         # Figure out fame, order, etc.
         self.divide_rounds(toposort(self, new_events))
-        #new_c = self.decide_fame()
+        self.decide_fame()
         #self.find_order(new_c)
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
