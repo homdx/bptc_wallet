@@ -1,4 +1,4 @@
-FROM jfloff/alpine-python:latest-slim
+FROM jfloff/alpine-python:latest
 MAINTAINER Thomas Kellermeier <t-kellermeier@hotmail.de>
 
 #-------------------------------------------------------------------------------
@@ -6,18 +6,7 @@ MAINTAINER Thomas Kellermeier <t-kellermeier@hotmail.de>
 #-------------------------------------------------------------------------------
 
 # Install deep dependencies, build packages
-RUN apk add --no-cache --update \
-    g++ \
-    libffi-dev \
-    make \
-    openssl-dev \
-    python3-dev \
-    libsodium
-
-# clean up
-RUN rm -rf \
-    /root/.cache \
-    /tmp/*
+RUN apk add libsodium
 
 #-------------------------------------------------------------------------------
 # Setup application
@@ -33,7 +22,8 @@ RUN rm -rf \
 # Setup working directory
 ENV projectPath="/home/bptc_wallet"
 WORKDIR ${projectPath}
-ADD . $projectPath
 
 # Install dependencies required for CLI
+COPY requirements_cli.txt $projectPath
 RUN pip install -r requirements_cli.txt
+COPY . $projectPath

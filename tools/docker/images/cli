@@ -10,4 +10,4 @@ EXPOSE 8002
 EXPOSE 8003
 
 # Start CLI interface
-CMD bash -c "python main.py -cli"
+CMD ["python", "main.py", "-cli"]
