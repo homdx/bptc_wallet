@@ -1,8 +1,11 @@
+import sys
+
+import bptc.networking.utils as network_utils
 from main import __version__
+import bptc
 from bptc.utils.interactive_shell import InteractiveShell
 from bptc.data.hashgraph import init_hashgraph
-import bptc.networking.utils as network_utils
-
+from bptc.data.db import DB
 
 class ConsoleApp(InteractiveShell):
     def __init__(self, cl_args):
@@ -21,14 +24,14 @@ class ConsoleApp(InteractiveShell):
             register=dict(
                 help='Register this hashgraph member at the registry',
                 args=[
-                    (['target'], dict(default='localhost:9000',
+                    (['target'], dict(default=self.cl_args.register,
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
             query_members=dict(
                 help='Query network members from registry',
                 args=[
-                    (['target'], dict(default='localhost:9001',
+                    (['target'], dict(default=self.cl_args.query_members,
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
@@ -36,7 +39,7 @@ class ConsoleApp(InteractiveShell):
                 help='Create heartbeat event and add it to the hashgraph',
             ),
         )
-        super().__init__('BPTC Wallet CLI {}'.format(__version__))
+        super().__init__('BPTC Wallet {} CLI'.format(__version__))
         self.me = None
         self.hashgraph = None
         self.network = None
@@ -47,14 +50,14 @@ class ConsoleApp(InteractiveShell):
             network_utils.initial_checks(self)
             super().__call__()
         finally:
+            bptc.logger.info("Stopping...")
+            DB.save(self.network.hashgraph)
             network_utils.stop_reactor_thread()
+        # TODO: If no command was entered and Ctrl+C was hit, the process doesn't stop
 
     # --------------------------------------------------------------------------
     # Hashgraph actions
     # --------------------------------------------------------------------------
-
-    def start_listening(self):
-        network_utils.start_listening(self.network, self.cl_args.port)
 
     def cmd_register(self, args):
         ip, port = args.target.split(':')

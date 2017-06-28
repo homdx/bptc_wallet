@@ -14,7 +14,9 @@ def parse_args():
     parser.add_argument('-o', '--output', type=str, default='data',
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
-    parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')
+    parser.add_argument('-auto', '--auto', action='store_true', help='Self organizing client')
+    parser.add_argument('-r', '--register', type=str, default='localhost:9000', help='Automatically register at given address')
+    parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001', help='Adress for querying members automatically')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -25,6 +27,9 @@ if __name__ == '__main__':
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
         ConsoleApp(cl_args)()
+    elif cl_args.auto:
+        from bptc.client.auto_app import AutoApp
+        AutoApp(cl_args)()
     else:
         from bptc.client.kivy_app import KivyApp
         KivyApp(cl_args).run()

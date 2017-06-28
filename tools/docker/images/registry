@@ -1,0 +1,13 @@
+FROM chaoste/bptc
+MAINTAINER Thomas Kellermeier <t-kellermeier@hotmail.de>
+
+#-------------------------------------------------------------------------------
+# Setup application
+#-------------------------------------------------------------------------------
+
+# Expose some ports to make them accessible from outside of the container
+EXPOSE 9000
+EXPOSE 9001
+
+# Start CLI interface
+CMD bash -c "python member_registry.py"
