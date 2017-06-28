@@ -43,7 +43,7 @@ class Hashgraph:
         # add functions of hashgraph algorithm
         self.divide_rounds = partial(consensus_new.divide_rounds, self)
         self.decide_fame = partial(consensus_new.decide_fame, self)
-        self.find_order = partial(consensus.find_order, self)
+        self.find_order = partial(consensus_new.find_order, self)
 
     @property
     def total_stake(self) -> int:
@@ -137,6 +137,7 @@ class Hashgraph:
 
         # Add event to graph
         self.lookup_table[event.id] = event
+        self.unordered_events.add(event.id)
 
         # Update cached head
         self.me.head = event.id
@@ -144,7 +145,7 @@ class Hashgraph:
         # Figure out rounds, fame, etc.
         self.divide_rounds([event])
         self.decide_fame()
-        #self.find_order(new_c)
+        self.find_order()
 
     @staticmethod
     def get_fingerprint(member: Member):
@@ -221,6 +222,7 @@ class Hashgraph:
             if event_id not in self.lookup_table:
                 new_events[event.id] = event
                 self.lookup_table[event_id] = event
+                self.unordered_events.add(event.id)
 
         # Learn about other members
         self.learn_members_from_events(new_events)
@@ -233,7 +235,7 @@ class Hashgraph:
         # Figure out fame, order, etc.
         self.divide_rounds(toposort(self, new_events))
         self.decide_fame()
-        #self.find_order(new_c)
+        self.find_order()
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """

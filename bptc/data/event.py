@@ -62,6 +62,10 @@ class Event:
         self.is_famous = False
         self.fame_is_decided = False
 
+        # Ordering info
+        self.round_received = None
+        self.consensus_time = None
+
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
             self.id[:6], self.verify_key[:6], self.height, self.round, self.parents, self.data, self.time)

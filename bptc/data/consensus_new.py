@@ -2,7 +2,11 @@ from bptc.data.event import Event
 from bptc.data.member import Member
 from collections import defaultdict
 from typing import Set
+from datetime import datetime
 import math
+import dateutil.parser
+import time
+from statistics import median
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
@@ -95,7 +99,7 @@ def decide_fame(hashgraph):
 
                     if d == 1:
                         # If there is only one round difference, just vote
-                        y.votes[x.id] = can_event_see_event(hashgraph, y, x)
+                        y.votes[x.id] = event_can_see_event(hashgraph, y, x)
                         print('{} votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
                     else:
                         # If there are multiple rounds difference, collect votes
@@ -159,7 +163,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
     return stake_for >= stake_against, stake_for if stake_for >= stake_against else stake_against
 
 
-def can_event_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
+def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
     :param event_1:
@@ -196,5 +200,78 @@ def decide_randomly_based_on_signature(signature: str) -> bool:
     return middle_byte >= 128  # 50:50 chance
 
 
-def find_order(self, new_c):
-    pass
+def find_order(hg):
+    decided_events = set()
+
+    for x_id in hg.unordered_events:
+        x = hg.lookup_table[x_id]
+        # We want to find the order of x
+        # Look for a round in which all famous witnesses see r
+        for r in range(x.round+1, max(hg.witnesses)+1):
+            # Only use rounds that have fully decided fame
+            if r not in hg.rounds_with_decided_fame:
+                continue
+
+            # x is an ancestor of all famous witnesses of round r
+            witnesses = [hg.lookup_table[w] for w in hg.witnesses[r].values()]
+            all_famous_witnesses_can_see_x = all([event_can_see_event(hg, w, x) or not w.is_famous for w in witnesses])
+
+            # ("this is not true of any round earlier than r" because we count up the rounds
+            # If there was an earlier round, we would not reach this point
+
+            if all_famous_witnesses_can_see_x:
+                x.round_received = r
+                x.consensus_time = get_consensus_time(hg, x).isoformat()
+
+                print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
+
+                decided_events.add(x)
+
+    sorted_events = sorted(decided_events, key=lambda e: (e.round_received, e.consensus_time, e.id))
+    for e in sorted_events:
+        hg.unordered_events.remove(e.id)
+        hg.ordered_events.append(e.id)
+
+
+def get_consensus_time(hg, x) -> datetime:
+    times = [dateutil.parser.parse(e.time) for e in get_events_for_consensus_time(hg, x)]
+    timestamps = [int(time.mktime(t.timetuple())) for t in times]
+    median_timestamp = int(median(timestamps))
+    return datetime.fromtimestamp(median_timestamp)
+
+
+def get_events_for_consensus_time(hg, x) -> Set[Event]:
+    """
+    "set of each event z such that z is a self-ancestor of a round r unique famous witness,
+    and x is an ancestor of z but not of the self-parent of z"
+    :param hg: The hashgraph
+    :param x: The event for which we want to calculate the median timestamp
+    :return:
+    """
+    result = set()
+
+    # For all famous round r witnesses
+    r = x.round_received
+    for witness_id in hg.witnesses[r].values():
+        witness = hg.lookup_table[witness_id]
+        if not witness.is_famous or not witness.fame_is_decided:
+            continue
+
+        # Go through the self ancenstors
+        z = hg.lookup_table[witness.parents.self_parent]
+        if z.parents.self_parent is not None:
+            z_self_parent = hg.lookup_table[z.parents.self_parent]
+
+            while not event_can_see_event(hg, z, x) or event_can_see_event(hg, z_self_parent, x):
+                z = hg.lookup_table[z.parents.self_parent]
+                if z.parents.self_parent is None:  # Special case for the first event - this is not described in the paper
+                    break
+                else:
+                    z_self_parent = hg.lookup_table[z.parents.self_parent]
+
+            result.add(z)
+        else: # Special case for the first event - this is not described in the paper
+            result.add(z)
+
+    return result
+

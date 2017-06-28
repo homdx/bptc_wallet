@@ -129,14 +129,15 @@ class DB:
                 hg.witnesses[event.round][event.verify_key] = event.id
 
         # Create fame lookup
-        for x_round in range(0, max(hg.witnesses) + 1):
-            decided_witnesses_in_round_x_count = 0
-            for x_id in hg.witnesses[x_round].values():
-                if hg.lookup_table[x_id].fame_is_decided:
-                    decided_witnesses_in_round_x_count += 1
+        if len(hg.witnesses) > 0:
+            for x_round in range(0, max(hg.witnesses) + 1):
+                decided_witnesses_in_round_x_count = 0
+                for x_id in hg.witnesses[x_round].values():
+                    if hg.lookup_table[x_id].fame_is_decided:
+                        decided_witnesses_in_round_x_count += 1
 
-            if decided_witnesses_in_round_x_count == len(hg.witnesses[x_round].items()):
-                hg.rounds_with_decided_fame.add(x_round)
+                if decided_witnesses_in_round_x_count == len(hg.witnesses[x_round].items()):
+                    hg.rounds_with_decided_fame.add(x_round)
 
         bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
         return hg
