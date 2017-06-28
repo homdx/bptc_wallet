@@ -121,15 +121,9 @@ class Hashgraph:
         """
 
         # Set the event's correct height
-        if event.parents.self_parent is not None:
+        if event.parents.self_parent:
             self_parent_height = self.lookup_table[event.parents.self_parent].height
-        else:
-            self_parent_height = -1
-        if event.parents.other_parent is not None:
-            other_parent_height = self.lookup_table[event.parents.other_parent].height
-        else:
-            other_parent_height = -1
-        event.height = max(self_parent_height, other_parent_height) + 1
+            event.height = self_parent_height + 1
 
         # Sign event body
         event.sign(self.me.signing_key)

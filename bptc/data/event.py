@@ -49,9 +49,6 @@ class Event:
         # and for each member m the latest event from m having same round
         # number as ev that ev can see
 
-        # {member-id => event-hash}: The top event of each member that this event can see
-        self.can_see = dict()
-
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
 
