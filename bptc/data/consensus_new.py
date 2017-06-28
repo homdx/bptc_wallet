@@ -195,5 +195,6 @@ def decide_randomly_based_on_signature(signature: str) -> bool:
     middle_byte = signature_bytes[int(math.floor(len(signature_bytes) / 2))]
     return middle_byte >= 128  # 50:50 chance
 
+
 def find_order(self, new_c):
     pass

@@ -40,8 +40,6 @@ class Hashgraph:
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
 
-        self.famous = {}
-
         # add functions of hashgraph algorithm
         self.divide_rounds = partial(consensus_new.divide_rounds, self)
         self.decide_fame = partial(consensus_new.decide_fame, self)
