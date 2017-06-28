@@ -142,7 +142,7 @@ class App:
             y = event.height
             events_data['x'].append(x)
             events_data['y'].append(y)
-            events_data['round_color'].append(round_color(event.round))
+            events_data['round_color'].append('#000000' if event.is_famous else round_color(event.round))
             events_data['round'].append(event.round)
             events_data['id'].append(event.id[:6] + "...")
             events_data['payload'].append("".format(event.data))
