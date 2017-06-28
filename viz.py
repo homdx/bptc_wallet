@@ -13,6 +13,7 @@ from twisted.internet import threads, reactor
 from tornado import gen
 
 from bptc import init_logger
+from bptc.data.event import Fame
 from bptc.networking.pull_protocol import PullClientFactory
 
 R_COLORS = small_palettes['Set2'][8]
@@ -88,7 +89,7 @@ class App:
         self.events_src = ColumnDataSource(
                 data={'x': [], 'y': [], 'round_color': [], 'line_alpha': [],
                       'round': [], 'id': [], 'payload': [], 'time': [], 'from': [], 'height': [], 'data': [],
-                      'witness': [], 'famous': [], 'fame_decided': [], 'round_received': [], 'consensus_timestamp': []})
+                      'witness': [], 'famous': [], 'round_received': [], 'consensus_timestamp': []})
 
         self.events_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                        line_alpha='line_alpha', source=self.events_src, line_width=5)
@@ -134,7 +135,7 @@ class App:
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
                        'time': [], 'from': [], 'height': [], 'data': [], 'witness': [], 'famous': [],
-                       'fame_decided': [], 'round_received': [], 'consensus_timestamp': []}
+                       'round_received': [], 'consensus_timestamp': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
 
         for event_id, event in events.items():
@@ -142,7 +143,7 @@ class App:
             y = event.height
             events_data['x'].append(x)
             events_data['y'].append(y)
-            events_data['round_color'].append('#000000' if event.is_famous else round_color(event.round))
+            events_data['round_color'].append('#000000' if event.is_famous == Fame.TRUE else round_color(event.round))
             events_data['round'].append(event.round)
             events_data['id'].append(event.id[:6] + "...")
             events_data['payload'].append("".format(event.data))
@@ -152,8 +153,7 @@ class App:
             events_data['height'].append(event.height)
             events_data['data'].append('None' if event.data is None else str(event.data))
             events_data['witness'].append('Yes' if event.is_witness else 'No')
-            events_data['famous'].append('Yes' if event.is_famous else 'No')
-            events_data['fame_decided'].append('Yes' if event.fame_is_decided else 'No')
+            events_data['famous'].append(event.is_famous)
             events_data['round_received'].append(event.round_received)
             events_data['consensus_timestamp'].append(event.consensus_time)
 

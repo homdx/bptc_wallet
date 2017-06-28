@@ -1,13 +1,11 @@
 import datetime
 import collections
 from collections import OrderedDict
-
 from bptc.data.transaction import Transaction
 from typing import Dict, List, Tuple
 import json
 from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
 from libnacl.encode import base64_encode, base64_decode
-import bptc.utils as utils
 
 
 # The parents of an event
@@ -17,6 +15,12 @@ class Parents(collections.namedtuple("Parents", ["self_parent", "other_parent"])
         return 'Parents(self_parent: {}, other_parent: {})'.format(
             None if self.self_parent is None else self.self_parent[:6] + '...',
             None if self.other_parent is None else self.other_parent[:6] + '...')
+
+
+class Fame:
+    UNDECIDED = -1
+    FALSE = 0
+    TRUE = 1
 
 
 class Event:
@@ -56,8 +60,7 @@ class Event:
         self.is_witness = False
 
         # Whether this event is famous
-        self.is_famous = False
-        self.fame_is_decided = False
+        self.is_famous = Fame.UNDECIDED
 
         # Ordering info
         self.round_received = None
@@ -100,7 +103,6 @@ class Event:
         event.signature = dict_event['signature']
         event.is_witness = dict_event['witness']
         event.is_famous = dict_event['is_famous']
-        event.fame_is_decided = dict_event['fame_is_decided']
         event.round_received = dict_event['round_received']
         event.consensus_time = dict_event['consensus_time']
         return event
@@ -121,7 +123,6 @@ class Event:
             ('signature', self.signature),
             ('witness', self.is_witness),
             ('is_famous', self.is_famous),
-            ('fame_is_decided', self.fame_is_decided),
             ('round_received', self.round_received),
             ('consensus_time', self.consensus_time)
         ])
@@ -144,7 +145,6 @@ class Event:
             self.round,
             self.is_witness,
             self.is_famous,
-            self.fame_is_decided,
             self.round_received,
             self.consensus_time
         )
@@ -165,9 +165,8 @@ class Event:
         event.round = e[8]
         event.is_witness = e[9]
         event.is_famous = e[10]
-        event.fame_is_decided = e[11]
-        event.round_received = e[12]
-        event.consensus_time = e[13]
+        event.round_received = e[11]
+        event.consensus_time = e[12]
 
         return event
 

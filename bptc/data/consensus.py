@@ -1,4 +1,4 @@
-from bptc.data.event import Event
+from bptc.data.event import Event, Fame
 from bptc.data.member import Member
 from collections import defaultdict
 from typing import Set
@@ -109,7 +109,6 @@ def decide_fame(hashgraph):
                         if d % C > 0:  # This is a normal round
                             if t > hashgraph.supermajority_stake:  # If supermajority, then decide
                                 x.is_famous = v
-                                x.fame_is_decided = True
                                 print('{} fame decided: {}'.format(x.short_id, x.is_famous))
                                 y.votes[x.id] = v
                                 print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
@@ -128,7 +127,7 @@ def decide_fame(hashgraph):
         # Check if round x was completely decided
         decided_witnesses_in_round_x_count = 0
         for x_id in hashgraph.witnesses[x_round].values():
-            if hashgraph.lookup_table[x_id].fame_is_decided:
+            if hashgraph.lookup_table[x_id] != Fame.UNDECIDED:
                 decided_witnesses_in_round_x_count += 1
 
         if decided_witnesses_in_round_x_count == len(hashgraph.witnesses[x_round].items()):
@@ -160,7 +159,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
         else:
             stake_against += hashgraph.known_members[event.verify_key].stake
 
-    return stake_for >= stake_against, stake_for if stake_for >= stake_against else stake_against
+    return Fame.TRUE if stake_for >= stake_against else Fame.FALSE, stake_for if stake_for >= stake_against else stake_against
 
 
 def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
@@ -214,7 +213,7 @@ def find_order(hg):
 
             # x is an ancestor of all famous witnesses of round r
             witnesses = [hg.lookup_table[w] for w in hg.witnesses[r].values()]
-            all_famous_witnesses_can_see_x = all([event_can_see_event(hg, w, x) or not w.is_famous for w in witnesses])
+            all_famous_witnesses_can_see_x = all([event_can_see_event(hg, w, x) or w.is_famous != Fame.TRUE for w in witnesses])
 
             # ("this is not true of any round earlier than r" because we count up the rounds
             # If there was an earlier round, we would not reach this point
@@ -254,7 +253,7 @@ def get_events_for_consensus_time(hg, x) -> Set[Event]:
     r = x.round_received
     for witness_id in hg.witnesses[r].values():
         witness = hg.lookup_table[witness_id]
-        if not witness.is_famous or not witness.fame_is_decided:
+        if witness.is_famous != Fame.TRUE:
             continue
 
         # Go through the self ancenstors
