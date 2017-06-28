@@ -10,5 +10,6 @@ EXPOSE 9000
 EXPOSE 9001
 
 # Start CLI interface
-CMD python member_registry.py
+# CMD python member_registry.py
 # CMD [ "nohup", "mock-server", "--dir=/usr/src/app", "--address=0.0.0.0", "&" ]
+CMD ["python", "member_registry.py"]
