@@ -235,7 +235,7 @@ def find_order(hg):
 def get_consensus_time(hg, x) -> datetime:
     times = [dateutil.parser.parse(e.time) for e in get_events_for_consensus_time(hg, x)]
     timestamps = [int(time.mktime(t.timetuple())) for t in times]
-    median_timestamp = int(median(timestamps))
+    median_timestamp = int(median(timestamps)) if timestamps else 0
     return datetime.fromtimestamp(median_timestamp)
 
 
@@ -273,4 +273,3 @@ def get_events_for_consensus_time(hg, x) -> Set[Event]:
             result.add(z)
 
     return result
-

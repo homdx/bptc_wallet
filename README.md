@@ -19,15 +19,18 @@ named in requirements.txt. Instead you can use requirements_cli.txt.
   python main.py -cli
 ```
 
-## Start CLI client as a docker container
-```shell
-  docker run --tty --interactive chaoste/bptc
-```
 
-## Build docker image
+
+## Docker
+
+There is a dockerfile which sets up all command line dependencies (e.g. not kivy) and a docker-compose file defining a network of 3 clients interacting with each other.
+You can find detailed descriptions on how to use docker in our repository in the wiki.
+
+##### Build docker image
 ```shell
   docker build . -t chaoste/bptc
 ```
+
 
 ## Build Android package
 Install Buildozer following the instructions on its Github page. Note the difference between

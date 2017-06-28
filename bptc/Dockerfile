@@ -6,18 +6,11 @@ MAINTAINER Thomas Kellermeier <t-kellermeier@hotmail.de>
 #-------------------------------------------------------------------------------
 
 # Install deep dependencies, build packages
-RUN apk add --no-cache --update libsodium
+RUN apk add --no-cache --update libsodium libffi-dev openssl-dev
 
 #-------------------------------------------------------------------------------
 # Setup application
 #-------------------------------------------------------------------------------
-
-# Expose some ports to make them accessible from outside of the container
-# TODO: Later define exposed ports via docker-compose file
-# EXPOSE 8000
-# EXPOSE 8001
-# EXPOSE 9000
-# EXPOSE 9001
 
 # Setup working directory
 ENV projectPath="/home/bptc_wallet"

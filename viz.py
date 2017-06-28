@@ -1,4 +1,3 @@
-# coding=utf-8
 # -*- coding: utf-8 -*-
 import threading
 import os
@@ -12,9 +11,9 @@ from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 from tornado import gen
 
-from bptc import init_logger
-from bptc.data.event import Fame
-from bptc.networking.pull_protocol import PullClientFactory
+from ..bptc import init_logger
+from ..bptc.data.event import Fame
+from ..bptc.networking.pull_protocol import PullClientFactory
 
 R_COLORS = small_palettes['Set2'][8]
 
