@@ -3,10 +3,9 @@ from collections import defaultdict
 from functools import partial
 from typing import Dict
 import bptc
-from bptc.data import consensus, consensus
+from bptc.data import consensus
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
-from bptc.data.utils import bfs
 from bptc.utils.toposort import toposort
 
 
@@ -146,63 +145,6 @@ class Hashgraph:
         self.divide_rounds([event])
         self.decide_fame()
         self.find_order()
-
-    @staticmethod
-    def get_fingerprint(member: Member):
-        """Returns dict of heights for each member."""
-        return {}
-
-    def keys(self):
-        return self.lookup_table.keys()
-
-    def difference(self, info):
-        """Difference with given hashgraph info (fingerprint?)"""
-
-        # NOTE we need bfs() due to cheating possibility -- several children of one parent
-        # succ = lambda u: (p for p in u.parents
-        #                if (p.verify_key not in info) or (p.height > info[p.verify_key]))
-        def succ(u):
-            return [p for p in u.parents
-                    if (p.verify_key not in info) or (p.height > info[p.verify_key])]
-
-        subset = [h for h in bfs((self.lookup_table[self.head],), succ)]
-        return subset
-
-    @staticmethod
-    def ancestors(event: Event):
-        """
-        A Generator returning the ancestors of a given event
-        :param event: The event
-        :return: A Generator for the event's parents
-        """
-        while True:
-            yield event
-            if not event.parents:
-                return
-            event = event.parents[0]
-
-    @staticmethod
-    def get_higher(a: Event, b: Event):
-        """
-        Returns the higher of two given events
-        :param a: The first event
-        :param b: The second event
-        :return: Event: The higher event: a or b
-        """
-        if Hashgraph.is_higher(a, b):
-            return a
-        else:
-            return b
-
-    @staticmethod
-    def is_higher(a: Event, b: Event):
-        """
-        Checks whether one event is higher than another event
-        :param a: The event to be checked
-        :param b: The event to be checked against
-        :return: boolean: Whether a is higher than b
-        """
-        return a is not None and (b is None or a.height >= b.height)
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
