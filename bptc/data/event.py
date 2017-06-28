@@ -60,6 +60,7 @@ class Event:
 
         # Whether this event is famous
         self.is_famous = False
+        self.fame_is_decided = False
 
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
@@ -81,6 +82,10 @@ class Event:
     @property
     def id(self):
         return self.__id
+
+    @property
+    def short_id(self):
+        return self.id[:6]
 
     @classmethod
     def from_dict(cls, dict_event) -> "Event":
