@@ -127,7 +127,7 @@ def decide_fame(hashgraph):
         # Check if round x was completely decided
         decided_witnesses_in_round_x_count = 0
         for x_id in hashgraph.witnesses[x_round].values():
-            if hashgraph.lookup_table[x_id] != Fame.UNDECIDED:
+            if hashgraph.lookup_table[x_id].is_famous != Fame.UNDECIDED:
                 decided_witnesses_in_round_x_count += 1
 
         if decided_witnesses_in_round_x_count == len(hashgraph.witnesses[x_round].items()):
