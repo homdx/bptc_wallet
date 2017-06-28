@@ -26,7 +26,7 @@ class DB:
             # Create tables if necessary
             c = cls.__connection.cursor()
             c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT, name TEXT)')
-            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL, is_famous BOOL, fame_is_decided BOOL)')
+            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL, is_famous BOOL, fame_is_decided BOOL, round_received INT, consensus_time DATETIME)')
 
         else:
             bptc.logger.error("Database has already been connected")
@@ -58,7 +58,7 @@ class DB:
         :param e: The Event object to be saved
         :return: None
         """
-        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         values = e.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)
@@ -138,6 +138,17 @@ class DB:
 
                 if decided_witnesses_in_round_x_count == len(hg.witnesses[x_round].items()):
                     hg.rounds_with_decided_fame.add(x_round)
+
+        # Create cache of undecided and decided events
+        ordered_events = []
+        for event_id, event in hg.lookup_table.items():
+            if event.round_received is None:
+                hg.unordered_events.add(event_id)
+            else:
+                ordered_events.append(event)
+
+        ordered_events = sorted(ordered_events, key=lambda e: (e.round_received, e.consensus_time, e.id))
+        hg.ordered_events = [e.id for e in ordered_events]
 
         bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
         return hg

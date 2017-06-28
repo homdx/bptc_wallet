@@ -104,6 +104,8 @@ class Event:
         event.is_witness = dict_event['witness']
         event.is_famous = dict_event['is_famous']
         event.fame_is_decided = dict_event['fame_is_decided']
+        event.round_received = dict_event['round_received']
+        event.consensus_time = dict_event['consensus_time']
         return event
 
     @classmethod
@@ -122,7 +124,9 @@ class Event:
             ('signature', self.signature),
             ('witness', self.is_witness),
             ('is_famous', self.is_famous),
-            ('fame_is_decided', self.fame_is_decided)
+            ('fame_is_decided', self.fame_is_decided),
+            ('round_received', self.round_received),
+            ('consensus_time', self.consensus_time)
         ])
 
     def to_debug_dict(self) -> Dict:
@@ -143,7 +147,9 @@ class Event:
             self.round,
             self.is_witness,
             self.is_famous,
-            self.fame_is_decided
+            self.fame_is_decided,
+            self.round_received,
+            self.consensus_time
         )
 
     @classmethod
@@ -163,6 +169,8 @@ class Event:
         event.is_witness = e[9]
         event.is_famous = e[10]
         event.fame_is_decided = e[11]
+        event.round_received = e[12]
+        event.consensus_time = e[13]
 
         return event
 
