@@ -3,7 +3,7 @@ from collections import defaultdict
 from functools import partial
 from typing import Dict
 import bptc
-from bptc.data import consensus, consensus_new
+from bptc.data import consensus, consensus
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.data.utils import bfs
@@ -41,9 +41,9 @@ class Hashgraph:
         self.witnesses = defaultdict(dict)
 
         # add functions of hashgraph algorithm
-        self.divide_rounds = partial(consensus_new.divide_rounds, self)
-        self.decide_fame = partial(consensus_new.decide_fame, self)
-        self.find_order = partial(consensus_new.find_order, self)
+        self.divide_rounds = partial(consensus.divide_rounds, self)
+        self.decide_fame = partial(consensus.decide_fame, self)
+        self.find_order = partial(consensus.find_order, self)
 
     @property
     def total_stake(self) -> int:
