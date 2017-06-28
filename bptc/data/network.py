@@ -125,6 +125,37 @@ class Network:
         self.hashgraph.add_own_first_event(event)
         return event
 
+    def receive_data_string_callback(self, data_string, peer):
+        # Decode received JSON data
+        received_data = json.loads(data_string)
+
+        # Generate Member object
+        from_member_id = received_data['from']['verify_key']
+        from_member_port = int(received_data['from']['listening_port'])
+        from_member = Member(from_member_id, None)
+        from_member.address = peer
+        from_member.address.port = from_member_port
+
+        # Check if the sender sent any events
+        s_events = received_data['events']
+        if len(s_events) > 0:
+            events = {}
+            for event_id, dict_event in s_events.items():
+                events[event_id] = Event.from_dict(dict_event)
+
+            bptc.logger.info('- Received {} events'.format(len(events.items())))
+
+            self.receive_events_callback(from_member, events)
+
+        # Check if the sender sent any members
+        s_members = received_data['members']
+        if len(s_members) > 0:
+            members = [Member.from_dict(m) for m in s_members]
+
+            bptc.logger.info('- Received {} members'.format(len(members)))
+
+            self.receive_members_callback(members)
+
     def receive_events_callback(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
         Used as a callback when events are received from the outside
