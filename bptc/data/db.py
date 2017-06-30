@@ -151,4 +151,8 @@ class DB:
         hg.ordered_events = [e.id for e in ordered_events]
 
         bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
+
+        # Create cached account balances
+        hg.process_ordered_events()
+
         return hg

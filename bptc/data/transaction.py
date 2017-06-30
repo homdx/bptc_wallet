@@ -3,12 +3,23 @@ from typing import Dict
 import bptc
 
 
+class TransactionStatus:
+    UNCONFIRMED = 0
+    CONFIRMED = 1
+    DENIED = 2
+
+    @classmethod
+    def text_for_value(cls, value):
+        return ['Unconfirmed', 'Confirmed', 'Denied'][value]
+
+
 class Transaction:
 
     def __init__(self, receiver, amount, comment=""):
         self.receiver = receiver
         self.amount = amount
         self.comment = comment
+        self.status = TransactionStatus.UNCONFIRMED
 
     def __str__(self):
         return "Transaction(receiver={}, amount={}, comment={})".format(self.receiver, self.amount, self.comment)

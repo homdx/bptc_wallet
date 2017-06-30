@@ -7,6 +7,7 @@ from bptc.data import consensus
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils.toposort import toposort
+from bptc.data.transaction import MoneyTransaction, TransactionStatus
 
 
 class Hashgraph:
@@ -30,6 +31,7 @@ class Hashgraph:
 
         # [event-hash]: Final order of events
         self.ordered_events = []
+        self.next_ordered_event_idx_to_process = 0
 
         self.idx = {}
 
@@ -139,6 +141,7 @@ class Hashgraph:
         self.divide_rounds([event])
         self.decide_fame()
         self.find_order()
+        self.process_ordered_events()
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
@@ -172,6 +175,7 @@ class Hashgraph:
         self.divide_rounds(toposort(self, new_events))
         self.decide_fame()
         self.find_order()
+        self.process_ordered_events()
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
@@ -182,6 +186,28 @@ class Hashgraph:
         for event in events.values():
             if event.verify_key not in self.known_members:
                 self.known_members[event.verify_key] = Member(event.verify_key, None)
+
+    def process_ordered_events(self):
+        for event_id in self.ordered_events[self.next_ordered_event_idx_to_process:len(self.ordered_events)]:
+            event = self.lookup_table[event_id]
+            if event.data is None:
+                continue
+
+            for transaction in event.data:
+                if isinstance(transaction, MoneyTransaction):
+                    sender = self.known_members[event.verify_key]
+                    receiver = self.known_members[transaction.receiver]
+
+                    # Check if the sender has the funds
+                    if sender.account_balance < transaction.amount:
+                        transaction.status = TransactionStatus.DENIED
+                    else:
+                        sender.account_balance -= transaction.amount
+                        receiver.account_balance += transaction.amount
+                        transaction.status = TransactionStatus.CONFIRMED
+
+        self.next_ordered_event_idx_to_process = len(self.ordered_events)
+
 
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:

@@ -6,6 +6,8 @@ from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.label import Label
 import bptc
 import bptc.networking.utils as network_utils
+from bptc.data.transaction import TransactionStatus
+import threading
 
 kivy.require('1.0.7')
 
@@ -25,6 +27,13 @@ class MainScreen(Screen):
         self.defaults['member_id'] = self.me.formatted_name
         super().__init__()
         self.pushing = False
+
+        def update_account_balance():
+            self.ids['account_balance_label'].text = 'Account balance: {} BPTC'.format(self.me.account_balance)
+            t = threading.Timer(1, update_account_balance)
+            t.daemon = True
+            t.start()
+        update_account_balance()
 
     # Get value for an attribute from its input element
     def get(self, key):
@@ -97,7 +106,10 @@ class NewTransactionScreen(Screen):
         members.sort(key=lambda x: x.formatted_name)
         self.data = [{'member': m, 'is_selected': False} for m in members]
 
-        args_converter = lambda row_index, rec: {'text': rec['member'].formatted_name}
+        args_converter = lambda row_index, rec: {
+            'text': rec['member'].formatted_name,
+            'height': 40
+        }
 
         list_adapter = ListAdapter(data=self.data,
                                    args_converter=args_converter,
@@ -155,7 +167,7 @@ class TransactionsScreen(Screen):
                             'amount': t.amount,
                             'comment': t.comment,
                             'time': e.time,
-                            'is_confirmed': e in self.network.hashgraph.ordered_events,
+                            'status': TransactionStatus.text_for_value(t.status),
                             'is_received': t.receiver == self.network.hashgraph.me.to_verifykey_string()
                         })
 
@@ -166,12 +178,12 @@ class TransactionsScreen(Screen):
             'height': 60,
             'markup': True,
             'halign': 'center',
-            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] {}\n{}'.format(
+            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] ({})\n{}'.format(
                 'Received' if rec['is_received'] else 'Sent',
                 rec['amount'],
                 'from' if rec['is_received'] else 'to',
                 rec['sender'] if rec['is_received'] else rec['receiver'],
-                '(Confirmed)' if rec['is_confirmed'] else '(Uncomfirmed)',
+                rec['status'],
                 '"{}"'.format(rec['comment']) if rec['comment'] is not None and len(rec['comment']) > 0 else ''
             )
         }

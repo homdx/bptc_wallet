@@ -31,6 +31,9 @@ class Member:
         # The name associated with this member (for display in the UI)
         self.name = None
 
+        # The account balance of this member
+        self.account_balance = 10  # TODO: Set to 0 as default
+
     @classmethod
     def create(cls) -> 'Member':
         """

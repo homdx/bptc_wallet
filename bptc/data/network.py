@@ -14,10 +14,6 @@ import threading
 
 
 class Network:
-    """
-    An abstraction of the P2P network
-    This should be the main API of the
-    """
 
     def __init__(self, hashgraph: Hashgraph, create_initial_event: bool = True):
         # The current hashgraph
@@ -164,7 +160,7 @@ class Network:
         :return: None
         """
         # Store/Update member
-        if from_member in self.hashgraph.known_members:
+        if from_member.id in self.hashgraph.known_members:
             self.hashgraph.known_members[from_member.id].address = from_member.address
         else:
             self.hashgraph.known_members[from_member.id] = from_member

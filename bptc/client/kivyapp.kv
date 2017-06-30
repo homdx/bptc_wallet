@@ -26,7 +26,15 @@
                 halign: 'center'
                 valign: 'middle'
             Label:
-                text: 'Member ID: {} (Port: {})'.format(root.defaults['member_id'], root.defaults['listening_port'])
+                text: '{} (Port: {})'.format(root.defaults['member_id'], root.defaults['listening_port'])
+                halign: 'left'
+                valign: 'top'
+                size_hint: 1, .2
+                padding: 30, 30
+                text_size: self.width, None
+            Label:
+                id: account_balance_label
+                text: 'Account balance: {} BPTC'.format(root.me.account_balance)
                 halign: 'left'
                 valign: 'top'
                 size_hint: 1, .2
