@@ -181,7 +181,7 @@ class Hashgraph:
         """
         for event in events.values():
             if event.verify_key not in self.known_members:
-                self.known_members[event.verify_key] = Member(event.verify_key)
+                self.known_members[event.verify_key] = Member(event.verify_key, None)
 
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
