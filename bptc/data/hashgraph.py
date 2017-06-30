@@ -7,7 +7,7 @@ from bptc.data import consensus
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils.toposort import toposort
-from bptc.data.transaction import MoneyTransaction, TransactionStatus
+from bptc.data.transaction import MoneyTransaction, TransactionStatus, PublishNameTransaction
 
 
 class Hashgraph:
@@ -194,8 +194,8 @@ class Hashgraph:
                 continue
 
             for transaction in event.data:
+                sender = self.known_members[event.verify_key]
                 if isinstance(transaction, MoneyTransaction):
-                    sender = self.known_members[event.verify_key]
                     receiver = self.known_members[transaction.receiver]
 
                     # Check if the sender has the funds
@@ -205,6 +205,8 @@ class Hashgraph:
                         sender.account_balance -= transaction.amount
                         receiver.account_balance += transaction.amount
                         transaction.status = TransactionStatus.CONFIRMED
+                elif isinstance(transaction, PublishNameTransaction):
+                    sender.name = transaction.name
 
         self.next_ordered_event_idx_to_process = len(self.ordered_events)
 

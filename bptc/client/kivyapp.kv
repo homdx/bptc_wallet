@@ -8,7 +8,7 @@
     id: MainScreen
     GridLayout:
         cols: 1
-        rows: 13
+        rows: 15
         BoxLayout:
             size_hint: 1, 2
             orientation: 'vertical'
@@ -26,6 +26,7 @@
                 halign: 'center'
                 valign: 'middle'
             Label:
+                id: account_name_label
                 text: '{} (Port: {})'.format(root.defaults['member_id'], root.defaults['listening_port'])
                 halign: 'left'
                 valign: 'top'
@@ -58,6 +59,16 @@
                 on_press:
                     root.manager.transition.direction = 'left'
                     root.manager.current = 'transactions'
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
+            Button:
+                id: publish_name_button
+                text: 'Publish name'
+                on_press:
+                    root.manager.transition.direction = 'left'
+                    root.manager.current = 'publish_name'
         BoxLayout:
             size_hint: 1, 0.3
         BoxLayout:
@@ -167,19 +178,24 @@
 	        orientation: 'horizontal'
 	        Label:
 	            text: 'Amount:'
-	            size_hint: 0.3, 1
+	            size_hint: 0.2, 1
             TextInput:
                 id: amount_field
+                size_hint: 0.6, 1
                 input_filter: 'int'
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+            Label:
+	            text: 'BPTC'
+	            size_hint: 0.2, 1
         BoxLayout:
 	        orientation: 'horizontal'
 	        Label:
 	            text: 'Comment:'
-	            size_hint: 0.3, 1
+	            size_hint: 0.2, 1
             TextInput:
                 id: comment_field
+                size_hint: 0.8, 1
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
         BoxLayout:
@@ -188,7 +204,7 @@
 	        orientation: 'horizontal'
 	        Label:
 	            text: 'Receiver:'
-	            size_hint: 0.3, 1
+	            size_hint: 0.2, 1
 	            padding_x: 100
 	    Button:
 	        id: send_button
@@ -216,6 +232,43 @@
             id: cancel_button
             text: "Back"
             #background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+<PublishNameScreen>:
+    name: "publish_name"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Name:'
+	            size_hint: 0.3, 1
+            TextInput:
+                id: name_field
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+        Label:
+            text: '[b]Warning[/b]:\nThis name will be published on the Hashgraph\nand will be visible for all members!'
+            halign: 'center'
+            markup: True
+            size_hint: 1, 2
+	    BoxLayout:
+            size_hint: 1, 4
+        Button:
+	        id: publish_name_button
+	        text: "Publish name"
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.publish_name()
+	            root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+        Button:
+            id: cancel_button
+            text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
             on_release:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'main'

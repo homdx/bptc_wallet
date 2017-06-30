@@ -6,7 +6,7 @@ from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.label import Label
 import bptc
 import bptc.networking.utils as network_utils
-from bptc.data.transaction import TransactionStatus
+from bptc.data.transaction import TransactionStatus, MoneyTransaction
 import threading
 
 kivy.require('1.0.7')
@@ -28,12 +28,17 @@ class MainScreen(Screen):
         super().__init__()
         self.pushing = False
 
-        def update_account_balance():
-            self.ids['account_balance_label'].text = 'Account balance: {} BPTC'.format(self.me.account_balance)
-            t = threading.Timer(1, update_account_balance)
+        def update_user_details():
+            self.ids.account_balance_label.text = 'Account balance: {} BPTC'.format(self.me.account_balance)
+            self.ids.account_name_label.text = '{} (Port: {})'.format(
+                self.me.formatted_name,
+                self.defaults['listening_port']
+            )
+            t = threading.Timer(1, update_user_details)
             t.daemon = True
             t.start()
-        update_account_balance()
+
+        update_user_details()
 
     # Get value for an attribute from its input element
     def get(self, key):
@@ -124,7 +129,7 @@ class NewTransactionScreen(Screen):
 
         list_adapter.bind(on_selection_change=selection_change_callback)
 
-        self.list_view = ListView(adapter=list_adapter)
+        self.list_view = ListView(adapter=list_adapter, size_hint_x=0.8)
 
         self.ids.receiver_layout.add_widget(self.list_view)
 
@@ -160,7 +165,7 @@ class TransactionsScreen(Screen):
         for e in events:
             if e.data is not None:
                 for t in e.data:
-                    if self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
+                    if isinstance(t, MoneyTransaction) and self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
                         transactions.append({
                             'receiver': self.network.hashgraph.known_members[t.receiver].formatted_name if t.receiver in self.network.hashgraph.known_members else t.receiver,
                             'sender': self.network.hashgraph.known_members[e.verify_key].formatted_name if e.verify_key in self.network.hashgraph.known_members else e.verify_key,
@@ -198,3 +203,14 @@ class TransactionsScreen(Screen):
 
     def on_leave(self, *args):
         self.ids.box_layout.remove_widget(self.list_view)
+
+
+class PublishNameScreen(Screen):
+
+    def __init__(self, network):
+        self.network = network
+        super().__init__()
+
+    def publish_name(self):
+        name = self.ids.name_field.text
+        self.network.publish_name(name)

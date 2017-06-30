@@ -6,7 +6,7 @@ import bptc
 from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
-from bptc.data.transaction import MoneyTransaction
+from bptc.data.transaction import MoneyTransaction, PublishNameTransaction
 from bptc.networking.push_protocol import PushClientFactory
 from bptc.data.utils import filter_members_with_address
 import time
@@ -106,6 +106,17 @@ class Network:
         :return:
         """
         transaction = MoneyTransaction(receiver.to_verifykey_string(), amount, comment)
+        event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
+        self.hashgraph.add_own_event(event)
+        return event
+
+    def publish_name(self, name: str):
+        """
+        Publishes a user's name on the hashgraph
+        :param name: The user's name
+        :return:
+        """
+        transaction = PublishNameTransaction(name)
         event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
         self.hashgraph.add_own_event(event)
         return event

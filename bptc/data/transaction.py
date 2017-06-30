@@ -42,6 +42,8 @@ class Transaction:
             return StakeTransaction(transaction_dict['receiver'],
                                     transaction_dict['amount'],
                                     transaction_dict['comment'] if 'comment' in transaction_dict else "")
+        elif transaction_dict['type'] == 'publish_name':
+            return PublishNameTransaction(transaction_dict['name'])
         else:
             bptc.logger.error("Received invalid transaction type: {}".format(transaction_dict['type']))
             return None
@@ -71,3 +73,21 @@ class StakeTransaction(Transaction):
             ('receiver', self.receiver),
             ('amount', self.amount),
             ('comment', self.comment)])
+
+
+class PublishNameTransaction(Transaction):
+
+    def __init__(self, name):
+        super().__init__(None, 0, name)
+
+    def __str__(self):
+        return "SetNameTransaction(name={})".format(self.name)
+
+    @property
+    def name(self):
+        return self.comment
+
+    def to_dict(self) -> Dict:
+        return OrderedDict([
+            ('type', 'publish_name'),
+            ('name', self.name)])
