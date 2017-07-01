@@ -4,6 +4,7 @@ from functools import partial
 from typing import Dict
 import bptc
 from bptc.data import consensus
+from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils.toposort import toposort
@@ -40,11 +41,6 @@ class Hashgraph:
 
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
-
-        # add functions of hashgraph algorithm
-        self.divide_rounds = partial(consensus.divide_rounds, self)
-        self.decide_fame = partial(consensus.decide_fame, self)
-        self.find_order = partial(consensus.find_order, self)
 
     @property
     def total_stake(self) -> int:
@@ -141,9 +137,9 @@ class Hashgraph:
         self.me.head = event.id
 
         # Figure out rounds, fame, etc.
-        self.divide_rounds([event])
-        self.decide_fame()
-        self.find_order()
+        divide_rounds(self, [event])
+        decide_fame(self)
+        find_order(self)
         self.process_ordered_events()
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
@@ -158,12 +154,20 @@ class Hashgraph:
         # Only deal with valid events
         events = filter_valid_events(events)
 
-        # Add all new events
+        events_toposorted = toposort(events)
+
+        # Add all new events in topological order and check parent pointer
         new_events = {}
-        for event_id, event in events.items():
-            if event_id not in self.lookup_table:
+        for event in events_toposorted:
+            if event.id not in self.lookup_table:
+                if event.parents.self_parent is not None and event.parents.self_parent not in self.lookup_table:
+                    raise AssertionError('Self parent {} of {} not known'.
+                                         format(event.parents.self_parent[:6], event.id[:6]))
+                if event.parents.other_parent is not None and event.parents.other_parent not in self.lookup_table:
+                    raise AssertionError('Other parent {} of {} not known'.
+                                         format(event.parents.other_parent[:6], event.id[:6]))
                 new_events[event.id] = event
-                self.lookup_table[event_id] = event
+                self.lookup_table[event.id] = event
                 self.unordered_events.add(event.id)
 
         # Learn about other members
@@ -175,9 +179,9 @@ class Hashgraph:
         new_events[event.id] = event
 
         # Figure out fame, order, etc.
-        self.divide_rounds(toposort(self, new_events))
-        self.decide_fame()
-        self.find_order()
+        divide_rounds(self, toposort(new_events))
+        decide_fame(self)
+        find_order(self)
         self.process_ordered_events()
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
@@ -212,7 +216,6 @@ class Hashgraph:
                     sender.name = transaction.name
 
         self.next_ordered_event_idx_to_process = len(self.ordered_events)
-
 
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
