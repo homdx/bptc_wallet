@@ -1,3 +1,4 @@
+import queue
 from random import choice
 from typing import Dict, List
 from twisted.internet import threads, reactor
@@ -18,11 +19,15 @@ class Network:
         # The current hashgraph
         self.hashgraph = hashgraph
         self.me = self.hashgraph.me
-        self.background_push_thread = None
+        self.background_push_client_thread = None
+
+        self.background_push_server_thread = PushingServerThread(self)
+        self.background_push_server_thread.daemon = True
+        self.background_push_server_thread.start()
 
         # Create first own event
         if create_initial_event:
-            self.hashgraph.create_own_first_event()
+            self.hashgraph.add_own_first_event()
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
@@ -112,6 +117,9 @@ class Network:
         return event
 
     def receive_data_string_callback(self, data_string, peer):
+        self.background_push_server_thread.q.put((data_string, peer))
+
+    def process_data_string(self, data_string, peer):
         # Decode received JSON data
         received_data = json.loads(data_string)
 
@@ -171,12 +179,12 @@ class Network:
                 self.hashgraph.known_members[member.id].address = member.address
 
     def start_background_pushes(self) -> None:
-        self.background_push_thread = PushingThread(self)
-        self.background_push_thread.daemon = True
-        self.background_push_thread.start()
+        self.background_push_client_thread = PushingClientThread(self)
+        self.background_push_client_thread.daemon = True
+        self.background_push_client_thread.start()
 
     def stop_background_pushes(self) -> None:
-        self.background_push_thread.stop()
+        self.background_push_client_thread.stop()
 
 
 def filter_members_with_address(members: List[Member]) -> List[Member]:
@@ -188,12 +196,12 @@ def filter_members_with_address(members: List[Member]) -> List[Member]:
     return [m for m in members if m.address is not None]
 
 
-class PushingThread(threading.Thread):
+class PushingClientThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
     def __init__(self, network):
-        super(PushingThread, self).__init__()
+        super(PushingClientThread, self).__init__()
         self.network = network
         self._stop_event = threading.Event()
 
@@ -202,6 +210,29 @@ class PushingThread(threading.Thread):
             self.network.push_to_random()
             bptc.logger.info("Performed automatic push to random at {}".format(time.ctime()))
             time.sleep(1)
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+
+class PushingServerThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self, network):
+        super(PushingServerThread, self).__init__()
+        self.network = network
+        self._stop_event = threading.Event()
+        self.q = queue.Queue()
+
+    def run(self):
+        while not self.stopped():
+            (data_string, peer) = self.q.get()
+            self.network.process_data_string(data_string, peer)
+            self.q.task_done()
 
     def stop(self):
         self._stop_event.set()

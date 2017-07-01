@@ -1,9 +1,7 @@
 import math
 from collections import defaultdict
-from functools import partial
 from typing import Dict
 import bptc
-from bptc.data import consensus
 from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
