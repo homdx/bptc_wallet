@@ -8,7 +8,6 @@ from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction, PublishNameTransaction
 from bptc.networking.push_protocol import PushClientFactory
-from bptc.data.utils import filter_members_with_address
 import time
 import threading
 
@@ -189,6 +188,15 @@ class Network:
 
     def stop_background_pushes(self) -> None:
         self.background_push_thread.stop()
+
+
+def filter_members_with_address(members: List[Member]) -> List[Member]:
+    """
+    Filters a list of members, only returning those who have a known network address
+    :param members: The list of members to be filtered
+    :return: The filtered lise
+    """
+    return [m for m in members if m.address is not None]
 
 
 class PushingThread(threading.Thread):
