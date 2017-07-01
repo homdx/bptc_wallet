@@ -73,9 +73,6 @@ class MainScreen(Screen):
         ip, port = self.get('query_members_address').split(':')
         network_utils.query_members(self, ip, port)
 
-    def heartbeat(self):
-        self.network.heartbeat()
-
     def push(self):
         ip, port = self.get('push_address').split(':')
         self.network.push_to(ip, int(port))

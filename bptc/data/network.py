@@ -88,15 +88,6 @@ class Network:
         else:
             bptc.logger.info("Don't know any other members. Get them from the registry!")
 
-    def heartbeat(self) -> Event:
-        """
-        Creates a heartbeat (= own, empty) event and adds it to the hashgraph
-        :return: The newly created event
-        """
-        event = Event(self.hashgraph.me.verify_key, None, Parents(self.hashgraph.me.head, None))
-        self.hashgraph.add_own_event(event)
-        return event
-
     def send_transaction(self, amount: int, comment: str, receiver: Member) -> Event:
         """
         Create a new event with a transaction

@@ -14,7 +14,7 @@ services:
       - "9001:9001"
   # The following two clients are running automatically. This means they don't
   # provide an UI but do everything on their own but the transactions. They can
-  # vote, create random heartbeat events and send their hashgraph to other
+  # vote and send their hashgraph to other
   # clients.
   client1:
     image: chaoste/bptc

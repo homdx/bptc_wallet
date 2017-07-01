@@ -35,9 +35,6 @@ class ConsoleApp(InteractiveShell):
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
-            heartbeat=dict(
-                help='Create heartbeat event and add it to the hashgraph',
-            ),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
         self.me = None
@@ -68,7 +65,7 @@ class ConsoleApp(InteractiveShell):
         network_utils.query_members(self, ip, port)
 
     def cmd_heartbeat(self, args):
-        self.network.heartbeat()
+        pass
 
     def cmd_push(self, args):
         ip, port = args.target.split(':')

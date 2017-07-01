@@ -22,7 +22,7 @@ class AutoApp():
     def __call__(self):
         network_utils.initial_checks(self)
         try:
-            bptc.logger.info('Automatically query members, push randomly, listen to events and create heartbeats')
+            bptc.logger.info('Automatically query members, push randomly, listen to pushs')
             while True:
                 self.query_members()
                 self.network.start_background_pushes()
@@ -40,7 +40,7 @@ class AutoApp():
 
     def run(self):
         # TODO: Maybe add registering if not successfully until now
-        self.network.heartbeat()
+        pass
 
     def query_members(self):
         ip, port = self.cl_args.query_members.split(':')
