@@ -25,7 +25,7 @@ class Member:
         # The current stake of this member
         self.stake = 1  # TODO: Different stakes
 
-        # The networking data
+        # The protocols data
         self.address = None
 
         # The name associated with this member (for display in the UI)

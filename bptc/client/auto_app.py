@@ -1,13 +1,11 @@
 import sys
 import time
 
-from prompt_toolkit import prompt
-
 import bptc
-import bptc.networking.utils as network_utils
+import bptc.utils.network as network_utils
 from bptc.data.db import DB
-from main import __version__
 from bptc.data.hashgraph import init_hashgraph
+from main import __version__
 
 
 class AutoApp():

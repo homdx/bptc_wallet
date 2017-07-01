@@ -4,8 +4,8 @@ import threading
 import sys
 from functools import partial
 from twisted.internet import reactor
-from bptc.networking.query_members_protocol import QueryMembersServerFactory
-from bptc.networking.register_protocol import RegisterServerFactory
+from bptc.protocols.query_members_protocol import QueryMembersServerFactory
+from bptc.protocols.register_protocol import RegisterServerFactory
 from prompt_toolkit import prompt
 
 

@@ -1,11 +1,10 @@
-import sys
-
-import bptc.networking.utils as network_utils
-from main import __version__
 import bptc
-from bptc.utils.interactive_shell import InteractiveShell
-from bptc.data.hashgraph import init_hashgraph
+import bptc.utils.network as network_utils
 from bptc.data.db import DB
+from bptc.data.hashgraph import init_hashgraph
+from bptc.utils.interactive_shell import InteractiveShell
+from main import __version__
+
 
 class ConsoleApp(InteractiveShell):
     def __init__(self, cl_args):

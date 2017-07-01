@@ -1,13 +1,15 @@
+import threading
+
 import kivy
-from kivy.uix.screenmanager import Screen
 from kivy.adapters.listadapter import ListAdapter
 from kivy.adapters.simplelistadapter import SimpleListAdapter
-from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.label import Label
+from kivy.uix.listview import ListItemButton, ListView
+from kivy.uix.screenmanager import Screen
+
 import bptc
-import bptc.networking.utils as network_utils
+import bptc.utils.network as network_utils
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
-import threading
 
 kivy.require('1.0.7')
 

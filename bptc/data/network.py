@@ -7,7 +7,7 @@ from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction, PublishNameTransaction
-from bptc.networking.push_protocol import PushClientFactory
+from bptc.protocols.push_protocol import PushClientFactory
 import time
 import threading
 

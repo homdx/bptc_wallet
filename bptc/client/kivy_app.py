@@ -1,12 +1,12 @@
 from kivy.app import App
+from kivy.config import Config
+from kivy.uix.screenmanager import ScreenManager
 
 import bptc
+import bptc.utils.network as network_utils
 from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
-import bptc.networking.utils as network_utils
-from kivy.config import Config
-from kivy.uix.screenmanager import ScreenManager
 
 # size of an iPhone 6 Plus
 Config.set('graphics', 'width', '414')

@@ -4,10 +4,10 @@ from twisted.internet import reactor, threads
 from twisted.internet.address import IPv4Address
 import bptc
 from bptc.data.member import Member
-from .push_protocol import PushServerFactory
-from .query_members_protocol import QueryMembersClientFactory
-from .register_protocol import RegisterClientFactory
-from .pull_protocol import PullServerFactory
+from bptc.protocols.push_protocol import PushServerFactory
+from bptc.protocols.query_members_protocol import QueryMembersClientFactory
+from bptc.protocols.register_protocol import RegisterClientFactory
+from bptc.protocols.pull_protocol import PullServerFactory
 
 
 def initial_checks(app):
