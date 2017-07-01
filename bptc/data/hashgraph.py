@@ -1,4 +1,5 @@
 import math
+import threading
 from collections import defaultdict
 from typing import Dict
 import bptc
@@ -15,6 +16,7 @@ class Hashgraph:
     """
 
     def __init__(self, me):
+        self.lock = threading.Lock()
         # Member: A reference to the current user. For convenience (e.g. signing)
         self.me = me
 

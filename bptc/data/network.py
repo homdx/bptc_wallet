@@ -207,7 +207,8 @@ class PushingClientThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            self.network.push_to_random()
+            with self.network.hashgraph.lock:
+                self.network.push_to_random()
             bptc.logger.info("Performed automatic push to random at {}".format(time.ctime()))
             time.sleep(1)
 
@@ -231,7 +232,8 @@ class PushingServerThread(threading.Thread):
     def run(self):
         while not self.stopped():
             (data_string, peer) = self.q.get()
-            self.network.process_data_string(data_string, peer)
+            with self.network.hashgraph.lock:
+                self.network.process_data_string(data_string, peer)
             self.q.task_done()
 
     def stop(self):
