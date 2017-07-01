@@ -103,12 +103,15 @@ class Hashgraph:
 
         return result
 
-    def add_own_first_event(self, event: Event):
+    def add_own_first_event(self):
         """
         Adds the own initial event to the hashgraph
         :param event: The event to be added
         :return: None
         """
+        event = Event(self.me.verify_key, None, Parents(None, None))
+        event.round = 0
+
         # Add the event
         self.add_own_event(event)
 

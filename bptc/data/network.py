@@ -22,7 +22,7 @@ class Network:
 
         # Create first own event
         if create_initial_event:
-            self.create_own_first_event()
+            self.hashgraph.create_own_first_event()
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
@@ -82,7 +82,7 @@ class Network:
         filtered_known_members = dict(self.hashgraph.known_members)
         filtered_known_members.pop(self.hashgraph.me.verify_key, None)
         if filtered_known_members:
-            member_id, member = choice(list(filtered_known_members.items()))
+            _, member = choice(list(filtered_known_members.items()))
             self.push_to_member(member)
         else:
             bptc.logger.info("Don't know any other members. Get them from the registry!")
@@ -111,17 +111,6 @@ class Network:
         self.hashgraph.add_own_event(event)
         return event
 
-    def create_own_first_event(self) -> Event:
-        """
-        Creates the own initial event and adds it to the hashgraph
-        :return: The newly created event
-        """
-        event = Event(self.hashgraph.me.verify_key, None, Parents(None, None))
-        event.round = 0
-        event.can_see = {event.verify_key: event}
-        self.hashgraph.add_own_first_event(event)
-        return event
-
     def receive_data_string_callback(self, data_string, peer):
         # Decode received JSON data
         received_data = json.loads(data_string)
@@ -142,7 +131,7 @@ class Network:
 
             bptc.logger.info('- Received {} events'.format(len(events.items())))
 
-            self.receive_events_callback(from_member, events)
+            self.process_events(from_member, events)
 
         # Check if the sender sent any members
         s_members = received_data['members']
@@ -153,7 +142,7 @@ class Network:
 
             self.receive_members_callback(members)
 
-    def receive_events_callback(self, from_member: Member, events: Dict[str, Event]) -> None:
+    def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
         Used as a callback when events are received from the outside
         :param from_member: The member from which the events were received
