@@ -10,10 +10,9 @@ from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 from tornado import gen
-
-from ..bptc import init_logger
-from ..bptc.data.event import Fame
-from ..bptc.networking.pull_protocol import PullClientFactory
+from bptc import init_logger
+from bptc.data.event import Fame
+from bptc.protocols.pull_protocol import PullClientFactory
 
 R_COLORS = small_palettes['Set2'][8]
 
@@ -65,7 +64,7 @@ class App:
         self.counter = 0
 
         plot = figure(
-                plot_height=1000, plot_width=900, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
+                plot_height=2000, plot_width=900, y_range=(0, (self.n_nodes - 1)*10), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(dimensions=Dimensions.height),
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
@@ -141,7 +140,7 @@ class App:
             y = event.height
             events_data['x'].append(x)
             events_data['y'].append(y)
-            events_data['round_color'].append('#000000' if event.is_famous == Fame.TRUE else round_color(event.round))
+            events_data['round_color'].append(self.color_of(event))
             events_data['round'].append(event.round)
             events_data['id'].append(event.id[:6] + "...")
             events_data['payload'].append("".format(event.data))
@@ -174,6 +173,16 @@ class App:
                 print('{} is not in self.all_events'.format(str(event.parents.other_parent)))
 
         return events_data, links_data
+
+    @staticmethod
+    def color_of(event):
+        if event.round_received is not None:
+            color = '#FF0000'
+        elif event.is_famous == Fame.TRUE:
+            color = '#000000'
+        else:
+            color = round_color(event.round)
+        return color
 
 App()
 
