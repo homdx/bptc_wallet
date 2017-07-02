@@ -1,3 +1,6 @@
+import signal
+from functools import partial
+
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
@@ -42,6 +45,7 @@ class ConsoleApp(InteractiveShell):
         init_hashgraph(self)
 
     def __call__(self):
+        signal.signal(signal.SIGHUP, partial(self.SIGHUP_handler, self))
         try:
             network_utils.initial_checks(self)
             if self.cl_args.start_pushing:
@@ -52,6 +56,11 @@ class ConsoleApp(InteractiveShell):
             network_utils.stop_reactor_thread()
             DB.save(self.network.hashgraph)
         # TODO: If no command was entered and Ctrl+C was hit, the process doesn't stop
+
+    def SIGHUP_handler(self, signum, frame):
+        bptc.logger.info("Stopping...")
+        network_utils.stop_reactor_thread()
+        DB.save(self.network.hashgraph)
 
     # --------------------------------------------------------------------------
     # Hashgraph actions
