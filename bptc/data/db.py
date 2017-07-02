@@ -49,7 +49,7 @@ class DB:
         values = m.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)
-        cls.__connection.commit()
+        # cls.__connection.commit()
 
     @classmethod
     def __save_event(cls, e: Event) -> None:
@@ -62,7 +62,7 @@ class DB:
         values = e.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)
-        cls.__connection.commit()
+        # cls.__connection.commit()
 
     @classmethod
     def save(cls, obj) -> None:
@@ -77,13 +77,14 @@ class DB:
             cls.__save_event(obj)
         elif isinstance(obj, Hashgraph):
             cls.__save_member(obj.me)
-            for _, member in obj.known_members.items():
+            for member in obj.known_members.values():
                 cls.__save_member(member)
 
-            for _, event in obj.lookup_table.items():
+            for event in obj.lookup_table.values():
                 cls.__save_event(event)
         else:
             bptc.logger.error("Could not persist object because its type is not supported")
+        cls.__connection.commit()
 
     @classmethod
     def load_hashgraph(cls, listening_port, output_dir) -> Hashgraph:

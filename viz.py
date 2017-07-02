@@ -200,8 +200,8 @@ class PullingThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-                    threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
-                    sleep(1)
+            threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
+            sleep(10)
 
     def stop(self):
         self._stop_event.set()

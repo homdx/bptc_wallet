@@ -107,7 +107,7 @@ def decide_fame(hashgraph):
                     if d == 1:
                         # If there is only one round difference, just vote
                         y.votes[x.id] = event_can_see_event(hashgraph, y, x)
-                        print('{} votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
+                        # print('{} votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
                     else:
                         # If there are multiple rounds difference, collect votes
                         s = get_strongly_seen_witnesses_for_round(hashgraph, y, y.round-1)
@@ -116,20 +116,20 @@ def decide_fame(hashgraph):
                         if d % C > 0:  # This is a normal round
                             if t > hashgraph.supermajority_stake:  # If supermajority, then decide
                                 x.is_famous = v
-                                print('{} fame decided: {}'.format(x.short_id, x.is_famous))
+                                # print('{} fame decided: {}'.format(x.short_id, x.is_famous))
                                 y.votes[x.id] = v
-                                print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
+                                # print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
                                 break
                             else:  # Else, just vote
                                 y.votes[x.id] = v
-                                print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
+                                # print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
                         else:  # This is a coin round
                             if t > hashgraph.supermajority_stake:  # If supermajority, then vote
                                 y.votes[x.id] = v
-                                print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
+                                # print('{} votes {} on {}'.format(y.short_id, v, x.short_id))
                             else:  # Else, flip a coin
                                 y.votes[x.id] = decide_randomly_based_on_signature(y.signature)
-                                print('{} randomly votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
+                                # print('{} randomly votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
 
         # Check if round x was completely decided
         if all([hashgraph.lookup_table[event_id].is_famous != Fame.UNDECIDED for event_id in hashgraph.witnesses[x_round].values()]):
@@ -232,7 +232,7 @@ def find_order(hg):
                 x.round_received = r
                 x.consensus_time = get_consensus_time(hg, x).isoformat()
 
-                print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
+                # print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
 
                 decided_events.add(x)
 
@@ -266,7 +266,7 @@ def get_events_for_consensus_time(hg, x) -> Set[Event]:
         if witness.is_famous != Fame.TRUE:
             continue
 
-        # Go through the self ancenstors
+        # Go through the self ancestors
         z = hg.lookup_table[witness.parents.self_parent]
         if z.parents.self_parent is not None:
             z_self_parent = hg.lookup_table[z.parents.self_parent]

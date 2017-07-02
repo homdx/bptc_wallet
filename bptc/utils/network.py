@@ -65,5 +65,5 @@ def start_listening(network, listening_port):
     network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 
     bptc.logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
-    pull_server_factory = PullServerFactory(network)
+    pull_server_factory = PullServerFactory(network.hashgraph.me.id, network.hashgraph)
     reactor.listenTCP(int(listening_port) + 1, pull_server_factory)

@@ -110,12 +110,6 @@ class Event:
         event.consensus_time = dict_event['consensus_time']
         return event
 
-    @classmethod
-    def from_debug_dict(cls, dict_event) -> "Event":
-        event = cls.from_dict(dict_event)
-        event.round = dict_event['round']
-        return event
-
     def to_dict(self) -> Dict:
         return OrderedDict([
             ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
@@ -127,13 +121,9 @@ class Event:
             ('witness', self.is_witness),
             ('is_famous', self.is_famous),
             ('round_received', self.round_received),
-            ('consensus_time', self.consensus_time)
+            ('consensus_time', self.consensus_time),
+            ('round', self.round)
         ])
-
-    def to_debug_dict(self) -> Dict:
-        result = self.to_dict()
-        result['round'] = self.round
-        return result
 
     def to_db_tuple(self) -> Tuple:
         return (
