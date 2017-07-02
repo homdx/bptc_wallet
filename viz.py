@@ -76,6 +76,7 @@ class App:
         plot.ygrid.grid_line_color = None
         plot.yaxis.minor_tick_line_color = None
 
+        self.index_counter = 0
         self.links_src = ColumnDataSource(data={'x0': [], 'y0': [], 'x1': [],
                                                 'y1': [], 'width': []})
 
@@ -106,9 +107,23 @@ class App:
                     self.verify_key_to_x[event.verify_key] = self.counter
                     self.counter = self.counter + 1
                 self.all_events[event_id] = event
+                event.index = self.index_counter
+                self.index_counter += 1
                 self.new_events[event_id] = event
+            else:
+                self.update_event(event)
         self.n_nodes = len(self.verify_key_to_x)
         self.log.text += "Updated member {}...\n".format(from_member[:6])
+
+    def update_event(self, event):
+        index = self.all_events[event.id].index
+        patches = {
+            'round_color': [(index, self.color_of(event))],
+            'famous': [(index, event.is_famous)],
+            'round_received': [(index, event.round_received)],
+            'consensus_timestamp': [(index, event.consensus_time)]
+        }
+        self.events_src.patch(patches)
 
     def start_pulling(self, ip_text_input, port_text_input):
         ip = ip_text_input.value
@@ -201,7 +216,7 @@ class PullingThread(threading.Thread):
     def run(self):
         while not self.stopped():
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
-            sleep(10)
+            sleep(0.5)
 
     def stop(self):
         self._stop_event.set()

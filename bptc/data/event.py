@@ -108,6 +108,7 @@ class Event:
         event.is_famous = dict_event['is_famous']
         event.round_received = dict_event['round_received']
         event.consensus_time = dict_event['consensus_time']
+        event.round = dict_event['round']
         return event
 
     def to_dict(self) -> Dict:

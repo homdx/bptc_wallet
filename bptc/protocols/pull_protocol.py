@@ -54,7 +54,6 @@ class PullClient(protocol.Protocol):
         return
 
     def dataReceived(self, data):
-        print(len(data))
         try:
             data = zlib.decompress(data)
         except zlib.error as err:
