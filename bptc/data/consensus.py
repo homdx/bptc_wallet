@@ -11,6 +11,8 @@ from statistics import median
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
 
+# DIVIDE ROUNDS
+
 def divide_rounds(hashgraph, events):
     for event in events:
         r = 0
@@ -29,11 +31,14 @@ def divide_rounds(hashgraph, events):
             hashgraph.witnesses[r][event.verify_key] = event.id
             event.is_witness = True
 
+        # DEBUG
+        event.processed_by_divideRounds = True
+
 
 def event_can_can_strongly_see_enough_round_r_witnesses(hashgraph, event: Event, r: int):
     members_with_strongly_seen_witnesses = get_members_with_strongly_seen_witnesses_for_round(hashgraph, event, r)
 
-    # Check if all strongly seen witnesses have enough stake
+    # Check if all of those members have enough stake
     strongly_seen_stake = sum([hashgraph.known_members[m].stake for m in members_with_strongly_seen_witnesses])
     return strongly_seen_stake > hashgraph.supermajority_stake
 
@@ -82,14 +87,16 @@ def get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Event, r
     return result
 
 
+# DECIDE FAME
+
 def decide_fame(hashgraph):
     for x_round in range(0, max(hashgraph.witnesses)+1):
         # Skip this round if we already decided its fame completely
         if x_round in hashgraph.rounds_with_decided_fame:
             continue
 
-        for y_round in range(x_round+1, max(hashgraph.witnesses)+1):
-            for x_id in hashgraph.witnesses[x_round].values():
+        for x_id in hashgraph.witnesses[x_round].values():
+            for y_round in range(x_round+1, max(hashgraph.witnesses)+1):
                 # We want to decide the fame of x
                 x = hashgraph.lookup_table[x_id]
 
@@ -125,12 +132,7 @@ def decide_fame(hashgraph):
                                 print('{} randomly votes {} on {}'.format(y.short_id, y.votes[x.id], x.short_id))
 
         # Check if round x was completely decided
-        decided_witnesses_in_round_x_count = 0
-        for x_id in hashgraph.witnesses[x_round].values():
-            if hashgraph.lookup_table[x_id].is_famous != Fame.UNDECIDED:
-                decided_witnesses_in_round_x_count += 1
-
-        if decided_witnesses_in_round_x_count == len(hashgraph.witnesses[x_round].items()):
+        if all([hashgraph.lookup_table[event_id].is_famous != Fame.UNDECIDED for event_id in hashgraph.witnesses[x_round].values()]):
             hashgraph.rounds_with_decided_fame.add(x_round)
             print("Fame is completely decided for round {}".format(x_round))
 
@@ -154,7 +156,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
 
     for event_id in s:
         event = hashgraph.lookup_table[event_id]
-        if event.votes[x.id]:
+        if x.id in event.votes and event.votes[x.id]:
             stake_for += hashgraph.known_members[event.verify_key].stake
         else:
             stake_against += hashgraph.known_members[event.verify_key].stake
@@ -165,10 +167,18 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
 def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
+    :param hashgraph:
     :param event_1:
     :param event_2:
     :return:
     """
+
+    # TODO:
+    '''
+    Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
+    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y!
+    If w only has x or y as ancestor, then w could see it. (see page 8, 9)
+    '''
 
     to_visit = {event_1}
     visited = set()

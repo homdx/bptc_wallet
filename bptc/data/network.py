@@ -27,7 +27,7 @@ class Network:
 
         # Create first own event
         if create_initial_event:
-            self.hashgraph.add_own_first_event()
+            self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""

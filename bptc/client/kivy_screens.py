@@ -64,6 +64,9 @@ class MainScreen(Screen):
     # MainScreen actions
     # --------------------------------------------------------------------------
 
+    def debug_checks(self):
+        print(self.hashgraph.rounds_with_decided_fame)
+
     def start_listening(self):
         network_utils.start_listening(self.network, self.get('listening_port'))
 

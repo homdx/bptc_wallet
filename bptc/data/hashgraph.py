@@ -99,30 +99,17 @@ class Hashgraph:
 
         return result
 
-    def add_own_first_event(self):
-        """
-        Adds the own initial event to the hashgraph
-        :param event: The event to be added
-        :return: None
-        """
-        event = Event(self.me.verify_key, None, Parents(None, None))
-        event.round = 0
-
-        # Add the event
-        self.add_own_event(event)
-
-        # Make the new event a witness for round 0
-        self.witnesses[0][event.verify_key] = event.id
-
     def add_own_event(self, event: Event):
         """
         Adds an own event to the hashgraph, setting the event's height depending on its parents
         :param event: The event to be added
+        :param first: whether it is the first event
         :return: None
         """
 
         # Set the event's correct height
         if event.parents.self_parent:
+            # not the first event
             self_parent_height = self.lookup_table[event.parents.self_parent].height
             event.height = self_parent_height + 1
 

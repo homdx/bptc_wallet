@@ -73,6 +73,15 @@
             size_hint: 1, 0.3
         BoxLayout:
             size_hint: 1, 1
+            Button:
+                id: debug_checks
+                text: 'debug checks'
+                on_press:
+                    root.debug_checks()
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
             id: registering_container
             canvas.before:
                 Color:
