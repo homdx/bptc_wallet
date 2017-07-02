@@ -5,7 +5,7 @@ from functools import partial
 from time import sleep
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText)
+from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText, WheelZoomTool)
 from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
@@ -60,16 +60,17 @@ class App:
         self.all_events = {}
         self.new_events = {}
         self.verify_key_to_x = {}
-        self.n_nodes = 4
+        self.n_nodes = 10
         self.counter = 0
 
         plot = figure(
-                plot_height=2000, plot_width=900, y_range=(0, (self.n_nodes - 1)*10), x_range=(0, self.n_nodes - 1),
-                tools=[PanTool(dimensions=Dimensions.height),
+                plot_height=2000, plot_width=2000, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
+                tools=[PanTool(dimensions=[Dimensions.height, Dimensions.width]),
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
                            ('round', '@round'), ('data', '@data'), ('famous', '@famous'), ('round_received', '@round_received'),
                            ('consensus_timestamp', '@consensus_timestamp')])])
+        plot.add_tools(WheelZoomTool())
 
         plot.xgrid.grid_line_color = None
         plot.xaxis.minor_tick_line_color = None
