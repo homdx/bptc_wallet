@@ -65,7 +65,7 @@ class App:
 
         plot = figure(
                 plot_height=2000, plot_width=2000, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
-                tools=[PanTool(dimensions=[Dimensions.height, Dimensions.width]),
+                tools=[PanTool(),  # dimensions=[Dimensions.height, Dimensions.width]
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
                            ('round', '@round'), ('data', '@data'), ('famous', '@famous'), ('round_received', '@round_received'),

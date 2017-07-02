@@ -45,12 +45,17 @@ class ConsoleApp(InteractiveShell):
         init_hashgraph(self)
 
     def __call__(self):
-        signal.signal(signal.SIGHUP, partial(self.SIGHUP_handler, self))
+        if hasattr(signal, 'SIGHUP'):
+            signal.signal(signal.SIGHUP, partial(self.SIGHUP_handler, self))
+        elif hasattr(signal, 'SIGTERM'):
+            # On windows listen to SIGTERM because SIGHUP is not available
+            signal.signal(signal.SIGTERM, partial(self.SIGHUP_handler, self))
         try:
             network_utils.initial_checks(self)
             if self.cl_args.start_pushing:
                 self.network.start_background_pushes()
             super().__call__()
+        # Ctrl+C throws KeyBoardInterruptException, Ctrl+D throws EOFException
         finally:
             bptc.logger.info("Stopping...")
             network_utils.stop_reactor_thread()
