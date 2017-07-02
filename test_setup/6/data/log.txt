@@ -1,11 +1,7 @@
 Loaded 0 events from DB.
-Created new Member: Member(Me, usVwv1...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
-Don't know any other members. Get them from the registry!
-Performed automatic push to random at Sun Jul  2 18:14:37 2017
-Don't know any other members. Get them from the registry!
-Performed automatic push to random at Sun Jul  2 18:14:38 2017
+Created new Member: Member(Me, JqhGfu...)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Don't know any other members. Get them from the registry!
 Performed automatic push to random at Sun Jul  2 18:14:39 2017
 Don't know any other members. Get them from the registry!
@@ -61,13 +57,9 @@ Performed automatic push to random at Sun Jul  2 18:15:04 2017
 Don't know any other members. Get them from the registry!
 Performed automatic push to random at Sun Jul  2 18:15:05 2017
 Loaded 0 events from DB.
-Created new Member: Member(Me, aYrD2h...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
-Don't know any other members. Get them from the registry!
-Performed automatic push to random at Sun Jul  2 18:15:33 2017
-Don't know any other members. Get them from the registry!
-Performed automatic push to random at Sun Jul  2 18:15:34 2017
+Created new Member: Member(Me, thofsF...)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Don't know any other members. Get them from the registry!
 Performed automatic push to random at Sun Jul  2 18:15:35 2017
 Don't know any other members. Get them from the registry!
@@ -193,40 +185,40 @@ Performed automatic push to random at Sun Jul  2 18:16:35 2017
 Don't know any other members. Get them from the registry!
 Performed automatic push to random at Sun Jul  2 18:16:36 2017
 Loaded 0 events from DB.
-Created new Member: Member(Me, RMF3+a...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
+Created new Member: Member(Me, FTuwa/...)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Loaded 0 events from DB.
-Created new Member: Member(Me, gqDGY1...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
+Created new Member: Member(Me, flzIoa...)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Loaded 0 events from DB.
-Created new Member: Member(Me, +WOQHo...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
-Member update: 5QjxB+... to (127.0.0.1, 8008)
-Member update: DIh00j... to (127.0.0.1, 8010)
-Member update: P7WQ5F... to (127.0.0.1, 8014)
-Member update: v013jK... to (127.0.0.1, 8002)
+Created new Member: Member(Me, HFuef3...)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Member update: YHyQAx... to (127.0.0.1, 8016)
-Member update: HFuef3... to (127.0.0.1, 8012)
-Member update: nCMhxw... to (127.0.0.1, 8018)
 Member update: iwDKWG... to (127.0.0.1, 8004)
+Member update: +WOQHo... to (127.0.0.1, 8000)
 Member update: ikaCQK... to (127.0.0.1, 8006)
+Member update: 5QjxB+... to (127.0.0.1, 8008)
+Member update: v013jK... to (127.0.0.1, 8002)
+Member update: P7WQ5F... to (127.0.0.1, 8014)
+Member update: DIh00j... to (127.0.0.1, 8010)
+Member update: nCMhxw... to (127.0.0.1, 8018)
 Stopping...
 Loaded 1 events from DB.
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Loaded 1 events from DB.
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
-Member update: v013jK... to (127.0.0.1, 8002)
-Member update: 5QjxB+... to (127.0.0.1, 8008)
-Member update: ikaCQK... to (127.0.0.1, 8006)
-Member update: YHyQAx... to (127.0.0.1, 8016)
+Push server listens on port 8012
+[Pull server (for viz tool) listens on port 8013]
 Member update: nCMhxw... to (127.0.0.1, 8018)
-Member update: HFuef3... to (127.0.0.1, 8012)
-Member update: DIh00j... to (127.0.0.1, 8010)
+Member update: YHyQAx... to (127.0.0.1, 8016)
+Member update: v013jK... to (127.0.0.1, 8002)
 Member update: P7WQ5F... to (127.0.0.1, 8014)
 Member update: iwDKWG... to (127.0.0.1, 8004)
+Member update: ikaCQK... to (127.0.0.1, 8006)
+Member update: 5QjxB+... to (127.0.0.1, 8008)
+Member update: DIh00j... to (127.0.0.1, 8010)
+Member update: +WOQHo... to (127.0.0.1, 8000)
 Stopping...

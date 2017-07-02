@@ -16,7 +16,9 @@ def parse_args():
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
     parser.add_argument('-auto', '--auto', action='store_true', help='Self organizing client')
     parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')  # localhost:9000
-    parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001', help='Adress for querying members automatically')
+    parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
+                        help='Adress for querying members automatically')
+    parser.add_argument('-sp', '--start-pushing', action='store_true', help='Start frequent pushing')
     return parser.parse_args()
 
 if __name__ == '__main__':

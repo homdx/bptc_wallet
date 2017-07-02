@@ -44,11 +44,13 @@ class ConsoleApp(InteractiveShell):
     def __call__(self):
         try:
             network_utils.initial_checks(self)
+            if self.cl_args.start_pushing:
+                self.network.start_background_pushes()
             super().__call__()
         finally:
             bptc.logger.info("Stopping...")
-            DB.save(self.network.hashgraph)
             network_utils.stop_reactor_thread()
+            DB.save(self.network.hashgraph)
         # TODO: If no command was entered and Ctrl+C was hit, the process doesn't stop
 
     # --------------------------------------------------------------------------
@@ -56,15 +58,18 @@ class ConsoleApp(InteractiveShell):
     # --------------------------------------------------------------------------
 
     def cmd_register(self, args):
-        ip, port = args.target.split(':')
+        if args.target:
+            ip, port = args.target.split(':')
+        else:
+            ip, port = 'localhost', 9000
         network_utils.register(self.me.id, self.cl_args.port, ip, port)
 
     def cmd_query_members(self, args):
-        ip, port = args.target.split(':')
+        if args.target:
+            ip, port = args.target.split(':')
+        else:
+            ip, port = 'localhost', 9001
         network_utils.query_members(self, ip, port)
-
-    def cmd_heartbeat(self, args):
-        pass
 
     def cmd_push(self, args):
         ip, port = args.target.split(':')
