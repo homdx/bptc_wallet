@@ -49,7 +49,11 @@ class PushClient(protocol.Protocol):
         # bptc.logger.info('Connected to server.')
         # bptc.logger.info('- Sending {} events'.format(len(self.factory.events.items())))
         # bptc.logger.info('- Sending {} members'.format(len(self.factory.members)))
-        self.transport.write(zlib.compress(self.factory.string_to_send))
+        data_to_send = zlib.compress(self.factory.string_to_send)
+        if len(data_to_send) > 65536:
+            raise AssertionError('Twisted only allows 65536 Bytes to be sent this way! Data to send is {} Bytes'.
+                                 format(len(data_to_send)))
+        self.transport.write(data_to_send)
         # bptc.logger.info("- Sent data")
         self.transport.loseConnection()
 
