@@ -36,6 +36,8 @@ class PushServer(protocol.Protocol):
             bptc.logger.error(
                 'Failed parsing input: {} \n\n Error message: {}'.format(
                     self.factory.received_data, err))
+        finally:
+            self.factory.received_data = b""
 
 
 class PushClientFactory(protocol.ClientFactory):

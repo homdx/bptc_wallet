@@ -1,6 +1,8 @@
 import queue
 from random import choice
 from typing import Dict, List
+
+import numpy as np
 from twisted.internet import threads, reactor
 import json
 import bptc
@@ -117,7 +119,10 @@ class Network:
         return event
 
     def receive_data_string_callback(self, data_string, peer):
-        self.background_push_server_thread.q.put((data_string, peer))
+        try:
+            self.background_push_server_thread.q.put((data_string, peer), block=False)
+        except:
+            pass
 
     def process_data_string(self, data_string, peer):
         # Decode received JSON data
@@ -210,7 +215,8 @@ class PushingClientThread(threading.Thread):
             with self.network.hashgraph.lock:
                 self.network.push_to_random()
             bptc.logger.debug("Performed automatic push to random at {}".format(time.ctime()))
-            time.sleep(1)
+            mu, sigma = 1, 0.2  # mean and standard deviation
+            time.sleep(max(np.random.normal(mu, sigma, 1)[0], 0))
 
     def stop(self):
         self._stop_event.set()
@@ -227,7 +233,7 @@ class PushingServerThread(threading.Thread):
         super(PushingServerThread, self).__init__()
         self.network = network
         self._stop_event = threading.Event()
-        self.q = queue.Queue()
+        self.q = queue.Queue(maxsize=1)
 
     def run(self):
         while not self.stopped():

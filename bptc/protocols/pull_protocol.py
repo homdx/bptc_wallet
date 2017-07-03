@@ -66,6 +66,8 @@ class PullClient(protocol.Protocol):
             data = zlib.decompress(self.factory.received_data)
         except zlib.error as err:
             bptc.logger.error(err)
+        finally:
+            self.factory.received_data = b""
 
         received_data = json.loads(data.decode('UTF-8'))
         from_member = received_data['from']
