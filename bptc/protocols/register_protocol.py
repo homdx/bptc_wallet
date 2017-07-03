@@ -36,11 +36,12 @@ class RegisterClientFactory(protocol.ClientFactory):
         self.protocol = RegisterClient
 
     def clientConnectionLost(self, connector, reason):
-        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.info('Connection failed. Reason: {}'.format(reason))
+        # Debug logging level because this might happen very often and is an
+        # expected behaviour within our framework
+        bptc.logger.debug('Connection failed. Reason: {}'.format(reason))
 
 
 class RegisterClient(protocol.Protocol):

@@ -67,7 +67,7 @@ class Network:
         return json.dumps(data_to_send).encode('UTF-8')
 
     def push_to_member(self, member: Member) -> None:
-        bptc.logger.info('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
+        bptc.logger.debug('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
         data_string = self.generate_data_string(self.hashgraph.me,
                                                 self.hashgraph.get_unknown_events_of(member),
@@ -90,7 +90,7 @@ class Network:
             _, member = choice(list(filtered_known_members.items()))
             self.push_to_member(member)
         else:
-            bptc.logger.info("Don't know any other members. Get them from the registry!")
+            bptc.logger.debug("Don't know any other members. Get them from the registry!")
 
     def send_transaction(self, amount: int, comment: str, receiver: Member) -> Event:
         """
@@ -209,7 +209,7 @@ class PushingClientThread(threading.Thread):
         while not self.stopped():
             with self.network.hashgraph.lock:
                 self.network.push_to_random()
-            bptc.logger.info("Performed automatic push to random at {}".format(time.ctime()))
+            bptc.logger.debug("Performed automatic push to random at {}".format(time.ctime()))
             time.sleep(1)
 
     def stop(self):

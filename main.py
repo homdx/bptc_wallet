@@ -19,19 +19,20 @@ def parse_args():
     parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
                         help='Adress for querying members automatically')
     parser.add_argument('-sp', '--start-pushing', action='store_true', help='Start frequent pushing')
+    parser.add_argument('-q', '--quiet', action='store_true', help='Less output as possible')
     return parser.parse_args()
 
 if __name__ == '__main__':
     # Right now there is only one app designed for mobile devices
     cl_args = parse_args()
     os.makedirs(cl_args.output, exist_ok=True)
-    init_logger(cl_args.output)
+    init_logger(cl_args.output, cl_args.quiet)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
         ConsoleApp(cl_args)()
     elif cl_args.auto:
-        from bptc.client.auto_app import AutoApp
-        AutoApp(cl_args)()
+        from bptc.client.headless_app import HeadlessApp
+        HeadlessApp(cl_args)()
     else:
         from bptc.client.kivy_app import KivyApp
         KivyApp(cl_args).run()

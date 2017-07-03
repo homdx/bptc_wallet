@@ -8,7 +8,7 @@ from bptc.data.hashgraph import init_hashgraph
 from main import __version__
 
 
-class AutoApp():
+class HeadlessApp():
     def __init__(self, cl_args):
         self.cl_args = cl_args
         bptc.logger.info('BPTC Wallet {} Auto Client'.format(__version__))
@@ -21,11 +21,10 @@ class AutoApp():
         network_utils.initial_checks(self)
         try:
             bptc.logger.info('Automatically query members, push randomly, listen to pushs')
+            self.network.start_background_pushes()
             while True:
                 self.query_members()
-                self.network.start_background_pushes()
-                self.run()
-                time.sleep(5)
+                time.sleep(30)
         except (EOFError, KeyboardInterrupt):
             print('Good bye!')
         except:

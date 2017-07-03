@@ -46,7 +46,7 @@ class PullClientFactory(protocol.ClientFactory):
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.info('Connection failed. Reason: {}'.format(reason))
+        bptc.logger.error('Connection failed. Reason: {}'.format(reason))
 
 
 class PullClient(protocol.Protocol):
@@ -59,7 +59,7 @@ class PullClient(protocol.Protocol):
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
-            bptc.logger.info('No data received!')
+            bptc.logger.warn('No data received!')
             return
 
         try:

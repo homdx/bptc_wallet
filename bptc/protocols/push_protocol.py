@@ -16,21 +16,26 @@ class PushServerFactory(protocol.ServerFactory):
 class PushServer(protocol.Protocol):
 
     def connectionMade(self):
-        pass
+        self.transport.write('I\'m alive!'.encode('UTF-8'))
 
     def dataReceived(self, data):
         self.factory.received_data += data
+        self.transport.loseConnection()
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
-            bptc.logger.info('No data received!')
+            bptc.logger.warn('No data received!')
             return
-
+        if self.factory.received_data[:3] == b'GET':
+            # Request is an HTTP request
+            return
         try:
             data = zlib.decompress(self.factory.received_data)
+            self.factory.receive_data_string_callback(data.decode('UTF-8'), self.transport.getPeer())
         except zlib.error as err:
-            bptc.logger.error(err)
-        self.factory.receive_data_string_callback(data.decode('UTF-8'), self.transport.getPeer())
+            bptc.logger.error(
+                'Failed parsing input: {} \n\n Error message: {}'.format(
+                    self.factory.received_data, err))
 
 
 class PushClientFactory(protocol.ClientFactory):
@@ -40,9 +45,13 @@ class PushClientFactory(protocol.ClientFactory):
         self.protocol = PushClient
 
     def clientConnectionLost(self, connector, reason):
+        if reason.getErrorMessage() != 'Connection was closed cleanly.':
+            bptc.logger.error("ConnLost: {}".format(reason.getErrorMessage()))
         return
 
     def clientConnectionFailed(self, connector, reason):
+        if reason.getErrorMessage() != 'Connection was closed cleanly.':
+            bptc.logger.error("ConnFailed: {}".format(reason.getErrorMessage()))
         pass
 
 

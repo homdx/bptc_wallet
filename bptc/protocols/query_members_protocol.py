@@ -29,11 +29,12 @@ class QueryMembersClientFactory(protocol.ClientFactory):
         self.protocol = QueryMembersClient
 
     def clientConnectionLost(self, connector, reason):
-        #bptc.logger.info('Lost connection.  Reason: {}'.format(reason))
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.info('Connection failed. Reason: {}'.format(reason))
+        # Debug logging level because this might happen very often and is an
+        # expected behaviour within our framework
+        bptc.logger.debug('Connection failed. Reason: {}'.format(reason))
 
 
 class QueryMembersClient(protocol.Protocol):
