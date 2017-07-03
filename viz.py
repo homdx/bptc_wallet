@@ -113,7 +113,6 @@ class App:
                 self.new_events[event_id] = event
             else:
                 self.update_event(event)
-        self.n_nodes = len(self.verify_key_to_x)
         self.log.text += "Updated member {}...\n".format(from_member[:6])
 
     def update_event(self, event):
@@ -176,8 +175,6 @@ class App:
                 links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.self_parent].height)
                 links_data['width'].append(3)
-            else:
-                print('{} is not in self.all_events'.format(str(event.parents.self_parent)))
 
             if event.parents.other_parent is not None and event.parents.other_parent in self.all_events:
                 links_data['x0'].append(x)
@@ -185,8 +182,6 @@ class App:
                 links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key]))
                 links_data['y1'].append(self.all_events[event.parents.other_parent].height)
                 links_data['width'].append(1)
-            else:
-                print('{} is not in self.all_events'.format(str(event.parents.other_parent)))
 
         return events_data, links_data
 
