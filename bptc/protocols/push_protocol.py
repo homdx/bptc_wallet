@@ -30,6 +30,8 @@ class PushServer(protocol.Protocol):
             data = zlib.decompress(self.factory.received_data)
         except zlib.error as err:
             bptc.logger.error(err)
+        finally:
+            self.factory.received_data = b""
         self.factory.receive_data_string_callback(data.decode('UTF-8'), self.transport.getPeer())
 
 

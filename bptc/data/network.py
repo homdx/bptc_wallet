@@ -117,7 +117,7 @@ class Network:
         return event
 
     def receive_data_string_callback(self, data_string, peer):
-        self.background_push_server_thread.q.put((data_string, peer))
+        self.background_push_server_thread.q.put((data_string, peer), block=False)
 
     def process_data_string(self, data_string, peer):
         # Decode received JSON data
@@ -227,7 +227,7 @@ class PushingServerThread(threading.Thread):
         super(PushingServerThread, self).__init__()
         self.network = network
         self._stop_event = threading.Event()
-        self.q = queue.Queue()
+        self.q = queue.Queue(maxsize=1)
 
     def run(self):
         while not self.stopped():
