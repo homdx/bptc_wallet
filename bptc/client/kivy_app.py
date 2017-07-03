@@ -1,3 +1,6 @@
+import os
+# Ignore command line arguments in Kivy
+os.environ["KIVY_NO_ARGS"] = "1"
 from kivy.app import App
 from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
