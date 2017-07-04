@@ -206,6 +206,10 @@ def parents_are_forked(hg, event: Event):
 
     self_parent: Event = hg.lookup_table[event.parents.self_parent]
     other_parent: Event = hg.lookup_table[event.parents.other_parent]
+
+    if self_parent.verify_key != other_parent.verify_key:
+        return False
+
     current_event, goal_event = (self_parent, other_parent) if self_parent.height > other_parent.height else (other_parent, self_parent)
 
     # Search if we can find goal_event
