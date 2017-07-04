@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 import threading
-import os
 from functools import partial
 from time import sleep, strftime, gmtime
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText, WheelZoomTool)
+from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, PreText, WheelZoomTool)
 from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 from tornado import gen
-
-import bptc
-from bptc import init_logger
 from bptc.data.event import Fame
 from bptc.protocols.pull_protocol import PullClientFactory
 
@@ -43,9 +39,7 @@ class App:
 
     def __init__(self):
         self.pull_thread = None
-        log_directory = 'data/viz'
-        os.makedirs(log_directory, exist_ok=True)
-        init_logger(log_directory, False)
+        self.pulling = False
 
         if not reactor.running:
             self.start_reactor_thread()
@@ -56,10 +50,8 @@ class App:
                             width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
-        self.start_pulling_button = Button(label="Start pulling...", width=60)
-        self.start_pulling_button.on_click(partial(self.start_pulling, self.ip_text_input, self.port_text_input))
-        self.stop_pulling_button = Button(label="Stop pulling...", width=60)
-        self.stop_pulling_button.on_click(self.stop_pulling)
+        self.pulling_button = Button(label="start/stop pulling", width=150)
+        self.pulling_button.on_click(partial(self.toggle_pulling, self.ip_text_input, self.port_text_input))
 
         self.all_events = {}
         self.new_events = {}
@@ -72,8 +64,8 @@ class App:
                 tools=[PanTool(),  # dimensions=[Dimensions.height, Dimensions.width]
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
-                           ('round', '@round'), ('data', '@data'), ('famous', '@famous'), ('round_received', '@round_received'),
-                           ('consensus_timestamp', '@consensus_timestamp')])])
+                           ('round', '@round'), ('data', '@data'), ('famous', '@famous'),
+                           ('round_received', '@round_received'), ('consensus_timestamp', '@consensus_timestamp')])])
         plot.add_tools(WheelZoomTool())
 
         plot.xgrid.grid_line_color = None
@@ -97,11 +89,8 @@ class App:
         self.events_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                        line_alpha='line_alpha', source=self.events_src, line_width=5)
 
-        self.log = PreText(text='')
-
-        control_column = column(self.text, self.ip_text_input,
-                                self.port_text_input, self.start_pulling_button, self.stop_pulling_button, self.log)
-        main_row = row([control_column, plot], sizing_mode='fixed')
+        control_row = row(self.text, self.ip_text_input, self.port_text_input, self.pulling_button)
+        main_row = column([control_row, plot])
         doc.add_root(main_row)
 
     @gen.coroutine
@@ -128,17 +117,20 @@ class App:
         }
         self.events_src.patch(patches)
 
-    def start_pulling(self, ip_text_input, port_text_input):
-        ip = ip_text_input.value
-        port = int(port_text_input.value)
-        factory = PullClientFactory(self, doc, lock)
+    def toggle_pulling(self, ip_text_input, port_text_input):
+        if self.pulling:
+            self.pull_thread.stop()
+            self.pulling = False
+        else:
+            ip = ip_text_input.value
+            port = int(port_text_input.value)
+            factory = PullClientFactory(self, doc, lock)
 
-        self.pull_thread = PullingThread(ip, port, factory)
-        self.pull_thread.daemon = True
-        self.pull_thread.start()
+            self.pull_thread = PullingThread(ip, port, factory)
+            self.pull_thread.daemon = True
+            self.pull_thread.start()
+            self.pulling = True
 
-    def stop_pulling(self):
-        self.pull_thread.stop()
 
     @gen.coroutine
     def draw(self, from_member):
@@ -146,8 +138,7 @@ class App:
         self.new_events = {}
         self.links_src.stream(links)
         self.events_src.stream(events)
-        print('Updated!')
-        self.log.text += "Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime()))
+        print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
         lock.release()
 
     def extract_data(self, events):
