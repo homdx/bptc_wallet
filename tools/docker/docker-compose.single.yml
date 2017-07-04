@@ -2,7 +2,7 @@
 # docker-compose -f tools/docker/docker-compose.single.yml run --rm client3
 version: "3"
 services:
-  client3:
+  client:
     image: chaoste/bptc
     # You can find the IP of the registry container by running the following:
     # docker inspect bptc_registry_1 | grep IP

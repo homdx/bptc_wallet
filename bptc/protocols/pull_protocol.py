@@ -46,7 +46,7 @@ class PullClientFactory(protocol.ClientFactory):
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.error('Connection failed. Reason: {}'.format(reason))
+        bptc.logger.error('Pull connection failed. Reason: {}'.format(reason))
 
 
 class PullClient(protocol.Protocol):
