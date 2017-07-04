@@ -22,7 +22,7 @@ class PullServer(protocol.Protocol):
         serialized_events = {}
         with self.factory.hashgraph.lock:
             for event_id, event in self.factory.hashgraph.lookup_table.items():
-                serialized_events[event_id] = event.to_dict()
+                serialized_events[event_id] = event.to_debug_dict()
 
         data_string = {'from': self.factory.me_id, 'events': serialized_events}
         data_to_send = zlib.compress(json.dumps(data_string).encode('UTF-8'))
@@ -74,7 +74,7 @@ class PullClient(protocol.Protocol):
         s_events = received_data['events']
         events = {}
         for event_id, dict_event in s_events.items():
-            events[event_id] = Event.from_dict(dict_event)
+            events[event_id] = Event.from_debug_dict(dict_event)
 
         self.factory.doc.add_next_tick_callback(
             partial(self.factory.callback_obj.received_data_callback, from_member, events))

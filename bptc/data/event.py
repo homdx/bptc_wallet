@@ -95,7 +95,7 @@ class Event:
         return self.id[:6]
 
     @classmethod
-    def from_dict(cls, dict_event) -> "Event":
+    def from_debug_dict(cls, dict_event) -> "Event":
         data = None
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
@@ -111,7 +111,7 @@ class Event:
         event.round = dict_event['round']
         return event
 
-    def to_dict(self) -> Dict:
+    def to_debug_dict(self) -> Dict:
         return OrderedDict([
             ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
             ('parents', self.parents),
@@ -124,6 +124,26 @@ class Event:
             ('round_received', self.round_received),
             ('consensus_time', self.consensus_time),
             ('round', self.round)
+        ])
+
+    @classmethod
+    def from_dict(cls, dict_event) -> "Event":
+        data = None
+        if dict_event['data'] is not None:
+            data = [Transaction.from_dict(x) for x in dict_event['data']]
+
+        event = Event(dict_event['verify_key'],
+                      data, Parents(dict_event['parents'][0], dict_event['parents'][1]), dict_event['time'])
+        event.signature = dict_event['signature']
+        return event
+
+    def to_dict(self) -> Dict:
+        return OrderedDict([
+            ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
+            ('parents', self.parents),
+            ('time', self.time),
+            ('verify_key', self.verify_key),
+            ('signature', self.signature)
         ])
 
     def to_db_tuple(self) -> Tuple:

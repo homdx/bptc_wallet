@@ -165,6 +165,7 @@ class Network:
         # Store/Update member
         if from_member.id in self.hashgraph.known_members:
             self.hashgraph.known_members[from_member.id].address = from_member.address
+            from_member = self.hashgraph.known_members[from_member.id]
         else:
             self.hashgraph.known_members[from_member.id] = from_member
 

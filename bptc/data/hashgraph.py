@@ -56,21 +56,6 @@ class Hashgraph:
         """
         return int(math.floor(2 * self.total_stake / 3))
 
-    def get_head_of(self, member: Member) -> str:
-        """
-        Returns the id of the head of a given member
-        :param member:
-        :return:
-        """
-        height = -1
-        head = None
-        for item_id, item in self.lookup_table.items():
-            if str(item.verify_key) == str(member.verify_key):
-                if item.height > height:
-                    head = item
-                    height = item.height
-        return head.id if head is not None else None
-
     def get_unknown_events_of(self, member: Member) -> Dict[str, Event]:
         """
         Returns the presumably unknown events of a given member, in the same format as lookup_table
@@ -78,7 +63,7 @@ class Hashgraph:
         :return: Dictionary mapping hashes to events
         """
         result = dict(self.lookup_table)
-        head = self.get_head_of(member)
+        head = member.head
 
         if head is None:
             return result
@@ -108,26 +93,43 @@ class Hashgraph:
         """
 
         # Set the event's correct height
-        if event.parents.self_parent:
+        #if event.parents.self_parent:
             # not the first event
-            self_parent_height = self.lookup_table[event.parents.self_parent].height
-            event.height = self_parent_height + 1
+        #    self_parent_height = self.lookup_table[event.parents.self_parent].height
+        #    event.height = self_parent_height + 1
 
         # Sign event body
         event.sign(self.me.signing_key)
 
         # Add event to graph
-        self.lookup_table[event.id] = event
-        self.unordered_events.add(event.id)
+        #self.lookup_table[event.id] = event
+        #self.unordered_events.add(event.id)
 
         # Update cached head
-        self.me.head = event.id
+        #self.me.head = event.id
+
+        # Add event
+        self.add_event(event)
 
         # Figure out rounds, fame, etc.
         divide_rounds(self, [event])
         decide_fame(self)
         find_order(self)
         self.process_ordered_events()
+
+    def add_event(self, event: Event):
+        # Set the event's correct height
+        if event.parents.self_parent:
+            event.height = self.lookup_table[event.parents.self_parent].height + 1
+
+        # Add event to graph
+        self.lookup_table[event.id] = event
+
+        # Update caches
+        self.unordered_events.add(event.id)
+        if  self.known_members[event.verify_key].head is None or \
+                event.height > self.lookup_table[self.known_members[event.verify_key].head].height:
+            self.known_members[event.verify_key].head = event.id
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
@@ -154,14 +156,15 @@ class Hashgraph:
                     raise AssertionError('Other parent {} of {} not known'.
                                          format(event.parents.other_parent[:6], event.id[:6]))
                 new_events[event.id] = event
-                self.lookup_table[event.id] = event
-                self.unordered_events.add(event.id)
+                #self.lookup_table[event.id] = event
+                #self.unordered_events.add(event.id)
+                self.add_event(event)
 
         # Learn about other members
         self.learn_members_from_events(new_events)
 
         # Create a new event for the gossip
-        event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
+        event = Event(self.me.verify_key, None, Parents(self.me.head, from_member.head))
         self.add_own_event(event)
         new_events[event.id] = event
 
