@@ -139,11 +139,14 @@ class Hashgraph:
         for event in events_toposorted:
             if event.id not in self.lookup_table:
                 if event.parents.self_parent is not None and event.parents.self_parent not in self.lookup_table:
-                    raise AssertionError('Self parent {} of {} not known'.
-                                         format(event.parents.self_parent[:6], event.id[:6]))
+                    bptc.logger.error('Self parent {} of {} not known. Ignore all data.'.
+                                      format(event.parents.self_parent[:6], event.id[:6]))
+                    return
                 if event.parents.other_parent is not None and event.parents.other_parent not in self.lookup_table:
-                    raise AssertionError('Other parent {} of {} not known'.
+                    bptc.logger.error('Other parent {} of {} not known. Ignore all data'.
                                          format(event.parents.other_parent[:6], event.id[:6]))
+                    return
+
                 new_events[event.id] = event
                 self.add_event(event)
 

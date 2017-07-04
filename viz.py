@@ -24,7 +24,6 @@ def round_color(r):
 
 I_COLORS = plasma(256)
 
-
 class App:
 
     @staticmethod
@@ -41,7 +40,7 @@ class App:
         self.pull_thread = None
         log_directory = 'data/viz'
         os.makedirs(log_directory, exist_ok=True)
-        init_logger(log_directory)
+        init_logger(log_directory, False)
 
         if not reactor.running:
             self.start_reactor_thread()
@@ -188,9 +187,9 @@ class App:
     @staticmethod
     def color_of(event):
         if event.round_received is not None:
-            color = '#FF0000'
-        elif event.is_famous == Fame.TRUE:
             color = '#000000'
+        elif event.is_famous == Fame.TRUE:
+            color = '#FF0000'
         else:
             color = round_color(event.round)
         return color
@@ -212,7 +211,7 @@ class PullingThread(threading.Thread):
     def run(self):
         while not self.stopped():
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
-            sleep(0.5)
+            sleep(1)
 
     def stop(self):
         self._stop_event.set()

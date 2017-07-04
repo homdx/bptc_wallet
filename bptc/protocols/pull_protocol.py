@@ -76,6 +76,13 @@ class PullClient(protocol.Protocol):
         for event_id, dict_event in s_events.items():
             events[event_id] = Event.from_debug_dict(dict_event)
 
-        self.factory.doc.add_next_tick_callback(
-            partial(self.factory.callback_obj.received_data_callback, from_member, events))
-        self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
+        try:
+            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
+                                                            from_member, events))
+        except ValueError:
+            pass
+
+        try:
+            self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
+        except ValueError:
+            pass

@@ -204,8 +204,8 @@ def parents_are_forked(hg, event: Event):
     if event.parents.self_parent is None or event.parents.other_parent is None:
         return False
 
-    self_parent: Event = hg.lookup_table[event.parents.self_parent]
-    other_parent: Event = hg.lookup_table[event.parents.other_parent]
+    self_parent = hg.lookup_table[event.parents.self_parent]
+    other_parent = hg.lookup_table[event.parents.other_parent]
 
     if self_parent.verify_key != other_parent.verify_key:
         return False
