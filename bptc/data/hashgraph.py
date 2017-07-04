@@ -92,21 +92,8 @@ class Hashgraph:
         :return: None
         """
 
-        # Set the event's correct height
-        #if event.parents.self_parent:
-            # not the first event
-        #    self_parent_height = self.lookup_table[event.parents.self_parent].height
-        #    event.height = self_parent_height + 1
-
         # Sign event body
         event.sign(self.me.signing_key)
-
-        # Add event to graph
-        #self.lookup_table[event.id] = event
-        #self.unordered_events.add(event.id)
-
-        # Update cached head
-        #self.me.head = event.id
 
         # Add event
         self.add_event(event)
@@ -127,7 +114,7 @@ class Hashgraph:
 
         # Update caches
         self.unordered_events.add(event.id)
-        if  self.known_members[event.verify_key].head is None or \
+        if self.known_members[event.verify_key].head is None or \
                 event.height > self.lookup_table[self.known_members[event.verify_key].head].height:
             self.known_members[event.verify_key].head = event.id
 
@@ -142,8 +129,10 @@ class Hashgraph:
 
         # Only deal with valid events
         events = filter_valid_events(events)
-
         events_toposorted = toposort(events)
+
+        # Learn about other members
+        self.learn_members_from_events(events)
 
         # Add all new events in topological order and check parent pointer
         new_events = {}
@@ -156,12 +145,7 @@ class Hashgraph:
                     raise AssertionError('Other parent {} of {} not known'.
                                          format(event.parents.other_parent[:6], event.id[:6]))
                 new_events[event.id] = event
-                #self.lookup_table[event.id] = event
-                #self.unordered_events.add(event.id)
                 self.add_event(event)
-
-        # Learn about other members
-        self.learn_members_from_events(new_events)
 
         # Create a new event for the gossip
         event = Event(self.me.verify_key, None, Parents(self.me.head, from_member.head))
