@@ -164,7 +164,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
     return Fame.TRUE if stake_for >= stake_against else Fame.FALSE, stake_for if stake_for >= stake_against else stake_against
 
 
-def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
+def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
     :param hashgraph:
@@ -172,13 +172,6 @@ def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
     :param event_2:
     :return:
     """
-
-    # TODO:
-    '''
-    Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
-    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y!
-    If w only has x or y as ancestor, then w could see it. (see page 8, 9)
-    '''
 
     to_visit = {event_1}
     visited = set()
@@ -190,17 +183,39 @@ def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
             if event.id == event_2.id:
                 return True
 
-            if event.round < event_2.round:
+            if parents_are_forked(hg, event) or event.round < event_2.round:
                 visited.add(event)
                 continue
 
             if event.parents.self_parent is not None:
-                to_visit.add(hashgraph.lookup_table[event.parents.self_parent])
+                to_visit.add(hg.lookup_table[event.parents.self_parent])
             if event.parents.other_parent is not None:
-                to_visit.add(hashgraph.lookup_table[event.parents.other_parent])
+                to_visit.add(hg.lookup_table[event.parents.other_parent])
             visited.add(event)
 
     return False
+
+
+def parents_are_forked(hg, event: Event):
+    """
+    Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
+    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y.
+    """
+    if event.parents.self_parent is None or event.parents.other_parent is None:
+        return False
+
+    self_parent: Event = hg.lookup_table[event.parents.self_parent]
+    other_parent: Event = hg.lookup_table[event.parents.other_parent]
+    current_event, goal_event = (self_parent, other_parent) if self_parent.height > other_parent.height else (other_parent, self_parent)
+
+    # Search if we can find goal_event
+    # If so, they can't be forked
+    while current_event.parents.self_parent is not None and current_event.height >= goal_event.height:
+        if current_event.parents.self_parent == goal_event.id:
+            return False
+        current_event = hg.lookup_table[current_event.parents.self_parent]
+
+    return True
 
 
 def decide_randomly_based_on_signature(signature: str) -> bool:
