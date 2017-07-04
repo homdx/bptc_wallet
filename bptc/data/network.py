@@ -102,10 +102,13 @@ class Network:
         :param receiver: The receiver of the transaction
         :return:
         """
-        transaction = MoneyTransaction(receiver.to_verifykey_string(), amount, comment)
-        event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
-        self.hashgraph.add_own_event(event)
-        return event
+        transaction1 = MoneyTransaction(receiver.to_verifykey_string(), amount, comment)
+        transaction2 = MoneyTransaction(self.hashgraph.me.to_verifykey_string(), amount, comment)
+        event1 = Event(self.hashgraph.me.verify_key, [transaction1], Parents(self.hashgraph.me.head, None))
+        event2 = Event(self.hashgraph.me.verify_key, [transaction2], Parents(self.hashgraph.me.head, None))
+        self.hashgraph.add_own_event(event1)
+        self.hashgraph.add_own_event(event2)
+        return event1
 
     def publish_name(self, name: str):
         """
