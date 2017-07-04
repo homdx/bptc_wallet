@@ -6,8 +6,8 @@ from time import strftime, gmtime
 
 from twisted.internet import protocol
 from functools import partial
-import bptc
 from bptc.data.event import Event
+from bptc.utils.toposort import toposort
 
 
 class PullServerFactory(protocol.ServerFactory):
@@ -70,7 +70,7 @@ class PullClient(protocol.Protocol):
         try:
             data = zlib.decompress(self.factory.received_data)
         except zlib.error as err:
-            bptc.logger.error(err)
+            print(err)
         finally:
             self.factory.received_data = b""
 
@@ -81,15 +81,11 @@ class PullClient(protocol.Protocol):
         for event_id, dict_event in s_events.items():
             events[event_id] = Event.from_debug_dict(dict_event)
 
-        try:
-            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
-                                                            from_member, events))
-        except ValueError as e:
-            bptc.logger.warn(e)
-            pass
+        toposort(events)
 
         try:
-            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.draw, from_member))
+            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
+                                                            from_member, toposort(events)))
         except ValueError as e:
-            bptc.logger.warn(e)
+            print(e)
             pass

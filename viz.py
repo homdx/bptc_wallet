@@ -53,11 +53,12 @@ class App:
         self.pulling_button = Button(label="start/stop pulling", width=150)
         self.pulling_button.on_click(partial(self.toggle_pulling, self.ip_text_input, self.port_text_input))
 
-        self.all_events = {}
-        self.new_events = {}
-        self.verify_key_to_x = {}
+        self.member_to_events = {}
+        self.event_id_to_member = {}
+        self.new_events = []
+        self.member_id_to_x = {}
         self.n_nodes = 10
-        self.counter = 0
+        self.member_counter = 0
 
         plot = figure(
                 plot_height=2000, plot_width=2000, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
@@ -93,22 +94,52 @@ class App:
         main_row = column([control_row, plot])
         doc.add_root(main_row)
 
+    def is_known(self, event):
+        if event.verify_key not in self.member_to_events:
+            return False
+        member_event_dict = self.member_to_events[event.verify_key]
+        if event.id in member_event_dict:
+            if member_event_dict[event.id].id == event.id:
+                return True
+            else:
+                print('Detected possible fork!')
+                return False
+        else:
+            return False
+
     @gen.coroutine
     def received_data_callback(self, from_member, events):
-        for event_id, event in events.items():
-            if event_id not in self.all_events:
-                if event.verify_key not in self.verify_key_to_x.keys():
-                    self.verify_key_to_x[event.verify_key] = self.counter
-                    self.counter = self.counter + 1
-                self.all_events[event_id] = event
+        for event in events:
+            member_id = event.verify_key
+            if member_id not in self.member_to_events:
+                self.member_to_events[member_id] = {}
+            member_event_dict = self.member_to_events[member_id]
+            if self.is_known(event):
+                # know event
+                self.update_event(event)
+            else:
+                # don't know event
+                if event.verify_key not in self.member_id_to_x.keys():
+                    self.member_id_to_x[event.verify_key] = self.member_counter
+                    self.member_counter = self.member_counter + 1
                 event.index = self.index_counter
                 self.index_counter += 1
-                self.new_events[event_id] = event
-            else:
-                self.update_event(event)
+                member_event_dict[event.id] = event
+                self.event_id_to_member[event.id] = event.verify_key
+                self.new_events.append(event)
+        self.draw(from_member)
+
+    @gen.coroutine
+    def draw(self, from_member):
+        events, links = self.extract_data(self.new_events)
+        self.new_events = []
+        self.links_src.stream(links)
+        self.events_src.stream(events)
+        print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
+        lock.release()
 
     def update_event(self, event):
-        index = self.all_events[event.id].index
+        index = self.member_to_events[event.verify_key][event.id].index
         patches = {
             'round_color': [(index, self.color_of(event))],
             'famous': [(index, self.fame_to_string(event.is_famous))],
@@ -131,24 +162,14 @@ class App:
             self.pull_thread.start()
             self.pulling = True
 
-
-    @gen.coroutine
-    def draw(self, from_member):
-        events, links = self.extract_data(self.new_events)
-        self.new_events = {}
-        self.links_src.stream(links)
-        self.events_src.stream(events)
-        print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
-        lock.release()
-
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
                        'time': [], 'from': [], 'height': [], 'data': [], 'witness': [], 'famous': [],
                        'round_received': [], 'consensus_timestamp': []}
         links_data = {'x0': [], 'y0': [], 'x1': [], 'y1': [], 'width': []}
 
-        for event_id, event in events.items():
-            x = self.verify_key_to_x[event.verify_key]
+        for event in events:
+            x = self.member_id_to_x[event.verify_key]
             y = event.height
             events_data['x'].append(x)
             events_data['y'].append(y)
@@ -166,19 +187,25 @@ class App:
             events_data['round_received'].append(event.round_received)
             events_data['consensus_timestamp'].append(event.consensus_time)
 
-            if event.parents.self_parent is not None and event.parents.self_parent in self.all_events:
-                links_data['x0'].append(x)
-                links_data['y0'].append(y)
-                links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.self_parent].verify_key]))
-                links_data['y1'].append(self.all_events[event.parents.self_parent].height)
-                links_data['width'].append(3)
+            self_parent_id = event.parents.self_parent
+            if self_parent_id is not None and self_parent_id in self.event_id_to_member:
+                member_id = self.event_id_to_member[self_parent_id]
+                if self_parent_id in self.member_to_events[member_id]:
+                    links_data['x0'].append(x)
+                    links_data['y0'].append(y)
+                    links_data['x1'].append(str(self.member_id_to_x[member_id]))
+                    links_data['y1'].append(self.member_to_events[member_id][self_parent_id].height)
+                    links_data['width'].append(3)
 
-            if event.parents.other_parent is not None and event.parents.other_parent in self.all_events:
-                links_data['x0'].append(x)
-                links_data['y0'].append(y)
-                links_data['x1'].append(str(self.verify_key_to_x[self.all_events[event.parents.other_parent].verify_key]))
-                links_data['y1'].append(self.all_events[event.parents.other_parent].height)
-                links_data['width'].append(1)
+            other_parent_id = event.parents.other_parent
+            if other_parent_id is not None and other_parent_id in self.event_id_to_member:
+                member_id = self.event_id_to_member[other_parent_id]
+                if other_parent_id in self.member_to_events[member_id]:
+                    links_data['x0'].append(x)
+                    links_data['y0'].append(y)
+                    links_data['x1'].append(str(self.member_id_to_x[member_id]))
+                    links_data['y1'].append(self.member_to_events[member_id][other_parent_id].height)
+                    links_data['width'].append(1)
 
         return events_data, links_data
 
