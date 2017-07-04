@@ -38,19 +38,19 @@ class PullServer(protocol.Protocol):
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, doc, ready):
+    def __init__(self, callback_obj, doc, lock):
         self.callback_obj = callback_obj
         self.doc = doc
         self.protocol = PullClient
         self.received_data = b""
-        self.ready = ready
+        self.lock = lock
 
     def clientConnectionLost(self, connector, reason):
         return
 
     def clientConnectionFailed(self, connector, reason):
         print('Connecting failed!')
-        self.ready.set()
+        self.lock.release()
 
 
 class PullClient(protocol.Protocol):

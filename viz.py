@@ -26,8 +26,7 @@ def round_color(r):
 
 I_COLORS = plasma(256)
 
-ready = threading.Event()
-ready.set()
+lock = threading.Lock()
 
 
 class App:
@@ -123,7 +122,7 @@ class App:
         index = self.all_events[event.id].index
         patches = {
             'round_color': [(index, self.color_of(event))],
-            'famous': [(index, event.is_famous)],
+            'famous': [(index, self.fame_to_string(event.is_famous))],
             'round_received': [(index, event.round_received)],
             'consensus_timestamp': [(index, event.consensus_time)]
         }
@@ -132,7 +131,7 @@ class App:
     def start_pulling(self, ip_text_input, port_text_input):
         ip = ip_text_input.value
         port = int(port_text_input.value)
-        factory = PullClientFactory(self, doc, ready)
+        factory = PullClientFactory(self, doc, lock)
 
         self.pull_thread = PullingThread(ip, port, factory)
         self.pull_thread.daemon = True
@@ -149,7 +148,7 @@ class App:
         self.events_src.stream(events)
         print('Updated!')
         self.log.text += "Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime()))
-        ready.set()
+        lock.release()
 
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
@@ -172,7 +171,7 @@ class App:
             events_data['height'].append(event.height)
             events_data['data'].append('None' if event.data is None else str(event.data))
             events_data['witness'].append('Yes' if event.is_witness else 'No')
-            events_data['famous'].append(event.is_famous)
+            events_data['famous'].append(self.fame_to_string(event.is_famous))
             events_data['round_received'].append(event.round_received)
             events_data['consensus_timestamp'].append(event.consensus_time)
 
@@ -202,6 +201,15 @@ class App:
             color = round_color(event.round)
         return color
 
+    @staticmethod
+    def fame_to_string(fame):
+        if fame is -1:
+            return 'UNDECIDED'
+        elif fame is 0:
+            return 'NO'
+        elif fame is 1:
+            return 'YES'
+
 App()
 
 
@@ -218,9 +226,7 @@ class PullingThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            while not ready.is_set():
-                ready.wait()
-            ready.clear()
+            lock.acquire()
             print('Try to connect...')
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
             sleep(1)
