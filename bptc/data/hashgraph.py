@@ -42,11 +42,6 @@ class Hashgraph:
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
 
-        # A cache to quickly find all direct self-children of an event
-        # Used to quickly check for forks
-        # {event-hash -> set(event-hash)}
-        self.self_children_lookup_table = defaultdict(set)
-
     @property
     def total_stake(self) -> int:
         """
@@ -104,7 +99,7 @@ class Hashgraph:
 
         return result
 
-    def add_own_event(self, event: Event) -> None:
+    def add_own_event(self, event: Event):
         """
         Adds an own event to the hashgraph, setting the event's height depending on its parents
         :param event: The event to be added
@@ -122,7 +117,8 @@ class Hashgraph:
         event.sign(self.me.signing_key)
 
         # Add event to graph
-        self.add_event(event)
+        self.lookup_table[event.id] = event
+        self.unordered_events.add(event.id)
 
         # Update cached head
         self.me.head = event.id
@@ -132,17 +128,6 @@ class Hashgraph:
         decide_fame(self)
         find_order(self)
         self.process_ordered_events()
-
-    def add_event(self, event: Event) -> None:
-        """
-        Adds an event to the hashgraph (lookup table and relevant caches)
-        :param event: The event to be added
-        :return: None
-        """
-        self.lookup_table[event.id] = event
-        self.unordered_events.add(event.id)
-        if event.parents.self_parent is not None:
-            self.self_children_lookup_table[event.parents.self_parent].add(event.id)
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
@@ -169,7 +154,8 @@ class Hashgraph:
                     raise AssertionError('Other parent {} of {} not known'.
                                          format(event.parents.other_parent[:6], event.id[:6]))
                 new_events[event.id] = event
-                self.add_event(event)
+                self.lookup_table[event.id] = event
+                self.unordered_events.add(event.id)
 
         # Learn about other members
         self.learn_members_from_events(new_events)

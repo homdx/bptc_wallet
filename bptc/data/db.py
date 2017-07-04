@@ -113,8 +113,6 @@ class DB:
         # check parent links and signatures
         for event_id, event in events.items():
             if event.parents.self_parent is not None:
-                # Add to self-child lookup table
-                hg.self_children_lookup_table[event.parents.self_parent].add(event.id)
                 if event.parents.self_parent not in events:
                     raise AssertionError
             if event.parents.other_parent is not None:
