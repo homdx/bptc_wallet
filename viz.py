@@ -2,7 +2,7 @@
 import threading
 import os
 from functools import partial
-from time import sleep
+from time import sleep, strftime, gmtime
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
 from bokeh.models import (Button, TextInput, ColumnDataSource, PanTool, HoverTool, Dimensions, PreText, WheelZoomTool)
@@ -10,6 +10,8 @@ from bokeh.palettes import plasma, small_palettes
 from bokeh.plotting import figure
 from twisted.internet import threads, reactor
 from tornado import gen
+
+import bptc
 from bptc import init_logger
 from bptc.data.event import Fame
 from bptc.protocols.pull_protocol import PullClientFactory
@@ -23,6 +25,10 @@ def round_color(r):
     return R_COLORS[r % 8]
 
 I_COLORS = plasma(256)
+
+ready = threading.Event()
+ready.set()
+
 
 class App:
 
@@ -112,7 +118,6 @@ class App:
                 self.new_events[event_id] = event
             else:
                 self.update_event(event)
-        self.log.text += "Updated member {}...\n".format(from_member[:6])
 
     def update_event(self, event):
         index = self.all_events[event.id].index
@@ -127,7 +132,7 @@ class App:
     def start_pulling(self, ip_text_input, port_text_input):
         ip = ip_text_input.value
         port = int(port_text_input.value)
-        factory = PullClientFactory(self, doc)
+        factory = PullClientFactory(self, doc, ready)
 
         self.pull_thread = PullingThread(ip, port, factory)
         self.pull_thread.daemon = True
@@ -137,11 +142,14 @@ class App:
         self.pull_thread.stop()
 
     @gen.coroutine
-    def draw(self):
+    def draw(self, from_member):
         events, links = self.extract_data(self.new_events)
         self.new_events = {}
         self.links_src.stream(links)
         self.events_src.stream(events)
+        print('Updated!')
+        self.log.text += "Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime()))
+        ready.set()
 
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
@@ -210,6 +218,10 @@ class PullingThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
+            while not ready.is_set():
+                ready.wait()
+            ready.clear()
+            print('Try to connect...')
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
             sleep(1)
 

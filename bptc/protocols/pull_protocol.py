@@ -2,6 +2,8 @@ import json
 import zlib
 
 from math import ceil
+from time import strftime, gmtime
+
 from twisted.internet import protocol
 from functools import partial
 import bptc
@@ -36,22 +38,25 @@ class PullServer(protocol.Protocol):
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, doc):
+    def __init__(self, callback_obj, doc, ready):
         self.callback_obj = callback_obj
         self.doc = doc
         self.protocol = PullClient
         self.received_data = b""
+        self.ready = ready
 
     def clientConnectionLost(self, connector, reason):
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.error('Pull connection failed. Reason: {}'.format(reason))
+        print('Connecting failed!')
+        self.ready.set()
 
 
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
+        print('Connected! Start updating at {}...'.format(strftime("%H:%M:%S", gmtime())))
         return
 
     def dataReceived(self, data):
@@ -59,7 +64,7 @@ class PullClient(protocol.Protocol):
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
-            bptc.logger.warn('No data received!')
+            print('No data received!')
             return
 
         try:
@@ -79,10 +84,12 @@ class PullClient(protocol.Protocol):
         try:
             self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
                                                             from_member, events))
-        except ValueError:
+        except ValueError as e:
+            bptc.logger.warn(e)
             pass
 
         try:
-            self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
-        except ValueError:
+            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.draw, from_member))
+        except ValueError as e:
+            bptc.logger.warn(e)
             pass
