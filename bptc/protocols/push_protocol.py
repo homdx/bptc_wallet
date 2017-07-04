@@ -16,11 +16,15 @@ class PushServerFactory(protocol.ServerFactory):
 class PushServer(protocol.Protocol):
 
     def connectionMade(self):
-        self.transport.write('I\'m alive!'.encode('UTF-8'))
+        # Dont call transport.write at this point - all received data might be gone
+        pass
 
     def dataReceived(self, data):
+        if data[:3] == b'GET':
+            self.transport.write('I\'m alive!'.encode('UTF-8'))
+            self.transport.loseConnection()
+            return
         self.factory.received_data += data
-        self.transport.loseConnection()
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
@@ -34,8 +38,8 @@ class PushServer(protocol.Protocol):
             self.factory.receive_data_string_callback(data.decode('UTF-8'), self.transport.getPeer())
         except zlib.error as err:
             bptc.logger.error(
-                'Failed parsing input: {} \n\n Error message: {}'.format(
-                    self.factory.received_data, err))
+                'Failed parsing input: {}... [length={}] \n\n Error message: {}'.format(
+                    self.factory.received_data[:100], len(self.factory.received_data), err))
         finally:
             self.factory.received_data = b""
 
@@ -47,13 +51,15 @@ class PushClientFactory(protocol.ClientFactory):
         self.protocol = PushClient
 
     def clientConnectionLost(self, connector, reason):
-        if reason.getErrorMessage() != 'Connection was closed cleanly.':
-            bptc.logger.error("ConnLost: {}".format(reason.getErrorMessage()))
-        return
+        # Ignore failed connections because we expect this to happen
+        # if reason.getErrorMessage() != 'Connection was closed cleanly.':
+        #     bptc.logger.error("ConnLost: {}".format(reason.getErrorMessage()))
+        pass
 
     def clientConnectionFailed(self, connector, reason):
-        if reason.getErrorMessage() != 'Connection was closed cleanly.':
-            bptc.logger.error("ConnFailed: {}".format(reason.getErrorMessage()))
+        # Ignore failed connections because we expect this to happen
+        # if reason.getErrorMessage() != 'Connection was closed cleanly.':
+        #     bptc.logger.error("ConnFailed: {}".format(reason.getErrorMessage()))
         pass
 
 

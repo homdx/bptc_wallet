@@ -8,7 +8,7 @@ logger = None
 
 
 # Logging
-def init_logger(output_dir, be_quiet):
+def init_logger(output_dir, be_quiet=False):
     global stdout_logger, file_logger, logger
 
     stdout_logger = logging.StreamHandler(sys.stdout)
