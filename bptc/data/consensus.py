@@ -173,13 +173,6 @@ def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
     :return:
     """
 
-    # TODO:
-    '''
-    Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
-    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y!
-    If w only has x or y as ancestor, then w could see it. (see page 8, 9)
-    '''
-
     to_visit = {event_1}
     visited = set()
 
@@ -194,7 +187,12 @@ def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
                 visited.add(event)
                 continue
 
-            if event.parents.self_parent is not None:
+            if event.parents.self_parent is not None \
+                    and len(hashgraph.self_children_lookup_table[event.parents.self_parent]) == 1:
+                '''
+                Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
+                but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y.
+                '''
                 to_visit.add(hashgraph.lookup_table[event.parents.self_parent])
             if event.parents.other_parent is not None:
                 to_visit.add(hashgraph.lookup_table[event.parents.other_parent])
