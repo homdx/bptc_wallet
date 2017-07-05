@@ -5,7 +5,7 @@ from kivy.uix.popup import Popup
 
 Builder.load_file(join(dirname(__file__), 'confirmpopup.kv'))
 
-
+# Source: https://gist.github.com/kived/742397a80d61e6be225a
 class ConfirmPopup(Popup):
 	text = StringProperty('')
 

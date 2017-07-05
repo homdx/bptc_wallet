@@ -104,6 +104,7 @@
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
                 multiline: False
+                write_tab: False
                 input_filter: root.generate_limited_input(self, 21)
         BoxLayout:
             size_hint: 1, 1
@@ -125,6 +126,7 @@
                 text: str(root.defaults['query_members_address'])
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
                 multiline: False
                 input_filter: root.generate_limited_input(self, 21)
         BoxLayout:
@@ -160,6 +162,7 @@
                 text: str(root.defaults['push_address'])
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
                 multiline: False
                 input_filter: root.generate_limited_input(self, 21)
         BoxLayout:
@@ -186,9 +189,11 @@
             TextInput:
                 id: amount_field
                 size_hint: 0.6, 1
-                input_filter: 'int'
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: 'int'
             Label:
 	            text: 'BPTC'
 	            size_hint: 0.2, 1
@@ -202,6 +207,9 @@
                 size_hint: 0.8, 1
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 100)
         BoxLayout:
             id: receiver_layout
             size_hint: 1, 5
@@ -254,6 +262,9 @@
                 id: name_field
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 50)
         Label:
             text: '[b]Warning[/b]:\nThis name will be published on the Hashgraph\nand will be visible for all members!'
             halign: 'center'

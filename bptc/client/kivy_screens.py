@@ -13,8 +13,14 @@ from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 kivy.require('1.0.7')
 
+class KivyScreen(Screen):
+    @staticmethod
+    def generate_limited_input(widget, n):
+        # This is used for limiting the input length
+        return lambda text, from_undo: text[:n - len(widget.text)]
 
-class MainScreen(Screen):
+
+class MainScreen(KivyScreen):
     def __init__(self, network, cl_args):
         self.defaults = {
             'listening_port': cl_args.port,
@@ -48,11 +54,6 @@ class MainScreen(Screen):
             if id_ == key:
                 return obj.text
         return self.defaults[key]
-
-    @staticmethod
-    def generate_limited_input(widget, n):
-        # This is used for limiting the input length
-        return lambda text, from_undo: text[:n - len(widget.text)]
 
     def get_widget_id(self, widget):
         for id_, obj in self.ids.items():
@@ -101,7 +102,7 @@ class MainScreen(Screen):
             self.pushing = False
 
 
-class NewTransactionScreen(Screen):
+class NewTransactionScreen(KivyScreen):
 
     class MemberListItemButton(ListItemButton):
 
@@ -163,7 +164,7 @@ class NewTransactionScreen(Screen):
             print("Error parsing values")
 
 
-class TransactionsScreen(Screen):
+class TransactionsScreen(KivyScreen):
 
     def __init__(self, network):
         self.network = network
@@ -217,7 +218,7 @@ class TransactionsScreen(Screen):
         self.ids.box_layout.remove_widget(self.list_view)
 
 
-class PublishNameScreen(Screen):
+class PublishNameScreen(KivyScreen):
 
     def __init__(self, network):
         self.network = network
