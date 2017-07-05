@@ -80,6 +80,20 @@ class App:
         main_row = column([control_row, plot])
         doc.add_root(main_row)
 
+    def toggle_pulling(self, ip_text_input, port_text_input):
+        if self.pulling:
+            self.pull_thread.stop()
+            self.pulling = False
+        else:
+            ip = ip_text_input.value
+            port = int(port_text_input.value)
+            factory = PullClientFactory(self, doc, lock)
+
+            self.pull_thread = PullingThread(ip, port, factory)
+            self.pull_thread.daemon = True
+            self.pull_thread.start()
+            self.pulling = True
+
     @gen.coroutine
     def received_data_callback(self, from_member, events):
         print('received_data_callback()')
@@ -115,20 +129,6 @@ class App:
         self.events_src.stream(events)
         print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
         lock.release()
-
-    def toggle_pulling(self, ip_text_input, port_text_input):
-        if self.pulling:
-            self.pull_thread.stop()
-            self.pulling = False
-        else:
-            ip = ip_text_input.value
-            port = int(port_text_input.value)
-            factory = PullClientFactory(self, doc, lock)
-
-            self.pull_thread = PullingThread(ip, port, factory)
-            self.pull_thread.daemon = True
-            self.pull_thread.start()
-            self.pulling = True
 
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
@@ -193,16 +193,6 @@ class App:
             return 'NO'
         elif fame is Fame.TRUE:
             return 'YES'
-
-    @staticmethod
-    def start_reactor_thread():
-        def start_reactor():
-            reactor.run(installSignalHandlers=0)
-
-        thread = threading.Thread(target=start_reactor)
-        thread.daemon = True
-        thread.start()
-        print('Started reactor')
 
     @staticmethod
     def start_reactor_thread():
