@@ -6,6 +6,9 @@ from time import strftime, gmtime
 
 from twisted.internet import protocol
 from functools import partial
+
+from twisted.protocols.policies import TimeoutMixin
+
 from bptc.data.event import Event
 from bptc.utils.toposort import toposort
 
@@ -21,6 +24,7 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
+        print('Viz connected!')
         serialized_events = {}
         with self.factory.hashgraph.lock:
             for event_id, event in self.factory.hashgraph.lookup_table.items():
@@ -53,24 +57,35 @@ class PullClientFactory(protocol.ClientFactory):
         self.lock.release()
 
 
-class PullClient(protocol.Protocol):
+class PullClient(protocol.Protocol, TimeoutMixin):
 
     def connectionMade(self):
         print('Connected! Start updating at {}...'.format(strftime("%H:%M:%S", gmtime())))
+        self.setTimeout(5)
         return
 
     def dataReceived(self, data):
         self.factory.received_data += data
+        self.resetTimeout()
+
+    def timeoutConnection(self):
+        print('TIMEOUT')
+        self.transport.abortConnection()
+        self.factory.received_data = b""
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
-            print('No data received!')
+            print('Error: No data received!')
+            self.factory.lock.release()
             return
 
         try:
             data = zlib.decompress(self.factory.received_data)
-        except zlib.error as err:
-            print(err)
+        except zlib.error:
+            print('Error: Incomplete data!')
+            self.transport.loseConnection()
+            self.factory.lock.release()
+            return
         finally:
             self.factory.received_data = b""
 
@@ -81,11 +96,11 @@ class PullClient(protocol.Protocol):
         for event_id, dict_event in s_events.items():
             events[event_id] = Event.from_debug_dict(dict_event)
 
-        toposort(events)
-
         try:
+            print('Added next tick callback!')
             self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
                                                             from_member, toposort(events)))
         except ValueError as e:
             print(e)
             pass
+        self.transport.loseConnection()

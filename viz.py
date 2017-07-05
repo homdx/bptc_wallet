@@ -16,7 +16,7 @@ R_COLORS = small_palettes['Set2'][8]
 
 doc = curdoc()
 
-# shuffle(R_COLORS)
+
 def round_color(r):
     return R_COLORS[r % 8]
 
@@ -27,20 +27,9 @@ lock = threading.Lock()
 
 class App:
 
-    @staticmethod
-    def start_reactor_thread():
-        def start_reactor():
-            reactor.run(installSignalHandlers=0)
-
-        thread = threading.Thread(target=start_reactor)
-        thread.daemon = True
-        thread.start()
-        print('Started reactor')
-
     def __init__(self):
         self.pull_thread = None
         self.pulling = False
-
         if not reactor.running:
             self.start_reactor_thread()
 
@@ -53,15 +42,12 @@ class App:
         self.pulling_button = Button(label="start/stop pulling", width=150)
         self.pulling_button.on_click(partial(self.toggle_pulling, self.ip_text_input, self.port_text_input))
 
-        self.member_to_events = {}
-        self.event_id_to_member = {}
-        self.new_events = []
+        self.all_events = {}
         self.member_id_to_x = {}
         self.n_nodes = 10
-        self.member_counter = 0
 
         plot = figure(
-                plot_height=2000, plot_width=2000, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
+                plot_height=800, plot_width=1800, y_range=(0, 30), x_range=(0, self.n_nodes - 1),
                 tools=[PanTool(),  # dimensions=[Dimensions.height, Dimensions.width]
                        HoverTool(tooltips=[
                            ('id', '@id'), ('from', '@from'), ('height', '@height'), ('witness', '@witness'),
@@ -94,52 +80,34 @@ class App:
         main_row = column([control_row, plot])
         doc.add_root(main_row)
 
-    def is_known(self, event):
-        if event.verify_key not in self.member_to_events:
-            return False
-        member_event_dict = self.member_to_events[event.verify_key]
-        if event.id in member_event_dict:
-            if member_event_dict[event.id].id == event.id:
-                return True
-            else:
-                print('Detected possible fork!')
-                return False
-        else:
-            return False
-
     @gen.coroutine
     def received_data_callback(self, from_member, events):
+        print('received_data_callback()')
+        new_events = []
         for event in events:
-            member_id = event.verify_key
-            if member_id not in self.member_to_events:
-                self.member_to_events[member_id] = {}
-            member_event_dict = self.member_to_events[member_id]
-            if self.is_known(event):
-                # know event
-                self.update_event(event)
+            if event.id in self.all_events:
+                if event.consensus_time is not None:
+                    self.update_event(event)
             else:
                 # don't know event
                 if event.verify_key not in self.member_id_to_x.keys():
-                    self.member_id_to_x[event.verify_key] = self.member_counter
-                    self.member_counter = self.member_counter + 1
-                event.index = self.index_counter
-                self.index_counter += 1
-                member_event_dict[event.id] = event
-                self.event_id_to_member[event.id] = event.verify_key
-                self.new_events.append(event)
-        self.draw(from_member)
+                    # don't know member
+                    self.member_id_to_x[event.verify_key] = len(self.member_id_to_x)
+                event.index = len(self.all_events)
+                self.all_events[event.id] = event
+                new_events.append(event)
+        self.draw(from_member, new_events)
 
     @gen.coroutine
-    def draw(self, from_member):
-        events, links = self.extract_data(self.new_events)
-        self.new_events = []
+    def draw(self, from_member, new_events):
+        events, links = self.extract_data(new_events)
         self.links_src.stream(links)
         self.events_src.stream(events)
         print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
         lock.release()
 
     def update_event(self, event):
-        index = self.member_to_events[event.verify_key][event.id].index
+        index = self.all_events[event.id].index
         patches = {
             'round_color': [(index, self.color_of(event))],
             'famous': [(index, self.fame_to_string(event.is_famous))],
@@ -188,24 +156,22 @@ class App:
             events_data['consensus_timestamp'].append(event.consensus_time)
 
             self_parent_id = event.parents.self_parent
-            if self_parent_id is not None and self_parent_id in self.event_id_to_member:
-                member_id = self.event_id_to_member[self_parent_id]
-                if self_parent_id in self.member_to_events[member_id]:
-                    links_data['x0'].append(x)
-                    links_data['y0'].append(y)
-                    links_data['x1'].append(str(self.member_id_to_x[member_id]))
-                    links_data['y1'].append(self.member_to_events[member_id][self_parent_id].height)
-                    links_data['width'].append(3)
+            if self_parent_id is not None and self_parent_id in self.all_events:
+                self_parent = self.all_events[self_parent_id]
+                links_data['x0'].append(x)
+                links_data['y0'].append(y)
+                links_data['x1'].append(str(self.member_id_to_x[self_parent.verify_key]))
+                links_data['y1'].append(self_parent.height)
+                links_data['width'].append(3)
 
             other_parent_id = event.parents.other_parent
-            if other_parent_id is not None and other_parent_id in self.event_id_to_member:
-                member_id = self.event_id_to_member[other_parent_id]
-                if other_parent_id in self.member_to_events[member_id]:
-                    links_data['x0'].append(x)
-                    links_data['y0'].append(y)
-                    links_data['x1'].append(str(self.member_id_to_x[member_id]))
-                    links_data['y1'].append(self.member_to_events[member_id][other_parent_id].height)
-                    links_data['width'].append(1)
+            if other_parent_id is not None and other_parent_id in self.all_events:
+                other_parent = self.all_events[other_parent_id]
+                links_data['x0'].append(x)
+                links_data['y0'].append(y)
+                links_data['x1'].append(str(self.member_id_to_x[other_parent.verify_key]))
+                links_data['y1'].append(other_parent.height)
+                links_data['width'].append(1)
 
         return events_data, links_data
 
@@ -227,6 +193,26 @@ class App:
             return 'NO'
         elif fame is 1:
             return 'YES'
+
+    @staticmethod
+    def start_reactor_thread():
+        def start_reactor():
+            reactor.run(installSignalHandlers=0)
+
+        thread = threading.Thread(target=start_reactor)
+        thread.daemon = True
+        thread.start()
+        print('Started reactor')
+
+    @staticmethod
+    def start_reactor_thread():
+        def start_reactor():
+            reactor.run(installSignalHandlers=0)
+
+        thread = threading.Thread(target=start_reactor)
+        thread.daemon = True
+        thread.start()
+        print('Started reactor')
 
 App()
 
