@@ -83,11 +83,23 @@ class App:
     @gen.coroutine
     def received_data_callback(self, from_member, events):
         print('received_data_callback()')
+        patch = {}
         new_events = []
         for event in events:
             if event.id in self.all_events:
+                # know event
                 if event.consensus_time is not None:
-                    self.update_event(event)
+                    # not committed so far
+                    if 'round_color' not in patch:
+                        patch['round_color'] = []
+                        patch['famous'] = []
+                        patch['round_received'] = []
+                        patch['consensus_timestamp'] = []
+                    index = self.all_events[event.id].index
+                    patch['round_color'].append((index, self.color_of(event)))
+                    patch['famous'].append((index, self.fame_to_string(event.is_famous)))
+                    patch['round_received'].append((index, event.round_received))
+                    patch['consensus_timestamp'].append((index, event.consensus_time))
             else:
                 # don't know event
                 if event.verify_key not in self.member_id_to_x.keys():
@@ -96,25 +108,13 @@ class App:
                 event.index = len(self.all_events)
                 self.all_events[event.id] = event
                 new_events.append(event)
-        self.draw(from_member, new_events)
 
-    @gen.coroutine
-    def draw(self, from_member, new_events):
+        self.events_src.patch(patch)
         events, links = self.extract_data(new_events)
         self.links_src.stream(links)
         self.events_src.stream(events)
         print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
         lock.release()
-
-    def update_event(self, event):
-        index = self.all_events[event.id].index
-        patches = {
-            'round_color': [(index, self.color_of(event))],
-            'famous': [(index, self.fame_to_string(event.is_famous))],
-            'round_received': [(index, event.round_received)],
-            'consensus_timestamp': [(index, event.consensus_time)]
-        }
-        self.events_src.patch(patches)
 
     def toggle_pulling(self, ip_text_input, port_text_input):
         if self.pulling:
@@ -177,9 +177,9 @@ class App:
 
     @staticmethod
     def color_of(event):
-        if event.round_received is not None:
+        if event.consensus_time is not None:
             color = '#000000'
-        elif event.is_famous == Fame.TRUE:
+        elif event.is_famous is Fame.TRUE:
             color = '#FF0000'
         else:
             color = round_color(event.round)
@@ -187,11 +187,11 @@ class App:
 
     @staticmethod
     def fame_to_string(fame):
-        if fame is -1:
+        if fame is Fame.UNDECIDED:
             return 'UNDECIDED'
-        elif fame is 0:
+        elif fame is Fame.FALSE:
             return 'NO'
-        elif fame is 1:
+        elif fame is Fame.TRUE:
             return 'YES'
 
     @staticmethod
