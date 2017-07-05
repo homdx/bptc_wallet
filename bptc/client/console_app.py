@@ -1,5 +1,6 @@
 import signal
 from functools import partial
+from prompt_toolkit.shortcuts import confirm
 
 import bptc
 import bptc.utils.network as network_utils
@@ -37,6 +38,12 @@ class ConsoleApp(InteractiveShell):
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
+            reset=dict(
+                help='Call this command to reset the local hashgraph',
+                args=[
+                    (['-f', '--force'], dict(action='store_true', help='Don\'t ask for permission'))
+                ],
+            ),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
         self.me = None
@@ -71,23 +78,43 @@ class ConsoleApp(InteractiveShell):
     # Hashgraph actions
     # --------------------------------------------------------------------------
 
+    def check_input(self, target):
+        try:
+            ip, port = target.split(':')
+            return ip, port
+        except ValueError:
+            bptc.logger.error('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
+            return None, None
+
     def cmd_register(self, args):
         if args.target:
-            ip, port = args.target.split(':')
+            ip, port = self.check_input(args.target)
+            if not ip or not port:
+                return
         else:
             ip, port = 'localhost', 9000
         network_utils.register(self.me.id, self.cl_args.port, ip, port)
 
     def cmd_query_members(self, args):
         if args.target:
-            ip, port = args.target.split(':')
+            ip, port = self.check_input(args.target)
+            if not ip or not port:
+                return
         else:
             ip, port = 'localhost', 9001
         network_utils.query_members(self, ip, port)
 
     def cmd_push(self, args):
-        ip, port = args.target.split(':')
+        ip, port = self.check_input(args.target)
+        if not ip or not port:
+            return
         self.network.push_to(ip, int(port))
 
     def cmd_push_random(self, args):
         self.network.start_background_pushes()
+
+    def cmd_reset(self, args):
+        do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
+        if do_it:
+            bptc.logger.warn('Deleting local database containing the hashgraph')
+            # TODO: Call reset function

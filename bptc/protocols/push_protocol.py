@@ -23,8 +23,9 @@ class PushServer(protocol.Protocol):
     def dataReceived(self, data):
         if data[:3] == b'GET':
             if self.factory.allow_reset_signal and data[4:11] == b'/?reset':
-                # TODO: Call reset function
                 self.transport.write('Resetting the local hashgraph!'.encode('UTF-8'))
+                bptc.logger.warn('Deleting local database containing the hashgraph')
+                # TODO: Call reset function
             else:
                 self.transport.write('I\'m alive!'.encode('UTF-8'))
             self.transport.loseConnection()
