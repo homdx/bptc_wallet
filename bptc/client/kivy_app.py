@@ -21,8 +21,6 @@ class KivyApp(App):
         self.cl_args = cl_args
         self.title = 'BPTC Wallet'
         super().__init__()
-        self.me = None
-        self.hashgraph = None
         self.network = None
         init_hashgraph(self)
         network_utils.initial_checks(self)  # c: name is misleading

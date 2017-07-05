@@ -10,6 +10,7 @@ from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction, PublishNameTransaction
+from bptc.data.db import DB
 from bptc.protocols.push_protocol import PushClientFactory
 import time
 import threading
@@ -20,7 +21,6 @@ class Network:
     def __init__(self, hashgraph: Hashgraph, create_initial_event: bool = True):
         # The current hashgraph
         self.hashgraph = hashgraph
-        self.me = self.hashgraph.me
         self.background_push_client_thread = None
 
         self.background_push_server_thread = PushingServerThread(self)
@@ -30,6 +30,17 @@ class Network:
         # Create first own event
         if create_initial_event:
             self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
+
+    @property
+    def me(self):
+        return self.hashgraph.me
+
+    def reset(self):
+        DB.reset()
+        new_me = Member.create()
+        new_hashgraph = Hashgraph(new_me)
+        self.hashgraph = new_hashgraph
+        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""

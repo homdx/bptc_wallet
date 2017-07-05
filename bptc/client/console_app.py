@@ -46,10 +46,16 @@ class ConsoleApp(InteractiveShell):
             ),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
-        self.me = None
-        self.hashgraph = None
         self.network = None
         init_hashgraph(self)
+
+    @property
+    def hashgraph(self):
+        return self.network.hashgraph
+
+    @property
+    def me(self):
+        return self.network.me
 
     def __call__(self):
         if hasattr(signal, 'SIGHUP'):
@@ -117,4 +123,4 @@ class ConsoleApp(InteractiveShell):
         do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
         if do_it:
             bptc.logger.warn('Deleting local database containing the hashgraph')
-            # TODO: Call reset function
+            self.network.reset()

@@ -9,7 +9,6 @@ from bptc.data.member import Member
 class DB:
 
     __connection = None
-    __listening_port = None
     __output_dir = None
 
     @classmethod
@@ -87,8 +86,7 @@ class DB:
         cls.__connection.commit()
 
     @classmethod
-    def load_hashgraph(cls, listening_port, output_dir) -> Hashgraph:
-        cls.__listening_port = listening_port
+    def load_hashgraph(cls, output_dir) -> Hashgraph:
         cls.__output_dir = output_dir
         c = cls.__get_cursor()
 
@@ -157,3 +155,21 @@ class DB:
         hg.process_ordered_events()
 
         return hg
+
+    @classmethod
+    def reset(cls):
+        """
+        Removes all entries from the DB
+        :return: None
+        """
+
+        # Remove all events
+        statement = 'DELETE from events'
+        cls.__get_cursor().execute(statement)
+
+        # Remove all members
+        statement = 'DELETE from members'
+        cls.__get_cursor().execute(statement)
+
+        # Commit
+        cls.__connection.commit()
