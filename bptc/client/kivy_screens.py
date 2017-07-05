@@ -24,8 +24,6 @@ class MainScreen(Screen):
             'member_id': 'Some-ID'
         }
         self.network = network
-        self.hashgraph = network.hashgraph
-        self.me = network.hashgraph.me
         self.defaults['member_id'] = self.me.formatted_name
         super().__init__()
         self.pushing = False
@@ -41,6 +39,14 @@ class MainScreen(Screen):
             t.start()
 
         update_user_details()
+
+    @property
+    def hashgraph(self):
+        return self.network.hashgraph
+
+    @property
+    def me(self):
+        return self.network.me
 
     # Get value for an attribute from its input element
     def get(self, key):
@@ -75,7 +81,8 @@ class MainScreen(Screen):
 
     def do_reset(self, _dialog):
         bptc.logger.warn('Deleting local database containing the hashgraph')
-        # TODO: Call reset function
+        self.network.reset()
+        self.defaults['member_id'] = self.me.formatted_name
 
     def start_listening(self):
         network_utils.start_listening(self.network, self.get('listening_port'))

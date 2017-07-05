@@ -60,7 +60,7 @@ def query_members(client, query_members_ip, query_members_port):
 
 def start_listening(network, listening_port, allow_reset_signal):
     bptc.logger.info("Push server listens on port {}".format(listening_port))
-    push_server_factory = PushServerFactory(network.receive_data_string_callback, allow_reset_signal)
+    push_server_factory = PushServerFactory(network.receive_data_string_callback, allow_reset_signal, network)
     reactor.listenTCP(int(listening_port), push_server_factory)
     network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 

@@ -7,11 +7,12 @@ import bptc
 
 class PushServerFactory(protocol.ServerFactory):
 
-    def __init__(self, receive_data_string_callback, allow_reset_signal=False):
+    def __init__(self, receive_data_string_callback, allow_reset_signal=False, network=None):
         self.receive_data_string_callback = receive_data_string_callback
         self.allow_reset_signal = allow_reset_signal
         self.protocol = PushServer
         self.received_data = b""
+        self.network = network
 
 
 class PushServer(protocol.Protocol):
@@ -25,7 +26,7 @@ class PushServer(protocol.Protocol):
             if self.factory.allow_reset_signal and data[4:11] == b'/?reset':
                 self.transport.write('Resetting the local hashgraph!'.encode('UTF-8'))
                 bptc.logger.warn('Deleting local database containing the hashgraph')
-                # TODO: Call reset function
+                self.network.reset()
             else:
                 self.transport.write('I\'m alive!'.encode('UTF-8'))
             self.transport.loseConnection()
