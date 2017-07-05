@@ -129,7 +129,7 @@ class NewTransactionScreen(KivyScreen):
     def on_pre_enter(self, *args):
         members = list(self.network.hashgraph.known_members.values())
         members.sort(key=lambda x: x.formatted_name)
-        self.data = [{'member': m, 'is_selected': False} for m in members]
+        self.data = [{'member': m, 'is_selected': False} for m in members if m != self.network.me]
 
         args_converter = lambda row_index, rec: {
             'text': rec['member'].formatted_name,

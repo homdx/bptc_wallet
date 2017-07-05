@@ -188,15 +188,30 @@
 	            size_hint: 0.2, 1
             TextInput:
                 id: amount_field
-                size_hint: 0.6, 1
+                size_hint: 0.5, 1
                 padding_x: 20
                 padding_y: ( self.height - self.line_height ) / 2
                 write_tab: False
                 multiline: False
                 input_filter: 'int'
             Label:
-	            text: 'BPTC'
-	            size_hint: 0.2, 1
+                size_hint: 0.3, 1
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1, 1)
+                    Rectangle:
+                        # The image size is at least 35x35
+                        # Horizontal centering image, Vertical padding if possible
+                        pos: [self.pos[0] + (self.size[0] - max(self.size[1] - 25, 35)) / 2, self.pos[1] + min(22, self.size[1] - max(self.size[1] - 25, 35))]
+                        size: [max(self.size[1] - 25, 35), max(self.size[1] - 25, 35)]
+                        source: "res/images/coin.png"
+                text: 'BPT Coins'
+                text_size: self.size
+                padding_y: 4
+                # font: 'Calibri Light'
+                # font_size: 20
+                halign: 'center'
+                valign: 'bottom'
         BoxLayout:
 	        orientation: 'horizontal'
 	        Label:
