@@ -6,17 +6,16 @@
 <MainScreen>:
     name: 'main'
     id: MainScreen
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: "res/images/black-and-gray-background.jpg"
     GridLayout:
         cols: 1
-        rows: 15
         BoxLayout:
             size_hint: 1, 2
             orientation: 'vertical'
-            canvas.before:
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-                    source: "res/images/black-and-gray-background.jpg"
             Label:
                 text: 'BPTC Wallet'
                 text_size: self.width, 200
@@ -42,33 +41,198 @@
                 padding: 30, 30
                 text_size: self.width, None
         BoxLayout:
-            size_hint: 1, 1
-            Button:
-                id: new_transaction_button
-                text: 'New Transaction'
-                on_press:
-                    root.manager.transition.direction = 'left'
-                    root.manager.current = 'new_transaction'
+            size_hint: 1, 0.3
+        Button:
+            id: new_transaction_button
+            text: 'New Transaction'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'new_transaction'
         BoxLayout:
             size_hint: 1, 0.3
-        BoxLayout:
-            size_hint: 1, 1
-            Button:
-                id: new_transaction_button
-                text: 'Transaction History'
-                on_press:
-                    root.manager.transition.direction = 'left'
-                    root.manager.current = 'transactions'
+        Button:
+            id: new_transaction_button
+            text: 'Transaction History'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'transactions'
         BoxLayout:
             size_hint: 1, 0.3
+        Button:
+            id: publish_name_button
+            text: 'Publish name'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'publish_name'
         BoxLayout:
-            size_hint: 1, 1
-            Button:
-                id: publish_name_button
-                text: 'Publish name'
-                on_press:
-                    root.manager.transition.direction = 'left'
-                    root.manager.current = 'publish_name'
+            size_hint: 1, 5
+        Button:
+            id: debug_button
+            text: 'Debug'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'debug'
+
+
+<NewTransactionScreen>:
+	name: "new_transaction"
+	BoxLayout:
+	    orientation: 'vertical'
+	    BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Amount:'
+	            size_hint: 0.2, 1
+            TextInput:
+                id: amount_field
+                size_hint: 0.5, 1
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: 'int'
+            Label:
+                size_hint: 0.3, 1
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1, 1)
+                    Rectangle:
+                        # The image size is at least 35x35
+                        # Horizontal centering image, Vertical padding if possible
+                        pos: [self.pos[0] + (self.size[0] - max(self.size[1] - 25, 35)) / 2, self.pos[1] + min(22, self.size[1] - max(self.size[1] - 25, 35))]
+                        size: [max(self.size[1] - 25, 35), max(self.size[1] - 25, 35)]
+                        source: "res/images/coin.png"
+                text: 'BPT Coins'
+                text_size: self.size
+                padding_y: 4
+                # font: 'Calibri Light'
+                # font_size: 20
+                halign: 'center'
+                valign: 'bottom'
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Comment:'
+	            size_hint: 0.2, 1
+            TextInput:
+                id: comment_field
+                size_hint: 0.8, 1
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 100)
+        BoxLayout:
+            id: receiver_layout
+            size_hint: 1, 5
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Receiver:'
+	            size_hint: 0.2, 1
+	            padding_x: 100
+	    Button:
+	        id: send_button
+	        text: "Send"
+	        disabled: True
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.send_transaction()
+	            root.manager.transition.direction = 'left'
+                root.manager.current = 'transactions'
+        Button:
+            id: cancel_button
+            text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+
+<TransactionsScreen>:
+    name: "transactions"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        Button:
+            id: cancel_button
+            text: "Back"
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+
+<PublishNameScreen>:
+    name: "publish_name"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Name:'
+	            size_hint: 0.3, 1
+            TextInput:
+                id: name_field
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 50)
+        Label:
+            text: '[b]Warning[/b]:\nThis name will be published on the Hashgraph\nand will be visible for all members!'
+            halign: 'center'
+            markup: True
+            size_hint: 1, 2
+	    BoxLayout:
+            size_hint: 1, 4
+        Button:
+	        id: publish_name_button
+	        text: "Publish name"
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.publish_name()
+	            root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+        Button:
+            id: cancel_button
+            text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+
+<DebugScreen>
+    name: "debug"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Label:
+            id: event_count_label
+            text: '{} events, {} confirmed'.format(len(root.hashgraph.lookup_table.keys()), len(root.hashgraph.ordered_events))
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
+            id: last_push_sent_label
+            text: 'Last push sent: {}'.format(root.network.last_push_sent)
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
+            id: last_push_received_label
+            text: 'Last push received: {}'.format(root.network.last_push_received)
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
         BoxLayout:
             size_hint: 1, 0.3
         BoxLayout:
@@ -176,129 +340,11 @@
                 id: push_random
                 text: 'Start/stop pushing to random'
                 on_press: root.push_random()
-
-<NewTransactionScreen>:
-	name: "new_transaction"
-	BoxLayout:
-	    orientation: 'vertical'
-	    BoxLayout:
-	        orientation: 'horizontal'
-	        Label:
-	            text: 'Amount:'
-	            size_hint: 0.2, 1
-            TextInput:
-                id: amount_field
-                size_hint: 0.5, 1
-                padding_x: 20
-                padding_y: ( self.height - self.line_height ) / 2
-                write_tab: False
-                multiline: False
-                input_filter: 'int'
-            Label:
-                size_hint: 0.3, 1
-                canvas.before:
-                    Color:
-                        rgb: (1, 1, 1, 1)
-                    Rectangle:
-                        # The image size is at least 35x35
-                        # Horizontal centering image, Vertical padding if possible
-                        pos: [self.pos[0] + (self.size[0] - max(self.size[1] - 25, 35)) / 2, self.pos[1] + min(22, self.size[1] - max(self.size[1] - 25, 35))]
-                        size: [max(self.size[1] - 25, 35), max(self.size[1] - 25, 35)]
-                        source: "res/images/coin.png"
-                text: 'BPT Coins'
-                text_size: self.size
-                padding_y: 4
-                # font: 'Calibri Light'
-                # font_size: 20
-                halign: 'center'
-                valign: 'bottom'
         BoxLayout:
-	        orientation: 'horizontal'
-	        Label:
-	            text: 'Comment:'
-	            size_hint: 0.2, 1
-            TextInput:
-                id: comment_field
-                size_hint: 0.8, 1
-                padding_x: 20
-                padding_y: ( self.height - self.line_height ) / 2
-                write_tab: False
-                multiline: False
-                input_filter: root.generate_limited_input(self, 100)
-        BoxLayout:
-            id: receiver_layout
-            size_hint: 1, 5
-	        orientation: 'horizontal'
-	        Label:
-	            text: 'Receiver:'
-	            size_hint: 0.2, 1
-	            padding_x: 100
-	    Button:
-	        id: send_button
-	        text: "Send"
-	        disabled: True
-	        background_color: 0.5, 1, 0.5, 1
-	        on_release:
-	            root.send_transaction()
-	            root.manager.transition.direction = 'left'
-                root.manager.current = 'transactions'
-        Button:
-            id: cancel_button
-            text: "Cancel"
-            background_color: 1, 0.5, 0.5, 1
-            on_release:
-                root.manager.transition.direction = 'right'
-                root.manager.current = 'main'
-
-<TransactionsScreen>:
-    name: "transactions"
-    BoxLayout:
-        id: box_layout
-        orientation: 'vertical'
+            size_hint: 1, 3
         Button:
             id: cancel_button
             text: "Back"
-            #background_color: 1, 0.5, 0.5, 1
-            on_release:
-                root.manager.transition.direction = 'right'
-                root.manager.current = 'main'
-
-<PublishNameScreen>:
-    name: "publish_name"
-    BoxLayout:
-        id: box_layout
-        orientation: 'vertical'
-        BoxLayout:
-	        orientation: 'horizontal'
-	        Label:
-	            text: 'Name:'
-	            size_hint: 0.3, 1
-            TextInput:
-                id: name_field
-                padding_x: 20
-                padding_y: ( self.height - self.line_height ) / 2
-                write_tab: False
-                multiline: False
-                input_filter: root.generate_limited_input(self, 50)
-        Label:
-            text: '[b]Warning[/b]:\nThis name will be published on the Hashgraph\nand will be visible for all members!'
-            halign: 'center'
-            markup: True
-            size_hint: 1, 2
-	    BoxLayout:
-            size_hint: 1, 4
-        Button:
-	        id: publish_name_button
-	        text: "Publish name"
-	        background_color: 0.5, 1, 0.5, 1
-	        on_release:
-	            root.publish_name()
-	            root.manager.transition.direction = 'right'
-                root.manager.current = 'main'
-        Button:
-            id: cancel_button
-            text: "Cancel"
-            background_color: 1, 0.5, 0.5, 1
             on_release:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'main'

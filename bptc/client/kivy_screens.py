@@ -21,18 +21,11 @@ class KivyScreen(Screen):
 
 
 class MainScreen(KivyScreen):
-    def __init__(self, network, cl_args):
-        self.defaults = {
-            'listening_port': cl_args.port,
-            'push_address': 'localhost:8000',
-            'registering_address': 'localhost:9000',
-            'query_members_address': 'localhost:9001',
-            'member_id': 'Some-ID'
-        }
+    def __init__(self, network, defaults):
         self.network = network
-        self.defaults['member_id'] = self.me.formatted_name
+        self.defaults = defaults
+
         super().__init__()
-        self.pushing = False
 
         def update_user_details():
             self.ids.account_balance_label.text = 'Account balance: {} BPTC'.format(self.me.account_balance)
@@ -53,60 +46,6 @@ class MainScreen(KivyScreen):
     @property
     def me(self):
         return self.network.me
-
-    # Get value for an attribute from its input element
-    def get(self, key):
-        for id_, obj in self.ids.items():
-            if id_ == key:
-                return obj.text
-        return self.defaults[key]
-
-    def get_widget_id(self, widget):
-        for id_, obj in self.ids.items():
-            if obj == widget:
-                return id_
-        return None
-
-    # --------------------------------------------------------------------------
-    # MainScreen actions
-    # --------------------------------------------------------------------------
-
-    def debug_checks(self):
-        print(self.hashgraph.rounds_with_decided_fame)
-
-    def confirm_reset(self):
-        from .confirmpopup import ConfirmPopup
-        popup = ConfirmPopup(text='Reset database containing the local hashgraph')
-        popup.bind(on_ok=self.do_reset)
-        popup.open()
-
-    def do_reset(self, _dialog):
-        bptc.logger.warn('Deleting local database containing the hashgraph')
-        self.network.reset()
-        self.defaults['member_id'] = self.me.formatted_name
-
-    def start_listening(self):
-        network_utils.start_listening(self.network, self.get('listening_port'))
-
-    def register(self):
-        ip, port = self.get('registering_address').split(':')
-        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
-
-    def query_members(self):
-        ip, port = self.get('query_members_address').split(':')
-        network_utils.query_members(self, ip, port)
-
-    def push(self):
-        ip, port = self.get('push_address').split(':')
-        self.network.push_to(ip, int(port))
-
-    def push_random(self):
-        if not self.pushing:
-            self.network.start_background_pushes()
-            self.pushing = True
-        else:
-            self.network.stop_background_pushes()
-            self.pushing = False
 
 
 class NewTransactionScreen(KivyScreen):
@@ -234,3 +173,86 @@ class PublishNameScreen(KivyScreen):
     def publish_name(self):
         name = self.ids.name_field.text
         self.network.publish_name(name)
+
+
+class DebugScreen(KivyScreen):
+
+    def __init__(self, network, defaults):
+        self.network = network
+        self.defaults = defaults
+        self.pushing = False
+        super().__init__()
+
+        def update_statistics():
+            self.ids.event_count_label.text = '{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()), len(self.hashgraph.ordered_events))
+            self.ids.last_push_sent_label.text = 'Last push sent: {}'.format(self.network.last_push_sent)
+            self.ids.last_push_received_label.text = 'Last push received: {}'.format(self.network.last_push_received)
+
+            t = threading.Timer(1, update_statistics)
+            t.daemon = True
+            t.start()
+
+        update_statistics()
+
+    @property
+    def hashgraph(self):
+        return self.network.hashgraph
+
+    @property
+    def me(self):
+        return self.network.me
+
+    # Get value for an attribute from its input element
+    def get(self, key):
+        for id_, obj in self.ids.items():
+            if id_ == key:
+                return obj.text
+        return self.defaults[key]
+
+    def get_widget_id(self, widget):
+        for id_, obj in self.ids.items():
+            if obj == widget:
+                return id_
+        return None
+
+    # --------------------------------------------------------------------------
+    # DebugScreen actions
+    # --------------------------------------------------------------------------
+
+    def debug_checks(self):
+        print(self.hashgraph.rounds_with_decided_fame)
+
+    def confirm_reset(self):
+        from .confirmpopup import ConfirmPopup
+        popup = ConfirmPopup(text='Reset database containing the local hashgraph')
+        popup.bind(on_ok=self.do_reset)
+        popup.open()
+
+    def do_reset(self, _dialog):
+        bptc.logger.warn('Deleting local database containing the hashgraph')
+        self.network.reset()
+        self.defaults['member_id'] = self.me.formatted_name
+
+    def start_listening(self):
+        network_utils.start_listening(self.network, self.get('listening_port'))
+
+    def register(self):
+        ip, port = self.get('registering_address').split(':')
+        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
+
+    def query_members(self):
+        ip, port = self.get('query_members_address').split(':')
+        network_utils.query_members(self, ip, port)
+
+    def push(self):
+        ip, port = self.get('push_address').split(':')
+        self.network.push_to(ip, int(port))
+
+    def push_random(self):
+        if not self.pushing:
+            self.network.start_background_pushes()
+            self.pushing = True
+        else:
+            self.network.stop_background_pushes()
+            self.pushing = False
+

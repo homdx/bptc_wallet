@@ -14,6 +14,7 @@ from bptc.data.db import DB
 from bptc.protocols.push_protocol import PushClientFactory
 import time
 import threading
+from datetime import datetime
 
 
 class Network:
@@ -26,6 +27,10 @@ class Network:
         self.background_push_server_thread = PushingServerThread(self)
         self.background_push_server_thread.daemon = True
         self.background_push_server_thread.start()
+
+        # Statistics
+        self.last_push_sent = None
+        self.last_push_received = None
 
         # Create first own event
         if create_initial_event:
@@ -53,8 +58,7 @@ class Network:
             reactor.connectTCP(ip, port, factory)
 
         threads.blockingCallFromThread(reactor, push)
-
-        return
+        self.last_push_sent = datetime.now().isoformat()
 
     @staticmethod
     def generate_data_string(me, events, members):
@@ -91,6 +95,7 @@ class Network:
             reactor.connectTCP(member.address.host, member.address.port, factory)
 
         threads.blockingCallFromThread(reactor, push)
+        self.last_push_sent = datetime.now().isoformat()
 
     def push_to_random(self) -> None:
         """
@@ -136,6 +141,9 @@ class Network:
             pass
 
     def process_data_string(self, data_string, peer):
+        # Log
+        self.last_push_received = datetime.now().isoformat()
+
         # Decode received JSON data
         received_data = json.loads(data_string)
 

@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import ScreenManager
 
 import bptc
 import bptc.utils.network as network_utils
-from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen
+from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen, DebugScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 
@@ -26,11 +26,20 @@ class KivyApp(App):
         network_utils.initial_checks(self)  # c: name is misleading
 
     def build(self):
+        defaults = {
+            'listening_port': self.cl_args.port,
+            'push_address': 'localhost:8000',
+            'registering_address': 'localhost:9000',
+            'query_members_address': 'localhost:9001',
+            'member_id': self.network.me.formatted_name
+        }
+
         sm = ScreenManager()
-        sm.add_widget(MainScreen(self.network, self.cl_args))
+        sm.add_widget(MainScreen(self.network, defaults))
         sm.add_widget(NewTransactionScreen(self.network))
         sm.add_widget(TransactionsScreen(self.network))
         sm.add_widget(PublishNameScreen(self.network))
+        sm.add_widget(DebugScreen(self.network, defaults))
         return sm
 
     def on_stop(self):
