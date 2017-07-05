@@ -14,7 +14,7 @@ def initial_checks(app):
     # starts network client in a new thread
     start_reactor_thread()
     # listen to hashgraph actions
-    start_listening(app.network, app.cl_args.port)
+    start_listening(app.network, app.cl_args.port, app.cl_args.dirty)
     if app.cl_args.register:
         ip, port = app.cl_args.register.split(':')
         register(app.me.id, app.cl_args.port, ip, port)
@@ -58,9 +58,9 @@ def query_members(client, query_members_ip, query_members_port):
     threads.blockingCallFromThread(reactor, query)
 
 
-def start_listening(network, listening_port):
+def start_listening(network, listening_port, allow_reset_signal):
     bptc.logger.info("Push server listens on port {}".format(listening_port))
-    push_server_factory = PushServerFactory(network.receive_data_string_callback)
+    push_server_factory = PushServerFactory(network.receive_data_string_callback, allow_reset_signal)
     reactor.listenTCP(int(listening_port), push_server_factory)
     network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
 

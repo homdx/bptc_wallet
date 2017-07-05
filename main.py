@@ -15,11 +15,14 @@ def parse_args():
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
     parser.add_argument('-auto', '--auto', action='store_true', help='Self organizing client')
-    parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')  # localhost:9000
+    parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')
     parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
                         help='Adress for querying members automatically')
     parser.add_argument('-sp', '--start-pushing', action='store_true', help='Start frequent pushing')
     parser.add_argument('-q', '--quiet', action='store_true', help='Less output as possible')
+    parser.add_argument('--dirty', action='store_true',
+                        help='This allows other clients to send a signal resetting ' + \
+                        'your local hashgraph. This is only available for the HeadlessApp.')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -29,10 +32,12 @@ if __name__ == '__main__':
     init_logger(cl_args.output, cl_args.quiet)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
+        cl_args.dirty = False  # Ignore this flag
         ConsoleApp(cl_args)()
     elif cl_args.auto:
         from bptc.client.headless_app import HeadlessApp
         HeadlessApp(cl_args)()
     else:
         from bptc.client.kivy_app import KivyApp
+        cl_args.dirty = False  # Ignore this flag
         KivyApp(cl_args).run()

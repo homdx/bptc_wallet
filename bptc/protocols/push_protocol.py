@@ -7,8 +7,9 @@ import bptc
 
 class PushServerFactory(protocol.ServerFactory):
 
-    def __init__(self, receive_data_string_callback):
+    def __init__(self, receive_data_string_callback, allow_reset_signal=False):
         self.receive_data_string_callback = receive_data_string_callback
+        self.allow_reset_signal = allow_reset_signal
         self.protocol = PushServer
         self.received_data = b""
 
@@ -21,7 +22,11 @@ class PushServer(protocol.Protocol):
 
     def dataReceived(self, data):
         if data[:3] == b'GET':
-            self.transport.write('I\'m alive!'.encode('UTF-8'))
+            if self.factory.allow_reset_signal and data[4:11] == b'/?reset':
+                # TODO: Call reset function
+                self.transport.write('Resetting the local hashgraph!'.encode('UTF-8'))
+            else:
+                self.transport.write('I\'m alive!'.encode('UTF-8'))
             self.transport.loseConnection()
             return
         self.factory.received_data += data
@@ -29,9 +34,6 @@ class PushServer(protocol.Protocol):
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
             bptc.logger.warn('No data received!')
-            return
-        if self.factory.received_data[:3] == b'GET':
-            # Request is an HTTP request
             return
         try:
             data = zlib.decompress(self.factory.received_data)
