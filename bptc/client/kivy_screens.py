@@ -67,6 +67,16 @@ class MainScreen(Screen):
     def debug_checks(self):
         print(self.hashgraph.rounds_with_decided_fame)
 
+    def confirm_reset(self):
+        from .confirmpopup import ConfirmPopup
+        popup = ConfirmPopup(text='Reset database containing the local hashgraph')
+        popup.bind(on_ok=self.do_reset)
+        popup.open()
+
+    def do_reset(self, _dialog):
+        bptc.logger.warn('Deleting local database containing the hashgraph')
+        # TODO: Call reset function
+
     def start_listening(self):
         network_utils.start_listening(self.network, self.get('listening_port'))
 

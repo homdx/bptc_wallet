@@ -23,7 +23,11 @@ def parse_args():
     parser.add_argument('--dirty', action='store_true',
                         help='This allows other clients to send a signal resetting ' + \
                         'your local hashgraph. This is only available for the HeadlessApp.')
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not args.auto and args.dirty:
+        args.dirty = False  # Ignore this flag on every other client
+        print('WARN: The dirty command will be ignored! See the manual for further information.')
+    return args
 
 if __name__ == '__main__':
     # Right now there is only one app designed for mobile devices
@@ -32,12 +36,10 @@ if __name__ == '__main__':
     init_logger(cl_args.output, cl_args.quiet)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
-        cl_args.dirty = False  # Ignore this flag
         ConsoleApp(cl_args)()
     elif cl_args.auto:
         from bptc.client.headless_app import HeadlessApp
         HeadlessApp(cl_args)()
     else:
         from bptc.client.kivy_app import KivyApp
-        cl_args.dirty = False  # Ignore this flag
         KivyApp(cl_args).run()

@@ -74,10 +74,13 @@
         BoxLayout:
             size_hint: 1, 1
             Button:
+                id: reset
+                text: 'Reset'
+                on_press: root.confirm_reset()
+            Button:
                 id: debug_checks
-                text: 'debug checks'
-                on_press:
-                    root.debug_checks()
+                text: 'Debug Checks'
+                on_press: root.debug_checks()
         BoxLayout:
             size_hint: 1, 0.3
         BoxLayout:
