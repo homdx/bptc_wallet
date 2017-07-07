@@ -16,7 +16,7 @@ class Hashgraph:
     """
 
     def __init__(self, me):
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         # Member: A reference to the current user. For convenience (e.g. signing)
         self.me = me
 

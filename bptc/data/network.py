@@ -49,9 +49,11 @@ class Network:
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
-        data_string = self.generate_data_string(self.hashgraph.me,
-                                                self.hashgraph.lookup_table,
-                                                filter_members_with_address(self.hashgraph.known_members.values()))
+        with self.hashgraph.lock:
+            data_string = self.generate_data_string(self.hashgraph.me,
+                                                    self.hashgraph.lookup_table,
+                                                    filter_members_with_address(self.hashgraph.known_members.values()))
+
         factory = PushClientFactory(data_string)
 
         def push():
@@ -86,9 +88,10 @@ class Network:
     def push_to_member(self, member: Member) -> None:
         bptc.logger.debug('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
-        data_string = self.generate_data_string(self.hashgraph.me,
-                                                self.hashgraph.get_unknown_events_of(member),
-                                                filter_members_with_address(self.hashgraph.known_members.values()))
+        with self.hashgraph.lock:
+            data_string = self.generate_data_string(self.hashgraph.me,
+                                                    self.hashgraph.get_unknown_events_of(member),
+                                                    filter_members_with_address(self.hashgraph.known_members.values()))
         factory = PushClientFactory(data_string)
 
         def push():
@@ -102,8 +105,10 @@ class Network:
         Pushes to a random, known member
         :return: None
         """
-        filtered_known_members = dict(self.hashgraph.known_members)
-        filtered_known_members.pop(self.hashgraph.me.verify_key, None)
+        with self.hashgraph.lock:
+            filtered_known_members = dict(self.hashgraph.known_members)
+            filtered_known_members.pop(self.hashgraph.me.verify_key, None)
+
         if filtered_known_members:
             _, member = choice(list(filtered_known_members.items()))
             self.push_to_member(member)
@@ -119,8 +124,11 @@ class Network:
         :return:
         """
         transaction = MoneyTransaction(receiver.to_verifykey_string(), amount, comment)
-        event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
-        self.hashgraph.add_own_event(event)
+
+        with self.hashgraph.lock:
+            event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
+            self.hashgraph.add_own_event(event)
+
         return event
 
     def publish_name(self, name: str):
@@ -130,8 +138,11 @@ class Network:
         :return:
         """
         transaction = PublishNameTransaction(name)
-        event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
-        self.hashgraph.add_own_event(event)
+
+        with self.hashgraph.lock:
+            event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
+            self.hashgraph.add_own_event(event)
+
         return event
 
     def receive_data_string_callback(self, data_string, peer):
@@ -182,14 +193,15 @@ class Network:
         :return: None
         """
         # Store/Update member
-        if from_member.id in self.hashgraph.known_members:
-            self.hashgraph.known_members[from_member.id].address = from_member.address
-            from_member = self.hashgraph.known_members[from_member.id]
-        else:
-            self.hashgraph.known_members[from_member.id] = from_member
+        with self.hashgraph.lock:
+            if from_member.id in self.hashgraph.known_members:
+                self.hashgraph.known_members[from_member.id].address = from_member.address
+                from_member = self.hashgraph.known_members[from_member.id]
+            else:
+                self.hashgraph.known_members[from_member.id] = from_member
 
-        # Let the hashgraph process the events
-        self.hashgraph.process_events(from_member, events)
+            # Let the hashgraph process the events
+            self.hashgraph.process_events(from_member, events)
 
     def receive_members_callback(self, members: List[Member]) -> None:
         """
@@ -197,11 +209,12 @@ class Network:
         :param members: The ist of members
         :return: None
         """
-        for member in members:
-            if member.id not in self.hashgraph.known_members:
-                self.hashgraph.known_members[member.id] = member
-            elif self.hashgraph.known_members[member.id].address is None:
-                self.hashgraph.known_members[member.id].address = member.address
+        with self.hashgraph.lock:
+            for member in members:
+                if member.id not in self.hashgraph.known_members:
+                    self.hashgraph.known_members[member.id] = member
+                elif self.hashgraph.known_members[member.id].address is None:
+                    self.hashgraph.known_members[member.id].address = member.address
 
     def start_background_pushes(self) -> None:
         self.background_push_client_thread = PushingClientThread(self)
