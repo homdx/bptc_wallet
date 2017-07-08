@@ -24,8 +24,12 @@ class DB:
 
             # Create tables if necessary
             c = cls.__connection.cursor()
-            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT, name TEXT)')
-            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL, is_famous BOOL, round_received INT, consensus_time DATETIME)')
+            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT,'
+                      'stake INT, host TEXT, port INT, name TEXT)')
+            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT,'
+                      'other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT,'
+                      'round INT, witness BOOL, is_famous BOOL, round_received INT, consensus_time DATETIME,'
+                      'confirmation_time DATETIME)')
 
         else:
             bptc.logger.error("Database has already been connected")
@@ -57,7 +61,7 @@ class DB:
         :param e: The Event object to be saved
         :return: None
         """
-        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         values = e.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)

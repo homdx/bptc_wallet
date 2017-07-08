@@ -38,8 +38,14 @@ class KivyApp(App):
         sm.add_widget(MainScreen(self.network, defaults))
         sm.add_widget(NewTransactionScreen(self.network))
         sm.add_widget(TransactionsScreen(self.network))
-        sm.add_widget(PublishNameScreen(self.network))
+        debug_screen = PublishNameScreen(self.network)
+        sm.add_widget(debug_screen)
         sm.add_widget(DebugScreen(self.network, defaults))
+
+        if self.cl_args.start_pushing:
+            self.network.start_background_pushes()
+            debug_screen.pushing = True
+
         return sm
 
     def on_stop(self):
