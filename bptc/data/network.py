@@ -92,7 +92,7 @@ class Network:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.get_unknown_events_of(member),
                                                     filter_members_with_address(self.hashgraph.known_members.values()))
-        factory = PushClientFactory(data_string)
+        factory = PushClientFactory(data_string, member)
 
         def push():
             reactor.connectTCP(member.address.host, member.address.port, factory)
@@ -106,11 +106,10 @@ class Network:
         :return: None
         """
         with self.hashgraph.lock:
-            filtered_known_members = dict(self.hashgraph.known_members)
-            filtered_known_members.pop(self.hashgraph.me.verify_key, None)
+            filtered_known_members = [m for key, m in self.hashgraph.known_members.items() if key != self.hashgraph.me.verify_key and m.address is not None]
 
         if filtered_known_members:
-            _, member = choice(list(filtered_known_members.items()))
+            member = choice(filtered_known_members)
             self.push_to_member(member)
         else:
             bptc.logger.debug("Don't know any other members. Get them from the registry!")

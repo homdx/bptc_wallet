@@ -26,13 +26,26 @@ class Member:
         self.stake = 1  # TODO: Different stakes
 
         # The protocols data
-        self.address = None
+        self.__address = None
 
         # The name associated with this member (for display in the UI)
         self.name = None
 
         # The account balance of this member
         self.account_balance = 10  # TODO: Set to 0 as default
+
+        # How often pushing to this member has failed
+        # Is reset when the Address changes
+        self.push_fail_count = 0
+
+    @property
+    def address(self):
+        return self.__address
+
+    @address.setter
+    def address(self, new_address):
+        self.__address = new_address
+        self.push_fail_count = 0
 
     @classmethod
     def create(cls) -> 'Member':

@@ -50,9 +50,10 @@ class PushServer(protocol.Protocol):
 
 class PushClientFactory(protocol.ClientFactory):
 
-    def __init__(self, string_to_send):
+    def __init__(self, string_to_send, receiver=None):
         self.string_to_send = string_to_send
         self.protocol = PushClient
+        self.receiver = receiver
 
     def clientConnectionLost(self, connector, reason):
         # Ignore failed connections because we expect this to happen
@@ -61,10 +62,11 @@ class PushClientFactory(protocol.ClientFactory):
         pass
 
     def clientConnectionFailed(self, connector, reason):
-        # Ignore failed connections because we expect this to happen
-        # if reason.getErrorMessage() != 'Connection was closed cleanly.':
-        #     bptc.logger.error("ConnFailed: {}".format(reason.getErrorMessage()))
-        pass
+        # Count how often a connection to someone failed
+        self.receiver.push_fail_count += 1
+        if self.receiver.push_fail_count >= 3:
+            self.receiver.address = None
+            bptc.logger.info("Forgot address of {} after three failed attempts".format(self.receiver))
 
 
 class PushClient(protocol.Protocol):

@@ -298,7 +298,7 @@ def get_events_for_consensus_time(hg, x) -> Set[Event]:
                     z_self_parent = hg.lookup_table[z.parents.self_parent]
 
             result.add(z)
-        else: # Special case for the first event - this is not described in the paper
+        else:  # Special case for the first event - this is not described in the paper
             result.add(z)
 
     return result
