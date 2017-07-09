@@ -68,6 +68,7 @@ class Event:
 
         # DEBUGGING
         self.processed_by_divideRounds = None
+        self.confirmation_time = None
 
     def __str__(self):
         return "Event({}...) by Member({}...), Height({}), Round({}), {}, Data({}), Time({})".format(
@@ -160,7 +161,8 @@ class Event:
             self.is_witness,
             self.is_famous,
             self.round_received,
-            self.consensus_time
+            self.consensus_time,
+            self.confirmation_time
         )
 
     @classmethod
@@ -181,6 +183,7 @@ class Event:
         event.is_famous = e[10]
         event.round_received = e[11]
         event.consensus_time = e[12]
+        event.confirmation_time = e[13]
 
         return event
 

@@ -295,6 +295,7 @@ def find_order(hg):
             if all_famous_witnesses_can_see_x:
                 x.round_received = r
                 x.consensus_time = get_consensus_time(hg, x).isoformat()
+                x.confirmation_time = datetime.now().isoformat()
 
                 # print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
 
