@@ -3,16 +3,16 @@ import sqlite3
 import matplotlib.pyplot as plt
 import dateutil.parser
 
-from bptc import init_logger
-from bptc.data.db import DB
+import bptc
+from bptc import init_logger, logger
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 
-db_file = os.path.join('', './test_setup/4_gui_member/1/data/data.db')
+db_file = './test_setup/4_gui_member/1/data/data.db'
 
 
-class DB_Loader:
+class DBLoader:
 
     __connection = None
 
@@ -24,11 +24,10 @@ class DB_Loader:
         """
         if cls.__connection is None:
             # Connect to DB
-            print(db_file)
             cls.__connection = sqlite3.connect(db_file)
 
         else:
-            print("Database has already been connected")
+            bptc.logger.error("Database has already been connected")
 
     @classmethod
     def __get_cursor(cls) -> sqlite3:
@@ -55,10 +54,9 @@ class DB_Loader:
                 if event.parents.other_parent not in events:
                     raise AssertionError("Events other_parent not in DB: {}".format(event))
             if not event.has_valid_signature:
-                print("Event had invalid signature: {}".format(event))
                 raise AssertionError("Event had invalid signature: {}".format(event))
 
-        print('Loaded {} events from {}'.format(len(events), db_file))
+        bptc.logger.info('Loaded {} events from {}'.format(len(events), db_file))
         return events
 
     @classmethod
@@ -74,7 +72,7 @@ class DB_Loader:
             if member.signing_key is not None:
                 me = member
 
-        print('Loaded {} members from {}'.format(len(members), db_file))
+        bptc.logger.info('Loaded {} members from {}'.format(len(members), db_file))
         return members, me
 
 
@@ -102,25 +100,22 @@ def plot_boxplot(data):
     plt.show()
 
 
-def create_new_member_with_hashgraph():
-    member = Member.create()
-    return Hashgraph(member)
-
 if __name__ == '__main__':
     init_logger('tools/db_analyzer_log.txt')
-    other_events = DB_Loader.load_events()
-    members, other = DB_Loader.load_members()
+    other_events = DBLoader.load_events()
+    other_members, other = DBLoader.load_members()
 
-    hashgraph = create_new_member_with_hashgraph()
-    hashgraph.process_events(other, other_events)
-
-    # plot boxplot
-    # data = get_confirmation_length(events)
-    # data = list(filter(lambda x: x < 100, data))
-    # plot_boxplot(data)
+    me = Member.create()
+    my_hashgraph = Hashgraph(me)
+    my_hashgraph.process_events(other, other_events)
 
     # memory
-    # size_of_db = os.path.getsize('{}/data.db'.format(db_dir))/float(1024)
-    # print(size_of_db)
-    # avg_event_size = size_of_db/len(events)
-    # print(avg_event_size)
+    size_of_db = os.path.getsize(db_file)/float(1024)
+    bptc.logger.info('Size of DB: {} kB'.format(size_of_db))
+    avg_event_size = size_of_db/len(other_events)
+    bptc.logger.info('Avg. size of event: {} kB'.format(avg_event_size))
+
+    # plot boxplot
+    data = get_confirmation_length(other_events)
+    data = list(filter(lambda x: x < 100, data))
+    plot_boxplot(data)

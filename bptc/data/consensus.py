@@ -1,3 +1,4 @@
+import bptc
 from bptc.data.event import Event, Fame
 from bptc.data.member import Member
 from collections import defaultdict
@@ -179,7 +180,7 @@ def decide_fame(hashgraph):
         # Check if round x was completely decided
         if all([hashgraph.lookup_table[event_id].is_famous != Fame.UNDECIDED for event_id in hashgraph.witnesses[x_round].values()]):
             hashgraph.rounds_with_decided_fame.add(x_round)
-            print("Fame is completely decided for round {}".format(x_round))
+            bptc.logger.info("Fame is completely decided for round {}".format(x_round))
 
 
 def get_strongly_seen_witnesses_for_round(hashgraph, event: Event, r: int) -> Set[str]:

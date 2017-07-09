@@ -3,6 +3,9 @@ import os
 import threading
 from collections import defaultdict
 from typing import Dict
+
+import copy
+
 import bptc
 from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
@@ -127,6 +130,7 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
+        events = copy.deepcopy(events)
         bptc.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
