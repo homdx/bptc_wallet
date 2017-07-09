@@ -10,19 +10,6 @@ from bptc.protocols.register_protocol import RegisterClientFactory
 from bptc.protocols.pull_protocol import PullServerFactory
 
 
-def initial_checks(app):
-    # starts network client in a new thread
-    start_reactor_thread()
-    # listen to hashgraph actions
-    start_listening(app.network, app.cl_args.port, app.cl_args.dirty)
-    if app.cl_args.register:
-        ip, port = app.cl_args.register.split(':')
-        register(app.me.id, app.cl_args.port, ip, port)
-        port = str(int(port) + 1)
-        threading.Timer(2, query_members,
-                        args=(app, ip, port)).start()
-
-
 def start_reactor_thread():
     thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
     thread.daemon = True

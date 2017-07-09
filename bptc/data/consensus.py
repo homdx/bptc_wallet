@@ -11,7 +11,6 @@ from statistics import median
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey
 
-C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 
 visibility_cache = LRUCache(maxsize=1000)  # Cache to store whether events can see each other
 
@@ -163,7 +162,7 @@ def decide_fame(hashgraph):
                         s = get_strongly_seen_witnesses_for_round(hashgraph, y, y.round-1)
                         v, t = get_majority_vote_in_set_for_event(hashgraph, s, x)
 
-                        if d % C > 0:  # This is a normal round
+                        if d % bptc.C > 0:  # This is a normal round
                             if t > hashgraph.supermajority_stake:  # If supermajority, then decide
                                 x.is_famous = v
                                 # print('{} fame decided: {}'.format(x.short_id, x.is_famous))

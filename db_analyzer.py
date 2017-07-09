@@ -2,9 +2,8 @@ import os
 import sqlite3
 import matplotlib.pyplot as plt
 import dateutil.parser
-
 import bptc
-from bptc import init_logger, logger
+from bptc import init_logger
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
