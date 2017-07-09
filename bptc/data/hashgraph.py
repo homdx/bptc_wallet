@@ -1,4 +1,5 @@
 import math
+import os
 import threading
 from collections import defaultdict
 from typing import Dict
@@ -217,7 +218,7 @@ def init_hashgraph(app):
     from bptc.data.network import Network
 
     # Try to load the Hashgraph from the database
-    hashgraph = DB.load_hashgraph(app.cl_args.output)
+    hashgraph = DB.load_hashgraph(os.path.join(app.cl_args.output, 'data.db'))
     # Create a new hashgraph if it could not be loaded
     if hashgraph is None or hashgraph.me is None:
         me = Member.create()

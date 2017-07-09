@@ -9,7 +9,7 @@ from bptc.data.member import Member
 class DB:
 
     __connection = None
-    __output_dir = None
+    __database_file = None
 
     @classmethod
     def __connect(cls) -> None:
@@ -19,8 +19,7 @@ class DB:
         """
         if cls.__connection is None:
             # Connect to DB
-            database_file = os.path.join(cls.__output_dir, 'data.db')
-            cls.__connection = sqlite3.connect(database_file)
+            cls.__connection = sqlite3.connect(cls.__database_file)
 
             # Create tables if necessary
             c = cls.__connection.cursor()
@@ -91,8 +90,8 @@ class DB:
         cls.__connection.commit()
 
     @classmethod
-    def load_hashgraph(cls, output_dir) -> Hashgraph:
-        cls.__output_dir = output_dir
+    def load_hashgraph(cls, db_file) -> Hashgraph:
+        cls.__database_file = db_file
         c = cls.__get_cursor()
 
         # Load members

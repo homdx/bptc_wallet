@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Right now there is only one app designed for mobile devices
     cl_args = parse_args()
     os.makedirs(cl_args.output, exist_ok=True)
-    init_logger(cl_args.output, cl_args.quiet)
+    init_logger(os.path.join(cl_args.output, 'log.txt'), cl_args.quiet)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
         ConsoleApp(cl_args)()

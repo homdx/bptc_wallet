@@ -32,3 +32,7 @@ libsodium.so
 /data/
 
 hello.py
+
+# db analyzer
+db_analyzer.cprof
+tools/db_analyzer_log.txt
