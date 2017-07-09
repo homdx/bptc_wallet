@@ -7,7 +7,7 @@ logger = None
 
 # PARAMETER
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
-push_per_sec_mu, push_per_sec_sigma = 1, 0.2  # mean and standard deviation of push rate
+push_waiting_time_mu, push_waiting_time_sigma = 1, 0.02  # mean and standard deviation of push rate
 
 # Logging
 def init_logger(logfile, be_quiet=False):
