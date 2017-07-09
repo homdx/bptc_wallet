@@ -98,12 +98,6 @@ class Hashgraph:
         # Add event
         self.add_event(event)
 
-        # Figure out rounds, fame, etc.
-        divide_rounds(self, [event])
-        decide_fame(self)
-        find_order(self)
-        self.process_ordered_events()
-
     def add_event(self, event: Event):
         # Set the event's correct height
         if event.parents.self_parent:
