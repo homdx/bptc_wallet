@@ -79,12 +79,13 @@ class DB:
         elif isinstance(obj, Event):
             cls.__save_event(obj)
         elif isinstance(obj, Hashgraph):
-            cls.__save_member(obj.me)
-            for member in obj.known_members.values():
-                cls.__save_member(member)
+            with obj.lock:
+                cls.__save_member(obj.me)
+                for member in obj.known_members.values():
+                    cls.__save_member(member)
 
-            for event in obj.lookup_table.values():
-                cls.__save_event(event)
+                for event in obj.lookup_table.values():
+                    cls.__save_event(event)
         else:
             bptc.logger.error("Could not persist object because its type is not supported")
         cls.__connection.commit()
