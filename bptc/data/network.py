@@ -95,7 +95,8 @@ class Network:
         factory = PushClientFactory(data_string, member)
 
         def push():
-            reactor.connectTCP(member.address.host, member.address.port, factory)
+            if member.address is not None:
+                reactor.connectTCP(member.address.host, member.address.port, factory)
 
         threads.blockingCallFromThread(reactor, push)
         self.last_push_sent = datetime.now().isoformat()

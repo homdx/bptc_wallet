@@ -7,8 +7,12 @@ import math
 import dateutil.parser
 import time
 from statistics import median
+from cachetools import cached, LRUCache
+from cachetools.keys import hashkey
 
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
+
+visibility_cache = LRUCache(maxsize=1000)  # Cache to store whether events can see each other
 
 
 # DIVIDE ROUNDS
@@ -209,6 +213,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
     return Fame.TRUE if stake_for >= stake_against else Fame.FALSE, stake_for if stake_for >= stake_against else stake_against
 
 
+@cached(visibility_cache, key=lambda hg, e1, e2: hashkey(e1, e2))
 def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
@@ -218,27 +223,21 @@ def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     :return:
     """
 
-    to_visit = {event_1}
-    visited = set()
+    if parents_are_forked(hg, event_1) or event_1.round < event_2.round:
+        return False
 
-    while len(to_visit) > 0:
-        event = to_visit.pop()
-        if event not in visited:
+    can_see = False
 
-            if event.id == event_2.id:
-                return True
+    if event_1.parents.self_parent is not None:
+        can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.self_parent], event_2)
 
-            if parents_are_forked(hg, event) or event.round < event_2.round:
-                visited.add(event)
-                continue
+    if can_see:
+        return True
 
-            if event.parents.self_parent is not None:
-                to_visit.add(hg.lookup_table[event.parents.self_parent])
-            if event.parents.other_parent is not None:
-                to_visit.add(hg.lookup_table[event.parents.other_parent])
-            visited.add(event)
+    if event_1.parents.other_parent is not None:
+        can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.other_parent], event_2)
 
-    return False
+    return can_see
 
 
 def parents_are_forked(hg, event: Event):
