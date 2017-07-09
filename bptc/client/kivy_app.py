@@ -2,6 +2,8 @@ import os
 # Ignore command line arguments in Kivy
 import threading
 
+import time
+
 os.environ["KIVY_NO_ARGS"] = "1"
 from kivy.app import App
 from kivy.config import Config
@@ -57,9 +59,22 @@ class KivyApp(App):
             self.network.start_background_pushes()
             debug_screen.pushing = True
 
+        class BootstrapPushThread(threading.Thread):
+            def __init__(self, ip, port, network):
+                threading.Thread.__init__(self)
+                self.ip = ip
+                self.port = port
+                self.network = network
+
+            def run(self):
+                while len(self.network.hashgraph.known_members) == 1:
+                    self.network.push_to(ip, int(port))
+                    time.sleep(2)
+
         if self.cl_args.bootstrap_push:
             ip, port = self.cl_args.bootstrap_push.split(':')
-            self.network.push_to(ip, int(port))
+            thread = BootstrapPushThread(ip, port, self.network)
+            thread.start()
 
         return sm
 

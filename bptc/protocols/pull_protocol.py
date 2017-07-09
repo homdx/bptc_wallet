@@ -1,14 +1,10 @@
 import json
 import zlib
-
 from math import ceil
 from time import strftime, gmtime
-
 from twisted.internet import protocol
 from functools import partial
-
-from twisted.protocols.policies import TimeoutMixin
-
+import bptc
 from bptc.data.event import Event
 from bptc.utils.toposort import toposort
 
@@ -24,7 +20,7 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        print('Viz connected!')
+        bptc.logger.info('connectionMade()')
         serialized_events = {}
         with self.factory.hashgraph.lock:
             for event_id, event in self.factory.hashgraph.lookup_table.items():
@@ -42,41 +38,31 @@ class PullServer(protocol.Protocol):
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, doc, lock):
+    def __init__(self, callback_obj, doc):
         self.callback_obj = callback_obj
         self.doc = doc
         self.protocol = PullClient
         self.received_data = b""
-        self.lock = lock
 
     def clientConnectionLost(self, connector, reason):
         return
 
     def clientConnectionFailed(self, connector, reason):
         print('Connecting failed!')
-        self.lock.release()
 
 
-class PullClient(protocol.Protocol, TimeoutMixin):
+class PullClient(protocol.Protocol):
 
     def connectionMade(self):
         print('Connected! Start updating at {}...'.format(strftime("%H:%M:%S", gmtime())))
-        self.setTimeout(5)
         return
 
     def dataReceived(self, data):
         self.factory.received_data += data
-        self.resetTimeout()
-
-    def timeoutConnection(self):
-        print('TIMEOUT')
-        self.transport.abortConnection()
-        self.factory.received_data = b""
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
             print('Error: No data received!')
-            self.factory.lock.release()
             return
 
         try:
@@ -84,7 +70,6 @@ class PullClient(protocol.Protocol, TimeoutMixin):
         except zlib.error:
             print('Error: Incomplete data!')
             self.transport.loseConnection()
-            self.factory.lock.release()
             return
         finally:
             self.factory.received_data = b""

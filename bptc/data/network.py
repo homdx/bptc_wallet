@@ -92,6 +92,7 @@ class Network:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.get_unknown_events_of(member),
                                                     filter_members_with_address(self.hashgraph.known_members.values()))
+
         factory = PushClientFactory(data_string, member)
 
         def push():
@@ -245,8 +246,7 @@ class PushingClientThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            with self.network.hashgraph.lock:
-                self.network.push_to_random()
+            self.network.push_to_random()
             time.sleep(max(random.normalvariate(bptc.push_per_sec_mu, bptc.push_per_sec_sigma), 0))
 
     def stop(self):
@@ -269,8 +269,7 @@ class PushingServerThread(threading.Thread):
     def run(self):
         while not self.stopped():
             (data_string, peer) = self.q.get()
-            with self.network.hashgraph.lock:
-                self.network.process_data_string(data_string, peer)
+            self.network.process_data_string(data_string, peer)
             self.q.task_done()
 
     def stop(self):
