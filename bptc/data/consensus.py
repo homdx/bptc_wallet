@@ -44,7 +44,13 @@ def event_can_can_strongly_see_enough_round_r_witnesses(hashgraph, event: Event,
 
 
 def get_members_with_strongly_seen_witnesses_for_round(hashgraph, event: Event, r: int):
-    members_on_paths = get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+    members_on_paths = fast_get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+    #old_members_on_paths = get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+
+    #same = len(members_on_paths) == len(old_members_on_paths) and all([len(s) == len(o_s) for s, o_s in zip(members_on_paths, old_members_on_paths)])
+
+    #if not same:
+    #    print("Fast member on paths was not equal!")
 
     # Collect all members who's witnesses we can strongly see
     members_with_strongly_seen_witnesses = set()
@@ -83,6 +89,45 @@ def get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Event, r
             visit_event(hashgraph.lookup_table[event.parents.other_parent], set(visited_members))
 
     visit_event(start_event, set())
+
+    return result
+
+
+def fast_get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Event, r: int):
+    # for every ancestor, the nodes that were visited to read it
+    members_on_paths = defaultdict(set)
+    members_on_paths[start_event.id].add(start_event.verify_key)
+    visited, queue = set(), [start_event]
+
+    while queue:
+        event = queue.pop(0)
+
+        # Stop once we reach the previous round
+        if event.id != start_event.id and event.round < r:
+            continue
+
+        if event not in visited:
+            visited.add(event)
+
+            if event.parents.self_parent is not None:
+                self_parent = hashgraph.lookup_table[event.parents.self_parent]
+                members_on_paths[self_parent.id].add(self_parent.verify_key)
+                members_on_paths[self_parent.id].add(event.verify_key)
+                members_on_paths[self_parent.id] |= members_on_paths[event.id]
+                queue.append(self_parent)
+
+            if event.parents.other_parent is not None:
+                other_parent = hashgraph.lookup_table[event.parents.other_parent]
+                members_on_paths[other_parent.id].add(other_parent.verify_key)
+                members_on_paths[other_parent.id].add(event.verify_key)
+                members_on_paths[other_parent.id] |= members_on_paths[event.id]
+                queue.append(other_parent)
+
+    # Only witnesses are relevant
+    result = defaultdict(set)
+    for member_id, witness_id in hashgraph.witnesses[r].items():
+        if len(members_on_paths[witness_id]) > 0:
+            result[member_id] = members_on_paths[witness_id]
 
     return result
 
