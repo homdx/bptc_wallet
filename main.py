@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--dirty', action='store_true',
                         help='This allows other clients to send a signal resetting ' +
                         'your local hashgraph. This is only available for the HeadlessApp.')
-    parser.add_argument('-bp', '--bootstrap-push', type=str, default='localhost:8000',
+    parser.add_argument('-bp', '--bootstrap-push', type=str, default=None,
                         help='Push initially to the given address')
     args = parser.parse_args()
     if not args.auto and args.dirty:

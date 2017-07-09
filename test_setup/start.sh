@@ -18,6 +18,6 @@ for i in `seq 1 $n`
 do
     rm -rf $i
     mkdir $i
-    gnome-terminal --tab -e "/bin/bash -c 'cd $i; ../../main.py -p $var -sp'"
+    gnome-terminal --tab -e "/bin/bash -c 'cd $i; ../../main.py -p $var -sp -bp localhost:8000'"
     var=$((var+2))
 done

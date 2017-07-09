@@ -247,7 +247,6 @@ class PushingClientThread(threading.Thread):
         while not self.stopped():
             with self.network.hashgraph.lock:
                 self.network.push_to_random()
-            bptc.logger.debug("Performed automatic push to random at {}".format(time.ctime()))
             time.sleep(max(random.normalvariate(bptc.push_per_sec_mu, bptc.push_per_sec_sigma), 0))
 
     def stop(self):

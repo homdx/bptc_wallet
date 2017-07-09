@@ -8,7 +8,7 @@ from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
 
-db_file = './test_setup/4_gui_member/1/data/data.db'
+db_file = './test_setup/1/data/data.db'
 
 
 class DBLoader:
