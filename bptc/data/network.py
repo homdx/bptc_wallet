@@ -247,7 +247,7 @@ class PushingClientThread(threading.Thread):
     def run(self):
         while not self.stopped():
             self.network.push_to_random()
-            time.sleep(max(random.normalvariate(bptc.push_per_sec_mu, bptc.push_per_sec_sigma), 0))
+            time.sleep(max(random.normalvariate(bptc.push_waiting_time_mu, bptc.push_waiting_time_sigma), 0))
 
     def stop(self):
         self._stop_event.set()
