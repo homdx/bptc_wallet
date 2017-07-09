@@ -34,7 +34,7 @@ class Network:
 
         # Create first own event
         if create_initial_event:
-            self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
+            self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
 
     @property
     def me(self):
@@ -45,7 +45,7 @@ class Network:
         new_me = Member.create()
         new_hashgraph = Hashgraph(new_me)
         self.hashgraph = new_hashgraph
-        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
+        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""

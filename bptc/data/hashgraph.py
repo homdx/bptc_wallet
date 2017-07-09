@@ -84,9 +84,9 @@ class Hashgraph:
 
         return result
 
-    def add_own_event(self, event: Event):
+    def add_own_event(self, event: Event, first: bool = False):
         """
-        Adds an own event to the hashgraph, setting the event's height depending on its parents
+        Adds an own event to the hashgraph
         :param event: The event to be added
         :param first: whether it is the first event
         :return: None
@@ -97,6 +97,13 @@ class Hashgraph:
 
         # Add event
         self.add_event(event)
+
+        # Only do consensus if this is the first event
+        if first:
+            divide_rounds(self, [event])
+            decide_fame(self)
+            find_order(self)
+            self.process_ordered_events()
 
     def add_event(self, event: Event):
         # Set the event's correct height
