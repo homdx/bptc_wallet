@@ -20,6 +20,7 @@ services:
     image: chaoste/bptc
     command: python main.py -auto -p 8000 -r registry:9000 -qm registry:9001
     tty: true
+    # stdin_open: true  # Add this if you want to execute the CLI client
     volumes:
       - ../../data/docker/c1:/home/bptc_wallet/data
     ports:
