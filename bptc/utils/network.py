@@ -54,3 +54,8 @@ def start_listening(network, listening_port, allow_reset_signal):
     bptc.logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
     pull_server_factory = PullServerFactory(network.hashgraph.me.id, network.hashgraph)
     reactor.listenTCP(int(listening_port) + 1, pull_server_factory)
+
+    # Push to yourself (is ignored when received)
+    # This is a workaround for bug on some systems where the reactor ignores incoming connections until it
+    # had at least one outgoing connection
+    network.push_to_member(network.me, True)
