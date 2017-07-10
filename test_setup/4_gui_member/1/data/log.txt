@@ -1,8 +1,0 @@
-Loaded 0 events from DB.
-Created new Member: Member(Me, hkilkC...)
-Push server listens on port 8000
-[Pull server (for viz tool) listens on port 8001]
-Member update: ieN2D4... to (127.0.0.1, 8004)
-Member update: XZk5FB... to (127.0.0.1, 8002)
-Member update: nKj38h... to (127.0.0.1, 8006)
-Stopping...

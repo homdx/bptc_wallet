@@ -22,7 +22,8 @@ def round_color(r):
 
 I_COLORS = plasma(256)
 
-lock = threading.Lock()
+ready_event = threading.Event()
+ready_event.set()
 
 
 class App:
@@ -33,9 +34,7 @@ class App:
         if not reactor.running:
             self.start_reactor_thread()
 
-        self.text = PreText(text='Reload the page to clear all events,\n'
-                                 'especially when changing the member to\n'
-                                 'pull from.',
+        self.text = PreText(text='Restart the process to clear all events.',
                             width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
@@ -87,7 +86,7 @@ class App:
         else:
             ip = ip_text_input.value
             port = int(port_text_input.value)
-            factory = PullClientFactory(self, doc, lock)
+            factory = PullClientFactory(self, doc)
 
             self.pull_thread = PullingThread(ip, port, factory)
             self.pull_thread.daemon = True
@@ -128,7 +127,7 @@ class App:
         self.links_src.stream(links)
         self.events_src.stream(events)
         print("Updated member {} at {}...\n".format(from_member[:6], strftime("%H:%M:%S", gmtime())))
-        lock.release()
+        ready_event.set()
 
     def extract_data(self, events):
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
@@ -220,10 +219,11 @@ class PullingThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            lock.acquire()
+            ready_event.wait()
+            ready_event.clear()
             print('Try to connect...')
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
-            sleep(1)
+            sleep(0.1)
 
     def stop(self):
         self._stop_event.set()

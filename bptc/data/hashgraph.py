@@ -1,7 +1,11 @@
 import math
+import os
 import threading
 from collections import defaultdict
 from typing import Dict
+
+import copy
+
 import bptc
 from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
@@ -84,9 +88,9 @@ class Hashgraph:
 
         return result
 
-    def add_own_event(self, event: Event):
+    def add_own_event(self, event: Event, first: bool = False):
         """
-        Adds an own event to the hashgraph, setting the event's height depending on its parents
+        Adds an own event to the hashgraph
         :param event: The event to be added
         :param first: whether it is the first event
         :return: None
@@ -98,11 +102,12 @@ class Hashgraph:
         # Add event
         self.add_event(event)
 
-        # Figure out rounds, fame, etc.
-        divide_rounds(self, [event])
-        decide_fame(self)
-        find_order(self)
-        self.process_ordered_events()
+        # Only do consensus if this is the first event
+        if first:
+            divide_rounds(self, [event])
+            decide_fame(self)
+            find_order(self)
+            self.process_ordered_events()
 
     def add_event(self, event: Event):
         # Set the event's correct height
@@ -125,6 +130,7 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
+        events = copy.deepcopy(events)
         bptc.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
@@ -216,7 +222,7 @@ def init_hashgraph(app):
     from bptc.data.network import Network
 
     # Try to load the Hashgraph from the database
-    hashgraph = DB.load_hashgraph(app.cl_args.output)
+    hashgraph = DB.load_hashgraph(os.path.join(app.cl_args.output, 'data.db'))
     # Create a new hashgraph if it could not be loaded
     if hashgraph is None or hashgraph.me is None:
         me = Member.create()

@@ -1,7 +1,6 @@
 import queue
 from random import choice
 from typing import Dict, List
-
 import random
 from twisted.internet import threads, reactor
 import json
@@ -34,7 +33,7 @@ class Network:
 
         # Create first own event
         if create_initial_event:
-            self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
+            self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
 
     @property
     def me(self):
@@ -45,7 +44,7 @@ class Network:
         new_me = Member.create()
         new_hashgraph = Hashgraph(new_me)
         self.hashgraph = new_hashgraph
-        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)))
+        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
@@ -85,20 +84,24 @@ class Network:
 
         return json.dumps(data_to_send).encode('UTF-8')
 
-    def push_to_member(self, member: Member) -> None:
+    def push_to_member(self, member: Member, ignore_for_statistics=False) -> None:
         bptc.logger.debug('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
         with self.hashgraph.lock:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.get_unknown_events_of(member),
                                                     filter_members_with_address(self.hashgraph.known_members.values()))
-        factory = PushClientFactory(data_string)
+
+        factory = PushClientFactory(data_string, member)
 
         def push():
-            reactor.connectTCP(member.address.host, member.address.port, factory)
+            if member.address is not None:
+                reactor.connectTCP(member.address.host, member.address.port, factory)
 
         threads.blockingCallFromThread(reactor, push)
-        self.last_push_sent = datetime.now().isoformat()
+
+        if not ignore_for_statistics:
+            self.last_push_sent = datetime.now().isoformat()
 
     def push_to_random(self) -> None:
         """
@@ -106,11 +109,10 @@ class Network:
         :return: None
         """
         with self.hashgraph.lock:
-            filtered_known_members = dict(self.hashgraph.known_members)
-            filtered_known_members.pop(self.hashgraph.me.verify_key, None)
+            filtered_known_members = [m for key, m in self.hashgraph.known_members.items() if key != self.hashgraph.me.verify_key and m.address is not None]
 
         if filtered_known_members:
-            _, member = choice(list(filtered_known_members.items()))
+            member = choice(filtered_known_members)
             self.push_to_member(member)
         else:
             bptc.logger.debug("Don't know any other members. Get them from the registry!")
@@ -157,6 +159,10 @@ class Network:
 
         # Decode received JSON data
         received_data = json.loads(data_string)
+
+        # Ignore pushes from yourself (should only happen once after the client is started)
+        if received_data['from']['verify_key'] == self.me.verify_key:
+            return
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
@@ -245,11 +251,8 @@ class PushingClientThread(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            with self.network.hashgraph.lock:
-                self.network.push_to_random()
-            bptc.logger.debug("Performed automatic push to random at {}".format(time.ctime()))
-            mu, sigma = 1, 0.2  # mean and standard deviation
-            time.sleep(max(random.normalvariate(mu, sigma), 0))
+            self.network.push_to_random()
+            time.sleep(max(random.normalvariate(bptc.push_waiting_time_mu, bptc.push_waiting_time_sigma), 0))
 
     def stop(self):
         self._stop_event.set()
@@ -271,8 +274,7 @@ class PushingServerThread(threading.Thread):
     def run(self):
         while not self.stopped():
             (data_string, peer) = self.q.get()
-            with self.network.hashgraph.lock:
-                self.network.process_data_string(data_string, peer)
+            self.network.process_data_string(data_string, peer)
             self.q.task_done()
 
     def stop(self):
@@ -280,3 +282,16 @@ class PushingServerThread(threading.Thread):
 
     def stopped(self):
         return self._stop_event.is_set()
+
+
+class BootstrapPushThread(threading.Thread):
+    def __init__(self, ip, port, network):
+        threading.Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+        self.network = network
+
+    def run(self):
+        while len(self.network.hashgraph.known_members) == 1:
+            self.network.push_to(self.ip, int(self.port))
+            time.sleep(2)

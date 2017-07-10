@@ -1,10 +1,15 @@
 import os
 # Ignore command line arguments in Kivy
+import threading
+
+import time
+
+from bptc.data.network import BootstrapPushThread
+
 os.environ["KIVY_NO_ARGS"] = "1"
 from kivy.app import App
 from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
-
 import bptc
 import bptc.utils.network as network_utils
 from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen, DebugScreen
@@ -23,7 +28,10 @@ class KivyApp(App):
         super().__init__()
         self.network = None
         init_hashgraph(self)
-        network_utils.initial_checks(self)  # c: name is misleading
+        # starts network client in a new thread
+        network_utils.start_reactor_thread()
+        # listen to hashgraph actions
+        network_utils.start_listening(self.network, self.cl_args.port, self.cl_args.dirty)
 
     def build(self):
         defaults = {
@@ -38,8 +46,27 @@ class KivyApp(App):
         sm.add_widget(MainScreen(self.network, defaults))
         sm.add_widget(NewTransactionScreen(self.network))
         sm.add_widget(TransactionsScreen(self.network))
-        sm.add_widget(PublishNameScreen(self.network))
+        debug_screen = PublishNameScreen(self.network)
+        sm.add_widget(debug_screen)
         sm.add_widget(DebugScreen(self.network, defaults))
+
+        if self.cl_args.register:
+            ip, port = self.cl_args.register.split(':')
+            network_utils.register(self.me.id, self.cl_args.port, ip, port)
+            port = str(int(port) + 1)
+            threading.Timer(2, network_utils.query_members,
+                            args=(self, ip, port)).start()
+
+        if self.cl_args.start_pushing:
+            self.network.start_background_pushes()
+            debug_screen.pushing = True
+
+        if self.cl_args.bootstrap_push:
+            ip, port = self.cl_args.bootstrap_push.split(':')
+            thread = BootstrapPushThread(ip, port, self.network)
+            thread.daemon = True
+            thread.start()
+
         return sm
 
     def on_stop(self):

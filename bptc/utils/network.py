@@ -10,19 +10,6 @@ from bptc.protocols.register_protocol import RegisterClientFactory
 from bptc.protocols.pull_protocol import PullServerFactory
 
 
-def initial_checks(app):
-    # starts network client in a new thread
-    start_reactor_thread()
-    # listen to hashgraph actions
-    start_listening(app.network, app.cl_args.port, app.cl_args.dirty)
-    if app.cl_args.register:
-        ip, port = app.cl_args.register.split(':')
-        register(app.me.id, app.cl_args.port, ip, port)
-        port = str(int(port) + 1)
-        threading.Timer(2, query_members,
-                        args=(app, ip, port)).start()
-
-
 def start_reactor_thread():
     thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
     thread.daemon = True
@@ -67,3 +54,8 @@ def start_listening(network, listening_port, allow_reset_signal):
     bptc.logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
     pull_server_factory = PullServerFactory(network.hashgraph.me.id, network.hashgraph)
     reactor.listenTCP(int(listening_port) + 1, pull_server_factory)
+
+    # Push to yourself (is ignored when received)
+    # This is a workaround for bug on some systems where the reactor ignores incoming connections until it
+    # had at least one outgoing connection
+    network.push_to_member(network.me, True)

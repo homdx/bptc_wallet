@@ -6,6 +6,7 @@ import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
+from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
 
@@ -63,10 +64,22 @@ class ConsoleApp(InteractiveShell):
         elif hasattr(signal, 'SIGTERM'):
             # On windows listen to SIGTERM because SIGHUP is not available
             signal.signal(signal.SIGTERM, partial(self.SIGHUP_handler, self))
+
         try:
-            network_utils.initial_checks(self)
+            # starts network client in a new thread
+            network_utils.start_reactor_thread()
+            # listen to hashgraph actions
+            network_utils.start_listening(self.network, self.cl_args.port, self.cl_args.dirty)
+
             if self.cl_args.start_pushing:
                 self.network.start_background_pushes()
+
+            if self.cl_args.bootstrap_push:
+                ip, port = self.cl_args.bootstrap_push.split(':')
+                thread = BootstrapPushThread(ip, port, self.network)
+                thread.daemon = True
+                thread.start()
+
             super().__call__()
         # Ctrl+C throws KeyBoardInterruptException, Ctrl+D throws EOFException
         finally:

@@ -9,7 +9,7 @@ from bptc.data.member import Member
 class DB:
 
     __connection = None
-    __output_dir = None
+    __database_file = None
 
     @classmethod
     def __connect(cls) -> None:
@@ -19,13 +19,16 @@ class DB:
         """
         if cls.__connection is None:
             # Connect to DB
-            database_file = os.path.join(cls.__output_dir, 'data.db')
-            cls.__connection = sqlite3.connect(database_file)
+            cls.__connection = sqlite3.connect(cls.__database_file)
 
             # Create tables if necessary
             c = cls.__connection.cursor()
-            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT, stake INT, host TEXT, port INT, name TEXT)')
-            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT, other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT, round INT, witness BOOL, is_famous BOOL, round_received INT, consensus_time DATETIME)')
+            c.execute('CREATE TABLE IF NOT EXISTS members (verify_key TEXT PRIMARY KEY, signing_key TEXT, head TEXT,'
+                      'stake INT, host TEXT, port INT, name TEXT)')
+            c.execute('CREATE TABLE IF NOT EXISTS events (hash TEXT PRIMARY KEY, data TEXT, self_parent TEXT,'
+                      'other_parent TEXT, created_time DATETIME, verify_key TEXT, height INT, signature TEXT,'
+                      'round INT, witness BOOL, is_famous BOOL, round_received INT, consensus_time DATETIME,'
+                      'confirmation_time DATETIME)')
 
         else:
             bptc.logger.error("Database has already been connected")
@@ -57,7 +60,7 @@ class DB:
         :param e: The Event object to be saved
         :return: None
         """
-        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        statement = 'INSERT OR REPLACE INTO events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         values = e.to_db_tuple()
 
         cls.__get_cursor().execute(statement, values)
@@ -75,19 +78,20 @@ class DB:
         elif isinstance(obj, Event):
             cls.__save_event(obj)
         elif isinstance(obj, Hashgraph):
-            cls.__save_member(obj.me)
-            for member in obj.known_members.values():
-                cls.__save_member(member)
+            with obj.lock:
+                cls.__save_member(obj.me)
+                for member in obj.known_members.values():
+                    cls.__save_member(member)
 
-            for event in obj.lookup_table.values():
-                cls.__save_event(event)
+                for event in obj.lookup_table.values():
+                    cls.__save_event(event)
         else:
             bptc.logger.error("Could not persist object because its type is not supported")
         cls.__connection.commit()
 
     @classmethod
-    def load_hashgraph(cls, output_dir) -> Hashgraph:
-        cls.__output_dir = output_dir
+    def load_hashgraph(cls, db_file) -> Hashgraph:
+        cls.__database_file = db_file
         c = cls.__get_cursor()
 
         # Load members

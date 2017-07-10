@@ -4,3 +4,4 @@ toposort==1.5
 Twisted==17.1.0
 py-dateutil==2.2
 service_identity==17.0.0
+cachetools==2.0.0
