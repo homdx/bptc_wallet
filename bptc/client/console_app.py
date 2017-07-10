@@ -47,6 +47,10 @@ class ConsoleApp(InteractiveShell):
             ),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
+
+        if self.cl_args.quiet:
+            bptc.logger.removeHandler(bptc.stdout_logger)
+
         self.network = None
         init_hashgraph(self)
 

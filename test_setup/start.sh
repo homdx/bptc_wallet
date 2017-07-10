@@ -19,7 +19,7 @@ do
     rm -rf $i
     mkdir $i
     # auto-close terminal
-    gnome-terminal --tab -e "/bin/bash -c 'cd $i; ../../main.py -p $var -sp -bp localhost:8000 -cli'"
+    gnome-terminal --tab -e "/bin/bash -c 'cd $i; ../../main.py -q -p $var -sp -bp localhost:8000 -cli'"
     # don't auto-close terminal
     #gnome-terminal --tab -e "/bin/bash -c 'cd $i; ../../main.py -p $var -sp -bp localhost:8000 -cli; exec /bin/bash -i'"
     var=$((var+2))
