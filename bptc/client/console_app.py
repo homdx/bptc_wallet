@@ -45,6 +45,9 @@ class ConsoleApp(InteractiveShell):
                     (['-f', '--force'], dict(action='store_true', help='Don\'t ask for permission'))
                 ],
             ),
+            status=dict(
+                help='Call this command to get information about the current hashgraph state',
+            )
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
 
@@ -141,3 +144,10 @@ class ConsoleApp(InteractiveShell):
         if do_it:
             bptc.logger.warn('Deleting local database containing the hashgraph')
             self.network.reset()
+
+    def cmd_status(self, args):
+        print('Account balance: {} BPTC'.format(self.me.account_balance))
+        print('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
+                                               len(self.hashgraph.ordered_events)))
+        print('Last push sent: {}'.format(self.network.last_push_sent))
+        print('Last push received: {}'.format(self.network.last_push_received))
