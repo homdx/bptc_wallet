@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import os
 import sqlite3
 import matplotlib.pyplot as plt
@@ -92,7 +94,7 @@ def plot_boxplot(data):
     ax = fig.add_subplot(111)
     ax.boxplot(data)
     #ax.set_title('axes title')
-    ax.set_xlabel('4 clients, 1 push/s')
+    ax.set_xlabel('10 clients, 1 push/s')
     ax.set_xticklabels([])
     ax.set_ylabel('confirmation length [s]')
 
@@ -104,9 +106,9 @@ if __name__ == '__main__':
     other_events = DBLoader.load_events()
     other_members, other = DBLoader.load_members()
 
-    me = Member.create()
-    my_hashgraph = Hashgraph(me)
-    my_hashgraph.process_events(other, other_events)
+    #me = Member.create()
+    #my_hashgraph = Hashgraph(me)
+    #my_hashgraph.process_events(other, other_events)
 
     # memory
     size_of_db = os.path.getsize(db_file)/float(1024)

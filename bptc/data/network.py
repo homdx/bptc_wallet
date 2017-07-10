@@ -277,3 +277,16 @@ class PushingServerThread(threading.Thread):
 
     def stopped(self):
         return self._stop_event.is_set()
+
+
+class BootstrapPushThread(threading.Thread):
+    def __init__(self, ip, port, network):
+        threading.Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+        self.network = network
+
+    def run(self):
+        while len(self.network.hashgraph.known_members) == 1:
+            self.network.push_to(self.ip, int(self.port))
+            time.sleep(2)
