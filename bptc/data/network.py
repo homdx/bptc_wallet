@@ -1,7 +1,6 @@
 import queue
 from random import choice
 from typing import Dict, List
-
 import random
 from twisted.internet import threads, reactor
 import json
@@ -85,7 +84,7 @@ class Network:
 
         return json.dumps(data_to_send).encode('UTF-8')
 
-    def push_to_member(self, member: Member) -> None:
+    def push_to_member(self, member: Member, ignore_for_statistics=False) -> None:
         bptc.logger.debug('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
         with self.hashgraph.lock:
@@ -100,7 +99,9 @@ class Network:
                 reactor.connectTCP(member.address.host, member.address.port, factory)
 
         threads.blockingCallFromThread(reactor, push)
-        self.last_push_sent = datetime.now().isoformat()
+
+        if not ignore_for_statistics:
+            self.last_push_sent = datetime.now().isoformat()
 
     def push_to_random(self) -> None:
         """
@@ -158,6 +159,10 @@ class Network:
 
         # Decode received JSON data
         received_data = json.loads(data_string)
+
+        # Ignore pushes from yourself (should only happen once after the client is started)
+        if received_data['from']['verify_key'] == self.me.verify_key:
+            return
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
