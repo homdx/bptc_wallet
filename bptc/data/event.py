@@ -66,6 +66,9 @@ class Event:
         self.round_received = None
         self.consensus_time = None
 
+        # A cache for event visibility
+        self.can_see_cache = dict()
+
         # DEBUGGING
         self.processed_by_divideRounds = None
         self.confirmation_time = None
