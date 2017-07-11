@@ -8,11 +8,6 @@ import math
 import dateutil.parser
 import time
 from statistics import median
-from cachetools import cached, LRUCache
-from cachetools.keys import hashkey
-
-
-visibility_cache = LRUCache(maxsize=1000)  # Cache to store whether events can see each other
 
 
 # DIVIDE ROUNDS
@@ -213,7 +208,6 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
     return Fame.TRUE if stake_for >= stake_against else Fame.FALSE, stake_for if stake_for >= stake_against else stake_against
 
 
-@cached(visibility_cache, key=lambda hg, e1, e2: hashkey(e1, e2))
 def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
@@ -223,21 +217,28 @@ def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     :return:
     """
 
-    if parents_are_forked(hg, event_1) or event_1.round < event_2.round:
-        return False
+    # Only calculate if the answer is not already cached
+    if event_2.id in event_1.can_see_cache:
+        return event_1.can_see_cache[event_2.id]
+    else:
+        if parents_are_forked(hg, event_1) or event_1.round < event_2.round:
+            event_1.can_see_cache[event_2.id] = False
+            return False
 
-    can_see = False
+        can_see = False
 
-    if event_1.parents.self_parent is not None:
-        can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.self_parent], event_2)
+        if event_1.parents.self_parent is not None:
+            can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.self_parent], event_2)
 
-    if can_see:
-        return True
+        if can_see:
+            event_1.can_see_cache[event_2.id] = True
+            return True
 
-    if event_1.parents.other_parent is not None:
-        can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.other_parent], event_2)
+        if event_1.parents.other_parent is not None:
+            can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.other_parent], event_2)
 
-    return can_see
+        event_1.can_see_cache[event_2.id] = can_see
+        return can_see
 
 
 def parents_are_forked(hg, event: Event):
@@ -302,6 +303,7 @@ def find_order(hg):
 
     sorted_events = sorted(decided_events, key=lambda e: (e.round_received, e.consensus_time, e.id))
     for e in sorted_events:
+        e.can_see_cache.clear()
         hg.unordered_events.remove(e.id)
         hg.ordered_events.append(e.id)
 
