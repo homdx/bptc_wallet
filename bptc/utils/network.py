@@ -45,17 +45,16 @@ def query_members(client, query_members_ip, query_members_port):
     threads.blockingCallFromThread(reactor, query)
 
 
-def start_listening(network, listening_port, allow_reset_signal):
+def start_listening(network, listening_ip, listening_port, allow_reset_signal):
     bptc.logger.info("Push server listens on port {}".format(listening_port))
     push_server_factory = PushServerFactory(network.receive_data_string_callback, allow_reset_signal, network)
-    reactor.listenTCP(int(listening_port), push_server_factory)
-    network.me.address = IPv4Address("TCP", "127.0.0.1", listening_port)
+    reactor.listenTCP(interface=listening_ip, port=int(listening_port), factory=push_server_factory)
 
     bptc.logger.info("[Pull server (for viz tool) listens on port {}]".format(int(listening_port) + 1))
     pull_server_factory = PullServerFactory(network.hashgraph.me.id, network.hashgraph)
-    reactor.listenTCP(int(listening_port) + 1, pull_server_factory)
+    reactor.listenTCP(interface=listening_ip, port=int(listening_port) + 1, factory=pull_server_factory)
 
     # Push to yourself (is ignored when received)
     # This is a workaround for bug on some systems where the reactor ignores incoming connections until it
     # had at least one outgoing connection
-    network.push_to_member(network.me, True)
+    network.push_to_member(network.hashgraph.me, True)

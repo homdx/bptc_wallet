@@ -11,7 +11,6 @@ from statistics import median
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey
 
-
 visibility_cache = LRUCache(maxsize=1000)  # Cache to store whether events can see each other
 
 
@@ -295,9 +294,7 @@ def find_order(hg):
                 x.round_received = r
                 x.consensus_time = get_consensus_time(hg, x).isoformat()
                 x.confirmation_time = datetime.now().isoformat()
-
                 # print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
-
                 decided_events.add(x)
 
     sorted_events = sorted(decided_events, key=lambda e: (e.round_received, e.consensus_time, e.id))

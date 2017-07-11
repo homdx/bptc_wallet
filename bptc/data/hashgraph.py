@@ -3,9 +3,8 @@ import os
 import threading
 from collections import defaultdict
 from typing import Dict
-
 import copy
-
+from twisted.internet.address import IPv4Address
 import bptc
 from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
@@ -226,6 +225,7 @@ def init_hashgraph(app):
     # Create a new hashgraph if it could not be loaded
     if hashgraph is None or hashgraph.me is None:
         me = Member.create()
+        me.address = IPv4Address("TCP", bptc.ip, bptc.port)
         hashgraph = Hashgraph(me)
         app.network = Network(hashgraph, create_initial_event=True)
     else:

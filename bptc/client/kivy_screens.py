@@ -1,17 +1,16 @@
 import threading
-
 import kivy
 from kivy.adapters.listadapter import ListAdapter
 from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.label import Label
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
-
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 kivy.require('1.0.7')
+
 
 class KivyScreen(Screen):
     @staticmethod
@@ -177,10 +176,11 @@ class PublishNameScreen(KivyScreen):
 
 class DebugScreen(KivyScreen):
 
-    def __init__(self, network, defaults):
+    def __init__(self, network, defaults, app):
         self.network = network
         self.defaults = defaults
         self.pushing = False
+        self.app = app
         super().__init__()
 
         def update_statistics():
@@ -230,11 +230,11 @@ class DebugScreen(KivyScreen):
 
     def do_reset(self, _dialog):
         bptc.logger.warn('Deleting local database containing the hashgraph')
-        self.network.reset()
+        self.network.reset(self.app)
         self.defaults['member_id'] = self.me.formatted_name
 
     def start_listening(self):
-        network_utils.start_listening(self.network, self.get('listening_port'))
+        network_utils.start_listening(self.network, bptc.ip, bptc.port, False)
 
     def register(self):
         ip, port = self.get('registering_address').split(':')

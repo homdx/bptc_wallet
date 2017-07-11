@@ -6,7 +6,7 @@ from twisted.internet import threads, reactor
 import json
 import bptc
 from bptc.data.event import Event, Parents
-from bptc.data.hashgraph import Hashgraph
+from bptc.data.hashgraph import Hashgraph, init_hashgraph
 from bptc.data.member import Member
 from bptc.data.transaction import MoneyTransaction, PublishNameTransaction
 from bptc.data.db import DB
@@ -39,12 +39,10 @@ class Network:
     def me(self):
         return self.hashgraph.me
 
-    def reset(self):
+    @staticmethod
+    def reset(app):
         DB.reset()
-        new_me = Member.create()
-        new_hashgraph = Hashgraph(new_me)
-        self.hashgraph = new_hashgraph
-        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
+        init_hashgraph(app)
 
     def push_to(self, ip, port) -> None:
         """Update hg and return new event ids in topological order."""
@@ -71,7 +69,8 @@ class Network:
         serialized_members = []
         if members is not None:
             for member in members:
-                serialized_members.append(member.to_dict())
+                if member.id is not me.verify_key:
+                    serialized_members.append(member.to_dict())
 
         data_to_send = {
             'from': {
@@ -81,6 +80,8 @@ class Network:
             'events': serialized_events,
             'members': serialized_members
         }
+
+        # bptc.logger.info(data_to_send)
 
         return json.dumps(data_to_send).encode('UTF-8')
 
@@ -166,10 +167,10 @@ class Network:
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
-        from_member_port = int(received_data['from']['listening_port'])
+        from_member_listening_port = int(received_data['from']['listening_port'])
         from_member = Member(from_member_id, None)
         from_member.address = peer
-        from_member.address.port = from_member_port
+        from_member.address.port = from_member_listening_port
 
         # Check if the sender sent any events
         s_events = received_data['events']

@@ -1,4 +1,3 @@
-import os
 import sqlite3
 import bptc
 from bptc.data.event import Event, Fame

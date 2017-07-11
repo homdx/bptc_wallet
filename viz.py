@@ -86,7 +86,7 @@ class App:
         else:
             ip = ip_text_input.value
             port = int(port_text_input.value)
-            factory = PullClientFactory(self, doc)
+            factory = PullClientFactory(self, doc, ready_event)
 
             self.pull_thread = PullingThread(ip, port, factory)
             self.pull_thread.daemon = True

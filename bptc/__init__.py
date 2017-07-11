@@ -9,6 +9,11 @@ logger = None
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 push_waiting_time_mu, push_waiting_time_sigma = 1, 0.02  # mean and standard deviation of push rate
 
+# listening interface information
+ip = None
+port = None
+
+
 # Logging
 def init_logger(logfile, be_quiet=False):
     global stdout_logger, file_logger, logger

@@ -1,7 +1,6 @@
 import signal
 from functools import partial
 from prompt_toolkit.shortcuts import confirm
-
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
@@ -63,20 +62,20 @@ class ConsoleApp(InteractiveShell):
 
     @property
     def me(self):
-        return self.network.me
+        return self.network.hashgraph.me
 
     def __call__(self):
         if hasattr(signal, 'SIGHUP'):
-            signal.signal(signal.SIGHUP, partial(self.SIGHUP_handler, self))
+            signal.signal(signal.SIGHUP, partial(self.exit, self))
         elif hasattr(signal, 'SIGTERM'):
             # On windows listen to SIGTERM because SIGHUP is not available
-            signal.signal(signal.SIGTERM, partial(self.SIGHUP_handler, self))
+            signal.signal(signal.SIGTERM, partial(self.exit, self))
 
         try:
             # starts network client in a new thread
             network_utils.start_reactor_thread()
             # listen to hashgraph actions
-            network_utils.start_listening(self.network, self.cl_args.port, self.cl_args.dirty)
+            network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
 
             if self.cl_args.start_pushing:
                 self.network.start_background_pushes()
@@ -90,12 +89,10 @@ class ConsoleApp(InteractiveShell):
             super().__call__()
         # Ctrl+C throws KeyBoardInterruptException, Ctrl+D throws EOFException
         finally:
-            bptc.logger.info("Stopping...")
-            network_utils.stop_reactor_thread()
-            DB.save(self.network.hashgraph)
+            self.exit()
         # TODO: If no command was entered and Ctrl+C was hit, the process doesn't stop
 
-    def SIGHUP_handler(self, signum, frame):
+    def exit(self, signum=None, frame=None):
         bptc.logger.info("Stopping...")
         network_utils.stop_reactor_thread()
         DB.save(self.network.hashgraph)
@@ -143,7 +140,7 @@ class ConsoleApp(InteractiveShell):
         do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
         if do_it:
             bptc.logger.warn('Deleting local database containing the hashgraph')
-            self.network.reset()
+            self.network.reset(self)
 
     def cmd_status(self, args):
         print('Account balance: {} BPTC'.format(self.me.account_balance))

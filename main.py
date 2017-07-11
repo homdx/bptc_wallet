@@ -2,6 +2,8 @@
 
 import argparse
 import os
+
+import bptc
 from bptc import init_logger
 
 __version__ = '0.1'
@@ -9,8 +11,10 @@ __version__ = '0.1'
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-ip', type=str, default='localhost',
+                        help='IP of network interface to use for listening')
     parser.add_argument('-p', '--port', type=int, default=8000,
-                        help='Porting for pulling information from other members and the registry')
+                        help='Port for pulling information from other members and the registry')
     parser.add_argument('-o', '--output', type=str, default='data',
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
@@ -34,6 +38,8 @@ def parse_args():
 if __name__ == '__main__':
     # Right now there is only one app designed for mobile devices
     cl_args = parse_args()
+    bptc.ip = cl_args.ip
+    bptc.port = cl_args.port
     os.makedirs(cl_args.output, exist_ok=True)
     init_logger(os.path.join(cl_args.output, 'log.txt'), cl_args.quiet)
     if cl_args.console:
