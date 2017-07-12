@@ -1,4 +1,5 @@
 import signal
+import itertools
 from functools import partial
 from prompt_toolkit.shortcuts import confirm
 import bptc
@@ -8,6 +9,7 @@ from bptc.data.hashgraph import init_hashgraph
 from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
+from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 
 class ConsoleApp(InteractiveShell):
@@ -21,8 +23,8 @@ class ConsoleApp(InteractiveShell):
                      help='Target address (incl. port)'))
                 ],
             ),
-            push_random=dict(
-                help='Start pushing to randomly chosen clients',
+            toggle_pushing=dict(
+                help='Start/Stop pushing to randomly chosen clients',
             ),
             register=dict(
                 help='Register this hashgraph member at the registry',
@@ -45,8 +47,19 @@ class ConsoleApp(InteractiveShell):
                 ],
             ),
             status=dict(
-                help='Call this command to get information about the current hashgraph state',
-            )
+                help='Print information about the current hashgraph state',
+            ),
+            list_members=dict(
+                help='Show all members withing the hashgraph network',
+            ),
+            send=dict(
+                help='Send money to another member of the hashgraph network',
+                args=[
+                    (['amount'], dict(help='Amount of money', type=int)),
+                    (['receiver'], dict(help='ID or name of the user which should receive the money')),
+                    (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
+                ],
+            ),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
 
@@ -54,6 +67,7 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.removeHandler(bptc.stdout_logger)
 
         self.network = None
+        self.pushing = False
         init_hashgraph(self)
 
     @property
@@ -133,8 +147,15 @@ class ConsoleApp(InteractiveShell):
             return
         self.network.push_to(ip, int(port))
 
-    def cmd_push_random(self, args):
-        self.network.start_background_pushes()
+    def cmd_toggle_pushing(self, args):
+        if not self.pushing:
+            bptc.logger.info('Start pushing randomly')
+            self.network.start_background_pushes()
+            self.pushing = True
+        else:
+            bptc.logger.info('Stop pushing randomly')
+            self.network.stop_background_pushes()
+            self.pushing = False
 
     def cmd_reset(self, args):
         do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
@@ -143,8 +164,31 @@ class ConsoleApp(InteractiveShell):
             self.network.reset(self)
 
     def cmd_status(self, args):
-        print('Account balance: {} BPTC'.format(self.me.account_balance))
-        print('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
-                                               len(self.hashgraph.ordered_events)))
-        print('Last push sent: {}'.format(self.network.last_push_sent))
-        print('Last push received: {}'.format(self.network.last_push_received))
+        bptc.logger.info('Account balance: {} BPTC'.format(self.me.account_balance))
+        bptc.logger.info('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
+                                                          len(self.hashgraph.ordered_events)))
+        bptc.logger.info('Last push sent: {}'.format(self.network.last_push_sent))
+        bptc.logger.info('Last push received: {}'.format(self.network.last_push_received))
+
+    def cmd_send(self, args):
+        # Generate mapping from a string to members
+        members = list(self.network.hashgraph.known_members.values())
+        members = [m for m in members if m != self.network.me]
+        member_names = dict(itertools.chain(
+            ((m.name, m) for m in members if m.name is not None and len(self.name) != 0),
+            ((m.id[:6], m) for m in members),
+            ((m.id, m) for m in members),
+        ))
+        # Check if the inserted string is within the member name mapping
+        if args.receiver in member_names:
+            receiver = member_names[args.receiver]
+            bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
+            self.network.send_transaction(args.amount, args.comment, receiver)
+        else:
+            bptc.logger.error('Invalid member name, call list_member to see all available options.')
+
+    def cmd_list_members(self, args):
+        members = list(self.network.hashgraph.known_members.values())
+        members.sort(key=lambda x: x.formatted_name)
+        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members) if m != self.network.me)
+        bptc.logger.info('Members List:\n{}'.format(members_list))
