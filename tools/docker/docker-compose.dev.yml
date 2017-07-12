@@ -4,7 +4,7 @@ services:
     image: chaoste/bptc
     # You can get the IP of the registry container by running the following:
     # docker inspect bptc_registry_1 | grep IP
-    command: python main.py -auto -p 8100 -q
+    command: python main.py -auto -p 8100 -q --dirty
     tty: true
     volumes:
       # Run following commad to create the volume:

@@ -1,11 +1,13 @@
+import datetime
 import json
 import zlib
-
 from math import ceil
+from time import strftime, gmtime
 from twisted.internet import protocol
 from functools import partial
 import bptc
 from bptc.data.event import Event
+from bptc.utils.toposort import toposort
 
 
 class PullServerFactory(protocol.ServerFactory):
@@ -19,10 +21,11 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
+        bptc.logger.info('connectionMade()')
         serialized_events = {}
         with self.factory.hashgraph.lock:
             for event_id, event in self.factory.hashgraph.lookup_table.items():
-                serialized_events[event_id] = event.to_dict()
+                serialized_events[event_id] = event.to_debug_dict()
 
         data_string = {'from': self.factory.me_id, 'events': serialized_events}
         data_to_send = zlib.compress(json.dumps(data_string).encode('UTF-8'))
@@ -36,22 +39,25 @@ class PullServer(protocol.Protocol):
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, doc):
+    def __init__(self, callback_obj, doc, ready_event):
         self.callback_obj = callback_obj
         self.doc = doc
         self.protocol = PullClient
         self.received_data = b""
+        self.ready_event = ready_event
 
     def clientConnectionLost(self, connector, reason):
         return
 
     def clientConnectionFailed(self, connector, reason):
-        bptc.logger.error('Connection failed. Reason: {}'.format(reason))
+        print('{}: {}'.format(datetime.datetime.now().isoformat(), reason.getErrorMessage()))
+        self.ready_event.set()
 
 
 class PullClient(protocol.Protocol):
 
     def connectionMade(self):
+        print('Connected! Start updating at {}...'.format(strftime("%H:%M:%S", gmtime())))
         return
 
     def dataReceived(self, data):
@@ -59,13 +65,15 @@ class PullClient(protocol.Protocol):
 
     def connectionLost(self, reason):
         if len(self.factory.received_data) == 0:
-            bptc.logger.warn('No data received!')
+            print('Error: No data received!')
             return
 
         try:
             data = zlib.decompress(self.factory.received_data)
-        except zlib.error as err:
-            bptc.logger.error(err)
+        except zlib.error:
+            print('Error: Incomplete data!')
+            self.transport.loseConnection()
+            return
         finally:
             self.factory.received_data = b""
 
@@ -74,8 +82,13 @@ class PullClient(protocol.Protocol):
         s_events = received_data['events']
         events = {}
         for event_id, dict_event in s_events.items():
-            events[event_id] = Event.from_dict(dict_event)
+            events[event_id] = Event.from_debug_dict(dict_event)
 
-        self.factory.doc.add_next_tick_callback(
-            partial(self.factory.callback_obj.received_data_callback, from_member, events))
-        self.factory.doc.add_next_tick_callback(self.factory.callback_obj.draw)
+        try:
+            print('Added next tick callback!')
+            self.factory.doc.add_next_tick_callback(partial(self.factory.callback_obj.received_data_callback,
+                                                            from_member, toposort(events)))
+        except ValueError as e:
+            print(e)
+            pass
+        self.transport.loseConnection()

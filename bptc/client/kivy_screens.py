@@ -1,12 +1,10 @@
 import threading
-
 import kivy
 from kivy.adapters.listadapter import ListAdapter
 from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.label import Label
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
-
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
@@ -14,21 +12,19 @@ from bptc.data.transaction import TransactionStatus, MoneyTransaction
 kivy.require('1.0.7')
 
 
-class MainScreen(Screen):
-    def __init__(self, network, cl_args):
-        self.defaults = {
-            'listening_port': cl_args.port,
-            'push_address': 'localhost:8000',
-            'registering_address': 'localhost:9000',
-            'query_members_address': 'localhost:9001',
-            'member_id': 'Some-ID'
-        }
+class KivyScreen(Screen):
+    @staticmethod
+    def generate_limited_input(widget, n):
+        # This is used for limiting the input length
+        return lambda text, from_undo: text[:n - len(widget.text)]
+
+
+class MainScreen(KivyScreen):
+    def __init__(self, network, defaults):
         self.network = network
-        self.hashgraph = network.hashgraph
-        self.me = network.hashgraph.me
-        self.defaults['member_id'] = self.me.formatted_name
+        self.defaults = defaults
+
         super().__init__()
-        self.pushing = False
 
         def update_user_details():
             self.ids.account_balance_label.text = 'Account balance: {} BPTC'.format(self.me.account_balance)
@@ -42,56 +38,16 @@ class MainScreen(Screen):
 
         update_user_details()
 
-    # Get value for an attribute from its input element
-    def get(self, key):
-        for id_, obj in self.ids.items():
-            if id_ == key:
-                return obj.text
-        return self.defaults[key]
+    @property
+    def hashgraph(self):
+        return self.network.hashgraph
 
-    @staticmethod
-    def generate_limited_input(widget, n):
-        # This is used for limiting the input length
-        return lambda text, from_undo: text[:n - len(widget.text)]
-
-    def get_widget_id(self, widget):
-        for id_, obj in self.ids.items():
-            if obj == widget:
-                return id_
-        return None
-
-    # --------------------------------------------------------------------------
-    # MainScreen actions
-    # --------------------------------------------------------------------------
-
-    def debug_checks(self):
-        print(self.hashgraph.rounds_with_decided_fame)
-
-    def start_listening(self):
-        network_utils.start_listening(self.network, self.get('listening_port'))
-
-    def register(self):
-        ip, port = self.get('registering_address').split(':')
-        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
-
-    def query_members(self):
-        ip, port = self.get('query_members_address').split(':')
-        network_utils.query_members(self, ip, port)
-
-    def push(self):
-        ip, port = self.get('push_address').split(':')
-        self.network.push_to(ip, int(port))
-
-    def push_random(self):
-        if not self.pushing:
-            self.network.start_background_pushes()
-            self.pushing = True
-        else:
-            self.network.stop_background_pushes()
-            self.pushing = False
+    @property
+    def me(self):
+        return self.network.me
 
 
-class NewTransactionScreen(Screen):
+class NewTransactionScreen(KivyScreen):
 
     class MemberListItemButton(ListItemButton):
 
@@ -111,7 +67,7 @@ class NewTransactionScreen(Screen):
     def on_pre_enter(self, *args):
         members = list(self.network.hashgraph.known_members.values())
         members.sort(key=lambda x: x.formatted_name)
-        self.data = [{'member': m, 'is_selected': False} for m in members]
+        self.data = [{'member': m, 'is_selected': False} for m in members if m != self.network.me]
 
         args_converter = lambda row_index, rec: {
             'text': rec['member'].formatted_name,
@@ -153,7 +109,7 @@ class NewTransactionScreen(Screen):
             print("Error parsing values")
 
 
-class TransactionsScreen(Screen):
+class TransactionsScreen(KivyScreen):
 
     def __init__(self, network):
         self.network = network
@@ -162,37 +118,13 @@ class TransactionsScreen(Screen):
 
     def on_pre_enter(self, *args):
         # Load relevant transactions
-        transactions = []
-        events = list(self.network.hashgraph.lookup_table.values())
-        for e in events:
-            if e.data is not None:
-                for t in e.data:
-                    if isinstance(t, MoneyTransaction) and self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
-                        transactions.append({
-                            'receiver': self.network.hashgraph.known_members[t.receiver].formatted_name if t.receiver in self.network.hashgraph.known_members else t.receiver,
-                            'sender': self.network.hashgraph.known_members[e.verify_key].formatted_name if e.verify_key in self.network.hashgraph.known_members else e.verify_key,
-                            'amount': t.amount,
-                            'comment': t.comment,
-                            'time': e.time,
-                            'status': TransactionStatus.text_for_value(t.status),
-                            'is_received': t.receiver == self.network.hashgraph.me.to_verifykey_string()
-                        })
-
-        transactions.sort(key=lambda x: x['time'], reverse=True)
-
+        transactions = self.network.hashgraph.get_relevant_transactions()
         # Create updated list
         args_converter = lambda row_index, rec: {
             'height': 60,
             'markup': True,
             'halign': 'center',
-            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] ({})\n{}'.format(
-                'Received' if rec['is_received'] else 'Sent',
-                rec['amount'],
-                'from' if rec['is_received'] else 'to',
-                rec['sender'] if rec['is_received'] else rec['receiver'],
-                rec['status'],
-                '"{}"'.format(rec['comment']) if rec['comment'] is not None and len(rec['comment']) > 0 else ''
-            )
+            'text': rec['formatted'],
         }
 
         list_adapter = SimpleListAdapter(data=transactions,
@@ -207,7 +139,7 @@ class TransactionsScreen(Screen):
         self.ids.box_layout.remove_widget(self.list_view)
 
 
-class PublishNameScreen(Screen):
+class PublishNameScreen(KivyScreen):
 
     def __init__(self, network):
         self.network = network
@@ -216,3 +148,86 @@ class PublishNameScreen(Screen):
     def publish_name(self):
         name = self.ids.name_field.text
         self.network.publish_name(name)
+
+
+class DebugScreen(KivyScreen):
+
+    def __init__(self, network, defaults, app):
+        self.network = network
+        self.defaults = defaults
+        self.pushing = False
+        self.app = app
+        super().__init__()
+
+        def update_statistics():
+            self.ids.event_count_label.text = '{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()), len(self.hashgraph.ordered_events))
+            self.ids.last_push_sent_label.text = 'Last push sent: {}'.format(self.network.last_push_sent)
+            self.ids.last_push_received_label.text = 'Last push received: {}'.format(self.network.last_push_received)
+
+            t = threading.Timer(1, update_statistics)
+            t.daemon = True
+            t.start()
+
+        update_statistics()
+
+    @property
+    def hashgraph(self):
+        return self.network.hashgraph
+
+    @property
+    def me(self):
+        return self.network.me
+
+    # Get value for an attribute from its input element
+    def get(self, key):
+        for id_, obj in self.ids.items():
+            if id_ == key:
+                return obj.text
+        return self.defaults[key]
+
+    def get_widget_id(self, widget):
+        for id_, obj in self.ids.items():
+            if obj == widget:
+                return id_
+        return None
+
+    # --------------------------------------------------------------------------
+    # DebugScreen actions
+    # --------------------------------------------------------------------------
+
+    def debug_checks(self):
+        print(self.hashgraph.rounds_with_decided_fame)
+
+    def confirm_reset(self):
+        from .confirmpopup import ConfirmPopup
+        popup = ConfirmPopup(text='Reset database containing the local hashgraph')
+        popup.bind(on_ok=self.do_reset)
+        popup.open()
+
+    def do_reset(self, _dialog):
+        bptc.logger.warn('Deleting local database containing the hashgraph')
+        self.network.reset(self.app)
+        self.defaults['member_id'] = self.me.formatted_name
+
+    def start_listening(self):
+        network_utils.start_listening(self.network, bptc.ip, bptc.port, False)
+
+    def register(self):
+        ip, port = self.get('registering_address').split(':')
+        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
+
+    def query_members(self):
+        ip, port = self.get('query_members_address').split(':')
+        network_utils.query_members(self, ip, port)
+
+    def push(self):
+        ip, port = self.get('push_address').split(':')
+        self.network.push_to(ip, int(port))
+
+    def push_random(self):
+        if not self.pushing:
+            self.network.start_background_pushes()
+            self.pushing = True
+        else:
+            self.network.stop_background_pushes()
+            self.pushing = False

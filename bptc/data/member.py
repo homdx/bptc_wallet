@@ -26,13 +26,26 @@ class Member:
         self.stake = 1  # TODO: Different stakes
 
         # The protocols data
-        self.address = None
+        self.__address = None
 
         # The name associated with this member (for display in the UI)
         self.name = None
 
         # The account balance of this member
         self.account_balance = 10  # TODO: Set to 0 as default
+
+        # How often pushing to this member has failed
+        # Is reset when the Address changes
+        self.push_fail_count = 0
+
+    @property
+    def address(self):
+        return self.__address
+
+    @address.setter
+    def address(self, new_address):
+        self.__address = new_address
+        self.push_fail_count = 0
 
     @classmethod
     def create(cls) -> 'Member':
@@ -54,11 +67,28 @@ class Member:
         return self.verify_key
 
     @property
+    def host(self):
+        return self.address.host if self.address else None
+
+    @property
+    def port(self):
+        return self.address.port if self.address else None
+
+    @property
     def formatted_name(self):
         if self.name is None or len(self.name) == 0:
             return "{}...".format(self.id[:6])
         else:
             return "{} ({}...)".format(self.name, self.id[:6])
+
+    def __repr__(self):
+        return "Member(id={}, name={}, host={}, port={}, stake={})".format(
+            self.id[:6],
+            self.name,
+            self.host,
+            self.port,
+            self.stake,
+        )
 
     def __str__(self):
         if self.name is None or len(self.name) == 0:
@@ -82,31 +112,19 @@ class Member:
         return member
 
     def to_db_tuple(self) -> Tuple:
-        host = None
-        port = None
-        if self.address is not None:
-            host = self.address.host
-            port = self.address.port
-
         return (self.verify_key,
                 self.signing_key if self.signing_key is not None else None,
                 self.head,
                 self.stake,
-                host,
-                port,
+                self.host,
+                self.port,
                 self.name)
 
     def to_dict(self) -> Dict:
-        host = None
-        port = None
-        if self.address is not None:
-            host = self.address.host
-            port = self.address.port
-
         return OrderedDict([
             ('verify_key', self.verify_key),
-            ('host', host),
-            ('port', port)])
+            ('host', self.host),
+            ('port', self.port)])
 
     @classmethod
     def from_dict(cls, member_dict):

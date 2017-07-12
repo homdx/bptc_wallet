@@ -1,0 +1,15 @@
+version: "3"
+services:
+  client:
+    image: chaoste/bptc
+    command: python main.py -cli -p 8000
+    tty: true
+    stdin_open: true
+    volumes:
+      - bptc_client1:/home/bptc_wallet/data
+    ports:
+      - "8100:8100"
+      - "8101:8101"
+volumes:
+  bptc_client1:
+    driver: local

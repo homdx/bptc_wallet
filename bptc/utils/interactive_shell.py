@@ -4,6 +4,8 @@ from prompt_toolkit import prompt
 from prompt_toolkit.styles import style_from_dict
 from prompt_toolkit.token import Token
 from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.key_binding.defaults import load_key_bindings_for_prompt
 
 class InteractiveShell:
     def __init__(self, title='Interactive Shell', add_help=True):
@@ -16,7 +18,9 @@ class InteractiveShell:
                 help = 'Show this help message',
             )
         self.history = InMemoryHistory()
+        self.completer = WordCompleter(sorted(self.commands.keys()))
         self.parser = self._create_parser()
+        self.registry = self._create_keybindings_registry()
 
     def _create_parser(self):
         parser = argparse.ArgumentParser(
@@ -33,12 +37,27 @@ class InteractiveShell:
                 parser_x.add_argument(*args_def, **kwargs_def)
         return parser
 
+    def _create_keybindings_registry(self):
+        registry = load_key_bindings_for_prompt()
+        for keystroke, callback in self.keybindings:
+            @registry.add_binding(keystroke)
+            def _(event):
+                """
+                We use ``run_in_terminal``, because that ensures that the prompt is
+                hidden right before something gets printed and it's drawn again
+                after it. (Otherwise this would destroy the output.)
+                """
+                event.cli.run_in_terminal(lambda: callback(None))
+        return registry
+
     def _get_toolbar(self, cli):
         return [(Token.Toolbar, 'Actions: {}'.format(', '.join(self.commands)))]
 
     def _process_input(self):
         input_ = prompt('> ', get_bottom_toolbar_tokens=self._get_toolbar,
-                        style=self.style, history=self.history)
+                        style=self.style, history=self.history,
+                        completer=self.completer, complete_while_typing=False,
+                        key_bindings_registry=self.registry)
         input_ = input_.split(' ')
         cmd = input_[0]
         args = input_[1:]

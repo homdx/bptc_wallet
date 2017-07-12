@@ -1,7 +1,10 @@
 import math
+import os
 import threading
 from collections import defaultdict
 from typing import Dict
+import copy
+from twisted.internet.address import IPv4Address
 import bptc
 from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
@@ -16,7 +19,7 @@ class Hashgraph:
     """
 
     def __init__(self, me):
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         # Member: A reference to the current user. For convenience (e.g. signing)
         self.me = me
 
@@ -56,21 +59,6 @@ class Hashgraph:
         """
         return int(math.floor(2 * self.total_stake / 3))
 
-    def get_head_of(self, member: Member) -> str:
-        """
-        Returns the id of the head of a given member
-        :param member:
-        :return:
-        """
-        height = -1
-        head = None
-        for item_id, item in self.lookup_table.items():
-            if str(item.verify_key) == str(member.verify_key):
-                if item.height > height:
-                    head = item
-                    height = item.height
-        return head.id if head is not None else None
-
     def get_unknown_events_of(self, member: Member) -> Dict[str, Event]:
         """
         Returns the presumably unknown events of a given member, in the same format as lookup_table
@@ -78,7 +66,7 @@ class Hashgraph:
         :return: Dictionary mapping hashes to events
         """
         result = dict(self.lookup_table)
-        head = self.get_head_of(member)
+        head = member.head
 
         if head is None:
             return result
@@ -99,35 +87,40 @@ class Hashgraph:
 
         return result
 
-    def add_own_event(self, event: Event):
+    def add_own_event(self, event: Event, first: bool = False):
         """
-        Adds an own event to the hashgraph, setting the event's height depending on its parents
+        Adds an own event to the hashgraph
         :param event: The event to be added
         :param first: whether it is the first event
         :return: None
         """
 
-        # Set the event's correct height
-        if event.parents.self_parent:
-            # not the first event
-            self_parent_height = self.lookup_table[event.parents.self_parent].height
-            event.height = self_parent_height + 1
-
         # Sign event body
         event.sign(self.me.signing_key)
 
+        # Add event
+        self.add_event(event)
+
+        # Only do consensus if this is the first event
+        if first:
+            divide_rounds(self, [event])
+            decide_fame(self)
+            find_order(self)
+            self.process_ordered_events()
+
+    def add_event(self, event: Event):
+        # Set the event's correct height
+        if event.parents.self_parent:
+            event.height = self.lookup_table[event.parents.self_parent].height + 1
+
         # Add event to graph
         self.lookup_table[event.id] = event
+
+        # Update caches
         self.unordered_events.add(event.id)
-
-        # Update cached head
-        self.me.head = event.id
-
-        # Figure out rounds, fame, etc.
-        divide_rounds(self, [event])
-        decide_fame(self)
-        find_order(self)
-        self.process_ordered_events()
+        if self.known_members[event.verify_key].head is None or \
+                event.height > self.lookup_table[self.known_members[event.verify_key].head].height:
+            self.known_members[event.verify_key].head = event.id
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """
@@ -136,32 +129,34 @@ class Hashgraph:
         :param events: The events to be processed
         :return: None
         """
-        bptc.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
+        events = copy.deepcopy(events)
+        bptc.logger.debug("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)
-
         events_toposorted = toposort(events)
+
+        # Learn about other members
+        self.learn_members_from_events(events)
 
         # Add all new events in topological order and check parent pointer
         new_events = {}
         for event in events_toposorted:
             if event.id not in self.lookup_table:
                 if event.parents.self_parent is not None and event.parents.self_parent not in self.lookup_table:
-                    raise AssertionError('Self parent {} of {} not known'.
-                                         format(event.parents.self_parent[:6], event.id[:6]))
+                    bptc.logger.error('Self parent {} of {} not known. Ignore all data.'.
+                                      format(event.parents.self_parent[:6], event.id[:6]))
+                    return
                 if event.parents.other_parent is not None and event.parents.other_parent not in self.lookup_table:
-                    raise AssertionError('Other parent {} of {} not known'.
+                    bptc.logger.error('Other parent {} of {} not known. Ignore all data'.
                                          format(event.parents.other_parent[:6], event.id[:6]))
-                new_events[event.id] = event
-                self.lookup_table[event.id] = event
-                self.unordered_events.add(event.id)
+                    return
 
-        # Learn about other members
-        self.learn_members_from_events(new_events)
+                new_events[event.id] = event
+                self.add_event(event)
 
         # Create a new event for the gossip
-        event = Event(self.me.verify_key, None, Parents(self.me.head, self.get_head_of(from_member)))
+        event = Event(self.me.verify_key, None, Parents(self.me.head, from_member.head))
         self.add_own_event(event)
         new_events[event.id] = event
 
@@ -204,6 +199,48 @@ class Hashgraph:
 
         self.next_ordered_event_idx_to_process = len(self.ordered_events)
 
+    def parse_transaction(self, event, transaction, plain=False):
+        receiver = self.known_members[transaction.receiver].formatted_name if \
+            transaction.receiver in self.known_members else transaction.receiver
+        sender = self.known_members[event.verify_key].formatted_name if \
+            event.verify_key in self.known_members else event.verify_key
+        status = TransactionStatus.text_for_value(transaction.status)
+        is_received = transaction.receiver == self.me.to_verifykey_string()
+        amount = transaction.amount
+        comment = transaction.comment
+        time = event.time
+        rec = {
+            'receiver': receiver,
+            'sender': sender,
+            'amount': amount,
+            'comment': comment,
+            'time': time,
+            'status': status,
+            'is_received': is_received,
+        }
+        format_string = '{} [b]{} BPTC[/b] {} [b]{}[/b] ({}){}'
+        if plain:
+            format_string = '{} {} BPTC {} {} ({}){}'
+        rec['formatted'] = format_string.format(
+            'Received' if is_received else 'Sent',
+            amount,
+            'from' if rec['is_received'] else 'to',
+            sender if rec['is_received'] else receiver,
+            status,
+            '\n"{}"'.format(comment) if comment else '',
+        ).replace('\n', ' - ' if plain else '\n')
+        return rec
+
+    def get_relevant_transactions(self, plain=False):
+        # Load transactions belonging to this member
+        transactions = []
+        events = list(self.lookup_table.values())
+        for e in events:
+            for t in e.data or []:
+                if isinstance(t, MoneyTransaction) and self.me.to_verifykey_string() in [e.verify_key, t.receiver]:
+                    transactions.append(self.parse_transaction(e, t, plain))
+        return sorted(transactions, key=lambda x: x['time'], reverse=True)
+
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
     """
@@ -226,13 +263,12 @@ def init_hashgraph(app):
     from bptc.data.network import Network
 
     # Try to load the Hashgraph from the database
-    app.hashgraph = DB.load_hashgraph(
-        app.cl_args.port, app.cl_args.output)
+    hashgraph = DB.load_hashgraph(os.path.join(app.cl_args.output, 'data.db'))
     # Create a new hashgraph if it could not be loaded
-    if app.hashgraph is None or app.hashgraph.me is None:
-        app.me = Member.create()
-        app.hashgraph = Hashgraph(app.me)
-        app.network = Network(app.hashgraph, create_initial_event=True)
+    if hashgraph is None or hashgraph.me is None:
+        me = Member.create()
+        me.address = IPv4Address("TCP", bptc.ip, bptc.port)
+        hashgraph = Hashgraph(me)
+        app.network = Network(hashgraph, create_initial_event=True)
     else:
-        app.network = Network(app.hashgraph, create_initial_event=False)
-        app.me = app.hashgraph.me
+        app.network = Network(hashgraph, create_initial_event=False)

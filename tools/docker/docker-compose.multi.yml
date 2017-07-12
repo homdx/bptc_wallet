@@ -1,0 +1,46 @@
+# TODO Presentation, *Pseudocode, Client-Tests, Server connecten
+version: "3"
+services:
+  registry:
+    image: chaoste/bptc
+    command: python member_registry.py
+    tty: true
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+  client1:
+    image: chaoste/bptc
+    command: python main.py -auto -p 8000 -r registry:9000 -qm registry:9001
+    tty: true
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    links:
+      - registry
+  client2:
+    image: chaoste/bptc
+    command: python main.py -auto -p 8002 -r registry:9000 -qm registry:9001
+    tty: true
+    ports:
+      - "8002:8002"
+      - "8003:8003"
+    links:
+      - registry
+  client3:
+    image: chaoste/bptc
+    command: python main.py -auto -p 8004 -r registry:9000 -qm registry:9001
+    tty: true
+    ports:
+      - "8004:8004"
+      - "8005:8005"
+    links:
+      - registry
+  client4:
+    image: chaoste/bptc
+    command: python main.py -auto -p 8006 -r registry:9000 -qm registry:9001
+    tty: true
+    ports:
+      - "8006:8006"
+      - "8007:8007"
+    links:
+      - registry

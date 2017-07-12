@@ -1,3 +1,4 @@
+import bptc
 from bptc.data.event import Event, Fame
 from bptc.data.member import Member
 from collections import defaultdict
@@ -7,8 +8,7 @@ import math
 import dateutil.parser
 import time
 from statistics import median
-
-C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
+from bptc.utils.toposort import toposort
 
 
 # DIVIDE ROUNDS
@@ -44,7 +44,13 @@ def event_can_can_strongly_see_enough_round_r_witnesses(hashgraph, event: Event,
 
 
 def get_members_with_strongly_seen_witnesses_for_round(hashgraph, event: Event, r: int):
-    members_on_paths = get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+    members_on_paths = fast_get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+    #old_members_on_paths = get_members_on_paths_to_witnesses_for_round(hashgraph, event, r)
+
+    #same = len(members_on_paths) == len(old_members_on_paths) and all([len(s) == len(o_s) for s, o_s in zip(members_on_paths, old_members_on_paths)])
+
+    #if not same:
+    #    print("Fast member on paths was not equal!")
 
     # Collect all members who's witnesses we can strongly see
     members_with_strongly_seen_witnesses = set()
@@ -87,6 +93,45 @@ def get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Event, r
     return result
 
 
+def fast_get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Event, r: int):
+    # for every ancestor, the nodes that were visited to read it
+    members_on_paths = defaultdict(set)
+    members_on_paths[start_event.id].add(start_event.verify_key)
+    visited, queue = set(), [start_event]
+
+    while queue:
+        event = queue.pop(0)
+
+        # Stop once we reach the previous round
+        if event.id != start_event.id and event.round < r:
+            continue
+
+        if event not in visited:
+            visited.add(event)
+
+            if event.parents.self_parent is not None:
+                self_parent = hashgraph.lookup_table[event.parents.self_parent]
+                members_on_paths[self_parent.id].add(self_parent.verify_key)
+                members_on_paths[self_parent.id].add(event.verify_key)
+                members_on_paths[self_parent.id] |= members_on_paths[event.id]
+                queue.append(self_parent)
+
+            if event.parents.other_parent is not None:
+                other_parent = hashgraph.lookup_table[event.parents.other_parent]
+                members_on_paths[other_parent.id].add(other_parent.verify_key)
+                members_on_paths[other_parent.id].add(event.verify_key)
+                members_on_paths[other_parent.id] |= members_on_paths[event.id]
+                queue.append(other_parent)
+
+    # Only witnesses are relevant
+    result = defaultdict(set)
+    for member_id, witness_id in hashgraph.witnesses[r].items():
+        if len(members_on_paths[witness_id]) > 0:
+            result[member_id] = members_on_paths[witness_id]
+
+    return result
+
+
 # DECIDE FAME
 
 def decide_fame(hashgraph):
@@ -95,13 +140,11 @@ def decide_fame(hashgraph):
         if x_round in hashgraph.rounds_with_decided_fame:
             continue
 
-        for x_id in hashgraph.witnesses[x_round].values():
+        x_events = {e: hashgraph.lookup_table[e] for e in hashgraph.witnesses[x_round].values()}
+        for x in toposort(x_events):
             for y_round in range(x_round+1, max(hashgraph.witnesses)+1):
-                # We want to decide the fame of x
-                x = hashgraph.lookup_table[x_id]
-
-                for y_id in hashgraph.witnesses[y_round].values():
-                    y = hashgraph.lookup_table[y_id]
+                y_events = {e: hashgraph.lookup_table[e] for e in hashgraph.witnesses[y_round].values()}
+                for y in toposort(y_events):
                     d = y.round - x.round
 
                     if d == 1:
@@ -113,7 +156,7 @@ def decide_fame(hashgraph):
                         s = get_strongly_seen_witnesses_for_round(hashgraph, y, y.round-1)
                         v, t = get_majority_vote_in_set_for_event(hashgraph, s, x)
 
-                        if d % C > 0:  # This is a normal round
+                        if d % bptc.C > 0:  # This is a normal round
                             if t > hashgraph.supermajority_stake:  # If supermajority, then decide
                                 x.is_famous = v
                                 # print('{} fame decided: {}'.format(x.short_id, x.is_famous))
@@ -134,7 +177,7 @@ def decide_fame(hashgraph):
         # Check if round x was completely decided
         if all([hashgraph.lookup_table[event_id].is_famous != Fame.UNDECIDED for event_id in hashgraph.witnesses[x_round].values()]):
             hashgraph.rounds_with_decided_fame.add(x_round)
-            print("Fame is completely decided for round {}".format(x_round))
+            bptc.logger.debug("Fame is completely decided for round {}".format(x_round))
 
 
 def get_strongly_seen_witnesses_for_round(hashgraph, event: Event, r: int) -> Set[str]:
@@ -164,7 +207,7 @@ def get_majority_vote_in_set_for_event(hashgraph, s: Set[str], x: Event) -> (boo
     return Fame.TRUE if stake_for >= stake_against else Fame.FALSE, stake_for if stake_for >= stake_against else stake_against
 
 
-def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
+def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     """
     Whether event 1 can see event 2
     :param hashgraph:
@@ -173,34 +216,54 @@ def event_can_see_event(hashgraph, event_1: Event, event_2: Event) -> bool:
     :return:
     """
 
-    # TODO:
-    '''
+    # Only calculate if the answer is not already cached
+    if event_2.id in event_1.can_see_cache:
+        return event_1.can_see_cache[event_2.id]
+    else:
+        if parents_are_forked(hg, event_1) or event_1.round < event_2.round:
+            event_1.can_see_cache[event_2.id] = False
+            return False
+
+        can_see = False
+
+        if event_1.parents.self_parent is not None:
+            can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.self_parent], event_2)
+
+        if can_see:
+            event_1.can_see_cache[event_2.id] = True
+            return True
+
+        if event_1.parents.other_parent is not None:
+            can_see = event_can_see_event(hg, hg.lookup_table[event_1.parents.other_parent], event_2)
+
+        event_1.can_see_cache[event_2.id] = can_see
+        return can_see
+
+
+def parents_are_forked(hg, event: Event):
+    """
     Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
-    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y!
-    If w only has x or y as ancestor, then w could see it. (see page 8, 9)
-    '''
+    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y.
+    """
+    if event.parents.self_parent is None or event.parents.other_parent is None:
+        return False
 
-    to_visit = {event_1}
-    visited = set()
+    self_parent = hg.lookup_table[event.parents.self_parent]
+    other_parent = hg.lookup_table[event.parents.other_parent]
 
-    while len(to_visit) > 0:
-        event = to_visit.pop()
-        if event not in visited:
+    if self_parent.verify_key != other_parent.verify_key:
+        return False
 
-            if event.id == event_2.id:
-                return True
+    current_event, goal_event = (self_parent, other_parent) if self_parent.height > other_parent.height else (other_parent, self_parent)
 
-            if event.round < event_2.round:
-                visited.add(event)
-                continue
+    # Search if we can find goal_event
+    # If so, they can't be forked
+    while current_event.parents.self_parent is not None and current_event.height >= goal_event.height:
+        if current_event.parents.self_parent == goal_event.id:
+            return False
+        current_event = hg.lookup_table[current_event.parents.self_parent]
 
-            if event.parents.self_parent is not None:
-                to_visit.add(hashgraph.lookup_table[event.parents.self_parent])
-            if event.parents.other_parent is not None:
-                to_visit.add(hashgraph.lookup_table[event.parents.other_parent])
-            visited.add(event)
-
-    return False
+    return True
 
 
 def decide_randomly_based_on_signature(signature: str) -> bool:
@@ -231,13 +294,13 @@ def find_order(hg):
             if all_famous_witnesses_can_see_x:
                 x.round_received = r
                 x.consensus_time = get_consensus_time(hg, x).isoformat()
-
+                x.confirmation_time = datetime.now().isoformat()
                 # print("Decided for {}: round_received = {}, time = {}".format(x.short_id, x.round_received, x.consensus_time))
-
                 decided_events.add(x)
 
     sorted_events = sorted(decided_events, key=lambda e: (e.round_received, e.consensus_time, e.id))
     for e in sorted_events:
+        e.can_see_cache.clear()
         hg.unordered_events.remove(e.id)
         hg.ordered_events.append(e.id)
 
@@ -279,7 +342,7 @@ def get_events_for_consensus_time(hg, x) -> Set[Event]:
                     z_self_parent = hg.lookup_table[z.parents.self_parent]
 
             result.add(z)
-        else: # Special case for the first event - this is not described in the paper
+        else:  # Special case for the first event - this is not described in the paper
             result.add(z)
 
     return result
