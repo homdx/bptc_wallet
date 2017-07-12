@@ -190,5 +190,5 @@ class ConsoleApp(InteractiveShell):
     def cmd_list_members(self, args):
         members = list(self.network.hashgraph.known_members.values())
         members.sort(key=lambda x: x.formatted_name)
-        members_list = '\n'.join('{}. {}'.format(i, repr(m)) for i, m in enumerate(members) if m != self.network.me)
+        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members) if m != self.network.me)
         bptc.logger.info('Members List:\n{}'.format(members_list))

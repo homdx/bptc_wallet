@@ -82,7 +82,7 @@ class Member:
             return "{} ({}...)".format(self.name, self.id[:6])
 
     def __repr__(self):
-        return "Member({}, {}, host={}, port={}, stake={})".format(
+        return "Member(id={}, name={}, host={}, port={}, stake={})".format(
             self.id[:6],
             self.name,
             self.host,
