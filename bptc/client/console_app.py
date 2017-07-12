@@ -49,6 +49,9 @@ class ConsoleApp(InteractiveShell):
             status=dict(
                 help='Print information about the current hashgraph state',
             ),
+            list_members=dict(
+                help='Show all members withing the hashgraph network',
+            ),
             send=dict(
                 help='Send money to another member of the hashgraph network',
                 args=[
@@ -183,3 +186,9 @@ class ConsoleApp(InteractiveShell):
             self.network.send_transaction(args.amount, args.comment, receiver)
         else:
             bptc.logger.error('Invalid member name, call list_member to see all available options.')
+
+    def cmd_list_members(self, args):
+        members = list(self.network.hashgraph.known_members.values())
+        members.sort(key=lambda x: x.formatted_name)
+        members_list = '\n'.join('{}. {}'.format(i, repr(m)) for i, m in enumerate(members) if m != self.network.me)
+        bptc.logger.info('Members List:\n{}'.format(members_list))
