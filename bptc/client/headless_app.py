@@ -18,7 +18,10 @@ class HeadlessApp():
         init_hashgraph(self)
 
     def __call__(self):
-        network_utils.initial_checks(self)
+        # starts network client in a new thread
+        network_utils.start_reactor_thread()
+        # listen to hashgraph actions
+        network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
         try:
             bptc.logger.info('Automatically query members, push randomly, listen to pushs')
             self.network.start_background_pushes()
