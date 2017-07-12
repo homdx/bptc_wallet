@@ -63,7 +63,12 @@ class ConsoleApp(InteractiveShell):
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
-            history=dict(help='List all relevant transactions'),
+            history=dict(
+                help='List all relevant transactions',
+                args=[
+                    (['-a', '--all'], dict(help='Show all transactions regardless of the involved members', action='store_true'))
+                ],
+            ),
             verbose=dict(help='Toggle info level of stdout logger'),
         )
         self.keybindings = ((Keys.ControlV, self.cmd_verbose),)
@@ -213,7 +218,7 @@ class ConsoleApp(InteractiveShell):
         print('Members List:\n{}'.format(members_list))
 
     def cmd_history(self, args):
-        transactions = self.network.hashgraph.get_relevant_transactions(plain=True)
+        transactions = self.network.hashgraph.get_relevant_transactions(plain=True, show_all=args.all)
         transactions_list = '\n'.join('{}. {}'.format(
             i+1, t['formatted']) for i, t in enumerate(transactions))
         print('Transactions List:\n{}'.format(transactions_list))

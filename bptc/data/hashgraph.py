@@ -231,14 +231,15 @@ class Hashgraph:
         ).replace('\n', ' - ' if plain else '\n')
         return rec
 
-    def get_relevant_transactions(self, plain=False):
+    def get_relevant_transactions(self, plain=False, show_all=False):
         # Load transactions belonging to this member
         transactions = []
         events = list(self.lookup_table.values())
         for e in events:
             for t in e.data or []:
-                if isinstance(t, MoneyTransaction) and self.me.to_verifykey_string() in [e.verify_key, t.receiver]:
-                    transactions.append(self.parse_transaction(e, t, plain))
+                if isinstance(t, MoneyTransaction):
+                    if show_all or self.me.to_verifykey_string() in [e.verify_key, t.receiver]:
+                        transactions.append(self.parse_transaction(e, t, plain))
         return sorted(transactions, key=lambda x: x['time'], reverse=True)
 
 
