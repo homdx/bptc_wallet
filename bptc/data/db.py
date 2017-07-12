@@ -93,6 +93,7 @@ class DB:
                 for event in obj.lookup_table.values():
                     cls.__save_event(event)
             if temp:
+                cls.__connection.commit()
                 cls.__connection = orig_connection
                 cls.__database_file = orig_file
         else:

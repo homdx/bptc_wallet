@@ -169,14 +169,14 @@ class Hashgraph:
         self.process_ordered_events()
 
         if self.debug_mode:
-            number_events = round(len(self.lookup_table) / 100) * 100
+            number_events = (len(self.lookup_table) // 100) * 100
             # Dont store when there are not enough events or it would overwrite
             # the last temporary db
             if number_events > 0 and number_events > self.debug_mode:
                 bptc.logger.debug('Store intermediate results containing about {} events'.format(number_events))
                 from bptc.data.db import DB
                 DB.save(self, temp=True)
-                self.debug_mode = round(len(self.lookup_table) / 100) * 100
+                self.debug_mode = (len(self.lookup_table) // 100) * 100
 
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
