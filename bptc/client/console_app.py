@@ -23,8 +23,8 @@ class ConsoleApp(InteractiveShell):
                      help='Target address (incl. port)'))
                 ],
             ),
-            push_random=dict(
-                help='Start pushing to randomly chosen clients',
+            toggle_pushing=dict(
+                help='Start/Stop pushing to randomly chosen clients',
             ),
             register=dict(
                 help='Register this hashgraph member at the registry',
@@ -64,6 +64,7 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.removeHandler(bptc.stdout_logger)
 
         self.network = None
+        self.pushing = False
         init_hashgraph(self)
 
     @property
@@ -143,8 +144,15 @@ class ConsoleApp(InteractiveShell):
             return
         self.network.push_to(ip, int(port))
 
-    def cmd_push_random(self, args):
-        self.network.start_background_pushes()
+    def cmd_toggle_pushing(self, args):
+        if not self.pushing:
+            bptc.logger.info('Start pushing randomly')
+            self.network.start_background_pushes()
+            self.pushing = True
+        else:
+            bptc.logger.info('Stop pushing randomly')
+            self.network.stop_background_pushes()
+            self.pushing = False
 
     def cmd_reset(self, args):
         do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
