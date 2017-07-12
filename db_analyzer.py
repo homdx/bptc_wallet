@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import sqlite3
 import matplotlib.pyplot as plt
 import dateutil.parser
@@ -9,8 +8,10 @@ from bptc import init_logger
 from bptc.data.event import Event
 from bptc.data.hashgraph import Hashgraph
 from bptc.data.member import Member
+import time
+import matplotlib.patches as mpatches
 
-db_file = './test_setup/1/data/data.db'
+db_file = None
 
 
 class DBLoader:
@@ -18,23 +19,18 @@ class DBLoader:
     __connection = None
 
     @classmethod
-    def __connect(cls) -> None:
-        """
-        Connects to the database. Creates a new database if necessary
-        :return: None
-        """
-        if cls.__connection is None:
-            # Connect to DB
-            cls.__connection = sqlite3.connect(db_file)
+    def connect(cls, db_file):
+        if cls.__connection:
+            cls.__connection.close()
 
-        else:
-            bptc.logger.error("Database has already been connected")
+        cls.__connection = sqlite3.connect(db_file)
 
     @classmethod
     def __get_cursor(cls) -> sqlite3:
         # Connect to DB on first call
         if cls.__connection is None:
-            cls.__connect()
+            print('Connect first!')
+            return
         return cls.__connection.cursor()
 
     @classmethod
@@ -88,35 +84,99 @@ def get_confirmation_length(events):
     return d
 
 
-def plot_boxplot(data):
+def plot_boxplot(data, x_labels, y_label):
     fig = plt.figure()
-    fig.suptitle('Confimation length', fontsize=14, fontweight='bold')
     ax = fig.add_subplot(111)
     ax.boxplot(data)
-    #ax.set_title('axes title')
-    ax.set_xlabel('10 clients, 1 push/s')
-    ax.set_xticklabels([])
-    ax.set_ylabel('confirmation length [s]')
-
+    ax.set_xticklabels(x_labels)
+    ax.set_ylabel(y_label)
     plt.show()
 
 
-if __name__ == '__main__':
-    init_logger('tools/db_analyzer_log.txt')
+def create_confirmation_length_data(db_dile):
+    DBLoader.connect(db_dile)
+    other_events = DBLoader.load_events()
+    data = get_confirmation_length(other_events)
+    return list(filter(lambda x: x < 100, data))
+
+
+def analyze_runtime(db_file):
+    DBLoader.connect(db_file)
     other_events = DBLoader.load_events()
     other_members, other = DBLoader.load_members()
+    me = Member.create()
+    my_hashgraph = Hashgraph(me)
+    start_time = time.time()
+    divide_rounds_time, decide_fame_time, find_order_time = my_hashgraph.process_events(other, other_events)
+    total_time = time.time() - start_time
+    return len(other_events), total_time, divide_rounds_time, decide_fame_time, find_order_time
 
-    #me = Member.create()
-    #my_hashgraph = Hashgraph(me)
-    #my_hashgraph.process_events(other, other_events)
+if __name__ == '__main__':
+    init_logger('tools/db_analyzer_log.txt')
+    bptc.logger.removeHandler(bptc.stdout_logger)
+
+    # data1 = create_confirmation_length_data('./test_setup/4c_1pps/data/data.db')
+    # data2 = create_confirmation_length_data('./test_setup/4c_2pps/data/data.db')
+    # data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
+    # data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
+
+    # plot_boxplot([data1, data2, data3, data4], ['4 clients, 1000 push/s', '4 clients, 2 push/s',
+    #                                            '8 clients, 1000 push/s', '8 clients, 2 push/s'],
+    #             'confirmation length [s]')
+
+    x1, total_time1, divide_rounds_time1, decide_fame_time1, find_order_time1 = analyze_runtime('test_setup/200/data/data.db')
+    x2, total_time2, divide_rounds_time2, decide_fame_time2, find_order_time2 = analyze_runtime('test_setup/400/data/data.db')
+    x3, total_time3, divide_rounds_time3, decide_fame_time3, find_order_time3 = analyze_runtime('test_setup/600/data/data.db')
+    x4, total_time4, divide_rounds_time4, decide_fame_time4, find_order_time4 = analyze_runtime('test_setup/800/data/data.db')
+    x5, total_time5, divide_rounds_time5, decide_fame_time5, find_order_time5 = analyze_runtime('test_setup/1000/data/data.db')
+
+    x = [x1, x2, x3, x4, x5]
+
+    y = [total_time1, total_time2, total_time3, total_time4, total_time5]
+    plt.plot(x, y, 'r')
+    plt.plot(x, y, 'ro')
+    red_patch = mpatches.Patch(color='red', label='total time')
+
+    y = [divide_rounds_time1, divide_rounds_time2, divide_rounds_time3, divide_rounds_time4, divide_rounds_time5]
+    plt.plot(x, y, 'b')
+    plt.plot(x, y, 'bo')
+    blue_patch = mpatches.Patch(color='blue', label='divide rounds')
+
+    y = [decide_fame_time1, decide_fame_time2, decide_fame_time3, decide_fame_time4, decide_fame_time5]
+    plt.plot(x, y, 'y')
+    plt.plot(x, y, 'yo')
+    yellow_patch = mpatches.Patch(color='yellow', label='decide fame')
+
+    y = [find_order_time1, find_order_time2, find_order_time3, find_order_time4, find_order_time5]
+    plt.plot(x, y, 'g')
+    plt.plot(x, y, 'go')
+    green_patch = mpatches.Patch(color='green', label='find order')
+
+    plt.legend(handles=[red_patch, blue_patch, yellow_patch, green_patch])
+    plt.ylabel('processing time [s]')
+    plt.xlabel('events')
+    plt.show()
 
     # memory
-    size_of_db = os.path.getsize(db_file)/float(1024)
-    bptc.logger.info('Size of DB: {} kB'.format(size_of_db))
-    avg_event_size = size_of_db/len(other_events)
-    bptc.logger.info('Avg. size of event: {} kB'.format(avg_event_size))
+    # size_of_db = os.path.getsize(db_file)/float(1024)
+    # bptc.logger.info('Size of DB: {} kB'.format(size_of_db))
+    # avg_event_size = size_of_db/len(other_events1)
+    # bptc.logger.info('Avg. size of event: {} kB'.format(avg_event_size))
 
-    # plot boxplot
-    data = get_confirmation_length(other_events)
-    data = list(filter(lambda x: x < 100, data))
-    plot_boxplot(data)
+
+'''
+Timing code for hashgraph:
+
+        import time
+        start_time = time.time()
+        divide_rounds(self, toposort(new_events))
+        divide_rounds_time = time.time() - start_time
+        start_time = time.time()
+        decide_fame(self)
+        decide_fame_time = time.time() - start_time
+        start_time = time.time()
+        find_order(self)
+        find_order_time = time.time() - start_time
+        self.process_ordered_events()
+        return divide_rounds_time, decide_fame_time, find_order_time
+'''
