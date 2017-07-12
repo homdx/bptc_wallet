@@ -10,6 +10,7 @@ from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
+from prompt_toolkit.keys import Keys
 
 
 class ConsoleApp(InteractiveShell):
@@ -63,6 +64,7 @@ class ConsoleApp(InteractiveShell):
             history=dict(help='List all relevant transactions'),
             verbose=dict(help='Toggle info level of stdout logger'),
         )
+        self.keybindings = ((Keys.ControlV, self.cmd_verbose),)
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
         self.network = None
         self.pushing = False
@@ -124,7 +126,7 @@ class ConsoleApp(InteractiveShell):
             ip, port = target.split(':')
             return ip, port
         except ValueError:
-            bptc.logger.error('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
+            print('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
             return None, None
 
     def cmd_register(self, args):
@@ -168,12 +170,12 @@ class ConsoleApp(InteractiveShell):
             self.network.reset(self)
 
     def cmd_status(self, args):
-        bptc.logger.info('I am: {}'.format(repr(self.me)))
-        bptc.logger.info('Account balance: {} BPTC'.format(self.me.account_balance))
-        bptc.logger.info('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
+        print('I am: {}'.format(repr(self.me)))
+        print('Account balance: {} BPTC'.format(self.me.account_balance))
+        print('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
                                                           len(self.hashgraph.ordered_events)))
-        bptc.logger.info('Last push sent: {}'.format(self.network.last_push_sent))
-        bptc.logger.info('Last push received: {}'.format(self.network.last_push_received))
+        print('Last push sent: {}'.format(self.network.last_push_sent))
+        print('Last push received: {}'.format(self.network.last_push_received))
 
     def cmd_send(self, args):
         # Generate mapping from a string to members
@@ -190,21 +192,21 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
             self.network.send_transaction(args.amount, args.comment, receiver)
         else:
-            bptc.logger.error('Invalid member name, call list_member to see all available options.')
+            print('ERROR: Invalid member name, call list_member to see all available options.')
 
     def cmd_members(self, args):
         members = self.network.hashgraph.known_members.values()
         members = [m for m in members if m != self.network.me]
         members.sort(key=lambda x: x.formatted_name)
         members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members))
-        bptc.logger.info('Members List:\n{}'.format(members_list))
+        print('Members List:\n{}'.format(members_list))
 
     def cmd_history(self, args):
         transactions = self.network.hashgraph.get_relevant_transactions(plain=True)
         transactions_list = '\n'.join('{}. {}'.format(
             i+1, t['formatted']) for i, t in enumerate(transactions))
-        bptc.logger.info('Transactions List:\n{}'.format(transactions_list))
+        print('Transactions List:\n{}'.format(transactions_list))
 
     def cmd_verbose(self, args):
-        bptc.toggle_stdout_logger()
-        print(bptc.stdout_logger.level)
+        bptc.toggle_stdout_log_level()
+        print('Toggled stdout log level. New level: {}'.format(bptc.get_stdout_levelname()))

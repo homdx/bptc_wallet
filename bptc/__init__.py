@@ -33,8 +33,11 @@ def init_logger(logfile, be_quiet=False):
     logger.addHandler(file_logger)
 
 # Toggle output level for stdout logger (stdout_logger_lvl or logging.WARN)
-def toggle_stdout_logger():
+def toggle_stdout_log_level():
     if stdout_logger.level == logging.INFO:
         stdout_logger.setLevel(logging.DEBUG)
     else:
         stdout_logger.setLevel(logging.INFO)
+
+def get_stdout_levelname():
+    return logging._levelToName[stdout_logger.level]
