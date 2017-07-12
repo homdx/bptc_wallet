@@ -199,6 +199,48 @@ class Hashgraph:
 
         self.next_ordered_event_idx_to_process = len(self.ordered_events)
 
+    def parse_transaction(self, event, transaction, plain=False):
+        receiver = self.known_members[transaction.receiver].formatted_name if \
+            transaction.receiver in self.known_members else transaction.receiver
+        sender = self.known_members[event.verify_key].formatted_name if \
+            event.verify_key in self.known_members else event.verify_key
+        status = TransactionStatus.text_for_value(transaction.status)
+        is_received = transaction.receiver == self.me.to_verifykey_string()
+        amount = transaction.amount
+        comment = transaction.comment
+        time = event.time
+        rec = {
+            'receiver': receiver,
+            'sender': sender,
+            'amount': amount,
+            'comment': comment,
+            'time': time,
+            'status': status,
+            'is_received': is_received,
+        }
+        format_string = '{} [b]{} BPTC[/b] {} [b]{}[/b] ({}){}'
+        if plain:
+            format_string = '{} {} BPTC {} {} ({}){}'
+        rec['formatted'] = format_string.format(
+            'Received' if is_received else 'Sent',
+            amount,
+            'from' if rec['is_received'] else 'to',
+            sender if rec['is_received'] else receiver,
+            status,
+            '\n"{}"'.format(comment) if comment else '',
+        ).replace('\n', ' - ' if plain else '\n')
+        return rec
+
+    def get_relevant_transactions(self, plain=False):
+        # Load transactions belonging to this member
+        transactions = []
+        events = list(self.lookup_table.values())
+        for e in events:
+            for t in e.data or []:
+                if isinstance(t, MoneyTransaction) and self.me.to_verifykey_string() in [e.verify_key, t.receiver]:
+                    transactions.append(self.parse_transaction(e, t, plain))
+        return sorted(transactions, key=lambda x: x['time'], reverse=True)
+
 
 def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
     """

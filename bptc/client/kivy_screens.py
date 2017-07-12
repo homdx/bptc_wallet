@@ -118,37 +118,13 @@ class TransactionsScreen(KivyScreen):
 
     def on_pre_enter(self, *args):
         # Load relevant transactions
-        transactions = []
-        events = list(self.network.hashgraph.lookup_table.values())
-        for e in events:
-            if e.data is not None:
-                for t in e.data:
-                    if isinstance(t, MoneyTransaction) and self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
-                        transactions.append({
-                            'receiver': self.network.hashgraph.known_members[t.receiver].formatted_name if t.receiver in self.network.hashgraph.known_members else t.receiver,
-                            'sender': self.network.hashgraph.known_members[e.verify_key].formatted_name if e.verify_key in self.network.hashgraph.known_members else e.verify_key,
-                            'amount': t.amount,
-                            'comment': t.comment,
-                            'time': e.time,
-                            'status': TransactionStatus.text_for_value(t.status),
-                            'is_received': t.receiver == self.network.hashgraph.me.to_verifykey_string()
-                        })
-
-        transactions.sort(key=lambda x: x['time'], reverse=True)
-
+        transactions = self.network.hashgraph.get_relevant_transactions()
         # Create updated list
         args_converter = lambda row_index, rec: {
             'height': 60,
             'markup': True,
             'halign': 'center',
-            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] ({})\n{}'.format(
-                'Received' if rec['is_received'] else 'Sent',
-                rec['amount'],
-                'from' if rec['is_received'] else 'to',
-                rec['sender'] if rec['is_received'] else rec['receiver'],
-                rec['status'],
-                '"{}"'.format(rec['comment']) if rec['comment'] is not None and len(rec['comment']) > 0 else ''
-            )
+            'text': rec['formatted'],
         }
 
         list_adapter = SimpleListAdapter(data=transactions,
@@ -255,4 +231,3 @@ class DebugScreen(KivyScreen):
         else:
             self.network.stop_background_pushes()
             self.pushing = False
-

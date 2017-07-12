@@ -60,6 +60,7 @@ class ConsoleApp(InteractiveShell):
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
+            history=dict(help='List all relevant transactions'),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
 
@@ -164,6 +165,7 @@ class ConsoleApp(InteractiveShell):
             self.network.reset(self)
 
     def cmd_status(self, args):
+        bptc.logger.info('I am: {}'.format(repr(self.me)))
         bptc.logger.info('Account balance: {} BPTC'.format(self.me.account_balance))
         bptc.logger.info('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
                                                           len(self.hashgraph.ordered_events)))
@@ -192,3 +194,9 @@ class ConsoleApp(InteractiveShell):
         members.sort(key=lambda x: x.formatted_name)
         members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members) if m != self.network.me)
         bptc.logger.info('Members List:\n{}'.format(members_list))
+
+    def cmd_history(self, args):
+        transactions = self.network.hashgraph.get_relevant_transactions(plain=True)
+        transactions_list = '\n'.join('{}. {}'.format(
+            i+1, t['formatted']) for i, t in enumerate(transactions))
+        bptc.logger.info('Transactions List:\n{}'.format(transactions_list))
