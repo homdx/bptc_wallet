@@ -29,6 +29,8 @@ def parse_args():
                         'your local hashgraph. This is only available for the HeadlessApp.')
     parser.add_argument('-bp', '--bootstrap-push', type=str, default=None,
                         help='Push initially to the given address')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Store hashgraph in a temporary database for each 200 processed events')
     args = parser.parse_args()
     if not args.auto and args.dirty:
         args.dirty = False  # Ignore this flag on every other client

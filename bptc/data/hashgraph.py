@@ -10,6 +10,7 @@ from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils.toposort import toposort
+import bptc.utils.network as network_utils
 from bptc.data.transaction import MoneyTransaction, TransactionStatus, PublishNameTransaction
 
 
@@ -18,10 +19,11 @@ class Hashgraph:
     The Hashgraph - storing the events of all nodes
     """
 
-    def __init__(self, me):
+    def __init__(self, me, debug_mode=False):
         self.lock = threading.RLock()
         # Member: A reference to the current user. For convenience (e.g. signing)
         self.me = me
+        self.debug_mode = debug_mode
 
         # {member-id => Member}: All members we know
         if me is not None:
@@ -166,6 +168,16 @@ class Hashgraph:
         find_order(self)
         self.process_ordered_events()
 
+        if self.debug_mode:
+            number_events = round(len(self.lookup_table) / 100) * 100
+            # Dont store when there are not enough events or it would overwrite
+            # the last temporary db
+            if number_events > 0 and number_events > self.debug_mode:
+                bptc.logger.debug('Store intermediate results containing about {} events'.format(number_events))
+                from bptc.data.db import DB
+                DB.save(self, temp=True)
+                self.debug_mode = round(len(self.lookup_table) / 100) * 100
+
     def learn_members_from_events(self, events: Dict[str, Event]) -> None:
         """
         Goes through a list of events and learns their creators if they are not already known
@@ -264,11 +276,12 @@ def init_hashgraph(app):
 
     # Try to load the Hashgraph from the database
     hashgraph = DB.load_hashgraph(os.path.join(app.cl_args.output, 'data.db'))
+    hashgraph.debug_mode = app.cl_args.debug
     # Create a new hashgraph if it could not be loaded
     if hashgraph is None or hashgraph.me is None:
         me = Member.create()
         me.address = IPv4Address("TCP", bptc.ip, bptc.port)
-        hashgraph = Hashgraph(me)
+        hashgraph = Hashgraph(me, app.cl_args.debug)
         app.network = Network(hashgraph, create_initial_event=True)
     else:
         app.network = Network(hashgraph, create_initial_event=False)
