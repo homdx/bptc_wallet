@@ -1,3 +1,4 @@
+import datetime
 import json
 import zlib
 from math import ceil
@@ -38,17 +39,19 @@ class PullServer(protocol.Protocol):
 
 class PullClientFactory(protocol.ClientFactory):
 
-    def __init__(self, callback_obj, doc):
+    def __init__(self, callback_obj, doc, ready_event):
         self.callback_obj = callback_obj
         self.doc = doc
         self.protocol = PullClient
         self.received_data = b""
+        self.ready_event = ready_event
 
     def clientConnectionLost(self, connector, reason):
         return
 
     def clientConnectionFailed(self, connector, reason):
-        print('Connecting failed!')
+        print('{}: {}'.format(datetime.datetime.now().isoformat(), reason.getErrorMessage()))
+        self.ready_event.set()
 
 
 class PullClient(protocol.Protocol):

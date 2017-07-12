@@ -1,17 +1,16 @@
 import threading
-
 import kivy
 from kivy.adapters.listadapter import ListAdapter
 from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.label import Label
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
-
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 kivy.require('1.0.7')
+
 
 class KivyScreen(Screen):
     @staticmethod
@@ -119,37 +118,13 @@ class TransactionsScreen(KivyScreen):
 
     def on_pre_enter(self, *args):
         # Load relevant transactions
-        transactions = []
-        events = list(self.network.hashgraph.lookup_table.values())
-        for e in events:
-            if e.data is not None:
-                for t in e.data:
-                    if isinstance(t, MoneyTransaction) and self.network.me.to_verifykey_string() in [e.verify_key, t.receiver]:
-                        transactions.append({
-                            'receiver': self.network.hashgraph.known_members[t.receiver].formatted_name if t.receiver in self.network.hashgraph.known_members else t.receiver,
-                            'sender': self.network.hashgraph.known_members[e.verify_key].formatted_name if e.verify_key in self.network.hashgraph.known_members else e.verify_key,
-                            'amount': t.amount,
-                            'comment': t.comment,
-                            'time': e.time,
-                            'status': TransactionStatus.text_for_value(t.status),
-                            'is_received': t.receiver == self.network.hashgraph.me.to_verifykey_string()
-                        })
-
-        transactions.sort(key=lambda x: x['time'], reverse=True)
-
+        transactions = self.network.hashgraph.get_relevant_transactions()
         # Create updated list
         args_converter = lambda row_index, rec: {
             'height': 60,
             'markup': True,
             'halign': 'center',
-            'text': '{} [b]{} BPTC[/b] {} [b]{}[/b] ({})\n{}'.format(
-                'Received' if rec['is_received'] else 'Sent',
-                rec['amount'],
-                'from' if rec['is_received'] else 'to',
-                rec['sender'] if rec['is_received'] else rec['receiver'],
-                rec['status'],
-                '"{}"'.format(rec['comment']) if rec['comment'] is not None and len(rec['comment']) > 0 else ''
-            )
+            'text': rec['formatted'],
         }
 
         list_adapter = SimpleListAdapter(data=transactions,
@@ -177,10 +152,11 @@ class PublishNameScreen(KivyScreen):
 
 class DebugScreen(KivyScreen):
 
-    def __init__(self, network, defaults):
+    def __init__(self, network, defaults, app):
         self.network = network
         self.defaults = defaults
         self.pushing = False
+        self.app = app
         super().__init__()
 
         def update_statistics():
@@ -230,11 +206,11 @@ class DebugScreen(KivyScreen):
 
     def do_reset(self, _dialog):
         bptc.logger.warn('Deleting local database containing the hashgraph')
-        self.network.reset()
+        self.network.reset(self.app)
         self.defaults['member_id'] = self.me.formatted_name
 
     def start_listening(self):
-        network_utils.start_listening(self.network, self.get('listening_port'))
+        network_utils.start_listening(self.network, bptc.ip, bptc.port, False)
 
     def register(self):
         ip, port = self.get('registering_address').split(':')
@@ -255,4 +231,3 @@ class DebugScreen(KivyScreen):
         else:
             self.network.stop_background_pushes()
             self.pushing = False
-

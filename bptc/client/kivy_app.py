@@ -1,12 +1,7 @@
 import os
-# Ignore command line arguments in Kivy
+os.environ["KIVY_NO_ARGS"] = "1"  # Ignore command line arguments in Kivy
 import threading
-
-import time
-
 from bptc.data.network import BootstrapPushThread
-
-os.environ["KIVY_NO_ARGS"] = "1"
 from kivy.app import App
 from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
@@ -31,7 +26,7 @@ class KivyApp(App):
         # starts network client in a new thread
         network_utils.start_reactor_thread()
         # listen to hashgraph actions
-        network_utils.start_listening(self.network, self.cl_args.port, self.cl_args.dirty)
+        network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
 
     def build(self):
         defaults = {
@@ -48,7 +43,7 @@ class KivyApp(App):
         sm.add_widget(TransactionsScreen(self.network))
         debug_screen = PublishNameScreen(self.network)
         sm.add_widget(debug_screen)
-        sm.add_widget(DebugScreen(self.network, defaults))
+        sm.add_widget(DebugScreen(self.network, defaults, self))
 
         if self.cl_args.register:
             ip, port = self.cl_args.register.split(':')
