@@ -4,6 +4,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.styles import style_from_dict
 from prompt_toolkit.token import Token
 from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.contrib.completers import WordCompleter
 
 class InteractiveShell:
     def __init__(self, title='Interactive Shell', add_help=True):
@@ -16,6 +17,7 @@ class InteractiveShell:
                 help = 'Show this help message',
             )
         self.history = InMemoryHistory()
+        self.completer = WordCompleter(sorted(self.commands.keys()))
         self.parser = self._create_parser()
 
     def _create_parser(self):
@@ -38,7 +40,8 @@ class InteractiveShell:
 
     def _process_input(self):
         input_ = prompt('> ', get_bottom_toolbar_tokens=self._get_toolbar,
-                        style=self.style, history=self.history)
+                        style=self.style, history=self.history,
+                        completer=self.completer, complete_while_typing=False)
         input_ = input_.split(' ')
         cmd = input_[0]
         args = input_[1:]

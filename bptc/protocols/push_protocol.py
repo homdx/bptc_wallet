@@ -67,7 +67,7 @@ class PushClientFactory(protocol.ClientFactory):
             self.receiver.push_fail_count += 1
             if self.receiver.push_fail_count >= 3:
                 self.receiver.address = None
-                bptc.logger.info("Forgot address of {} after three failed attempts".format(self.receiver))
+                bptc.logger.debug("Forgot address of {} after three failed attempts".format(self.receiver))
 
 
 class PushClient(protocol.Protocol):

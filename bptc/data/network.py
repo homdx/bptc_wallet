@@ -81,8 +81,6 @@ class Network:
             'members': serialized_members
         }
 
-        # bptc.logger.info(data_to_send)
-
         return json.dumps(data_to_send).encode('UTF-8')
 
     def push_to_member(self, member: Member, ignore_for_statistics=False) -> None:
@@ -179,7 +177,7 @@ class Network:
             for event_id, dict_event in s_events.items():
                 events[event_id] = Event.from_dict(dict_event)
 
-            bptc.logger.info('- Received {} events'.format(len(events.items())))
+            bptc.logger.debug('- Received {} events'.format(len(events.items())))
 
             self.process_events(from_member, events)
 
@@ -188,7 +186,7 @@ class Network:
         if len(s_members) > 0:
             members = [Member.from_dict(m) for m in s_members]
 
-            bptc.logger.info('- Received {} members'.format(len(members)))
+            bptc.logger.debug('- Received {} members'.format(len(members)))
 
             self.receive_members_callback(members)
 

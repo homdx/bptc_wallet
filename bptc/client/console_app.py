@@ -1,7 +1,7 @@
 import signal
 import itertools
 from functools import partial
-from prompt_toolkit.shortcuts import confirm
+from prompt_toolkit.shortcuts import confirm, prompt
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
@@ -49,7 +49,7 @@ class ConsoleApp(InteractiveShell):
             status=dict(
                 help='Print information about the current hashgraph state',
             ),
-            list_members=dict(
+            members=dict(
                 help='Show all members withing the hashgraph network',
             ),
             send=dict(
@@ -61,12 +61,9 @@ class ConsoleApp(InteractiveShell):
                 ],
             ),
             history=dict(help='List all relevant transactions'),
+            verbose=dict(help='Toggle info level of stdout logger'),
         )
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
-
-        if self.cl_args.quiet:
-            bptc.logger.removeHandler(bptc.stdout_logger)
-
         self.network = None
         self.pushing = False
         init_hashgraph(self)
@@ -87,6 +84,12 @@ class ConsoleApp(InteractiveShell):
             signal.signal(signal.SIGTERM, partial(self.exit, self))
 
         try:
+            print(
+                'WARN: Receiving and pushing events might cover over the console ' +
+                'interface. Press Ctrl + V or call command verbose to turn this ' +
+                'behaviour on or off. \n' +
+                'Press any key to continue...')
+            prompt('')
             # starts network client in a new thread
             network_utils.start_reactor_thread()
             # listen to hashgraph actions
@@ -189,10 +192,11 @@ class ConsoleApp(InteractiveShell):
         else:
             bptc.logger.error('Invalid member name, call list_member to see all available options.')
 
-    def cmd_list_members(self, args):
-        members = list(self.network.hashgraph.known_members.values())
+    def cmd_members(self, args):
+        members = self.network.hashgraph.known_members.values()
+        members = [m for m in members if m != self.network.me]
         members.sort(key=lambda x: x.formatted_name)
-        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members) if m != self.network.me)
+        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members))
         bptc.logger.info('Members List:\n{}'.format(members_list))
 
     def cmd_history(self, args):
@@ -200,3 +204,7 @@ class ConsoleApp(InteractiveShell):
         transactions_list = '\n'.join('{}. {}'.format(
             i+1, t['formatted']) for i, t in enumerate(transactions))
         bptc.logger.info('Transactions List:\n{}'.format(transactions_list))
+
+    def cmd_verbose(self, args):
+        bptc.toggle_stdout_logger()
+        print(bptc.stdout_logger.level)

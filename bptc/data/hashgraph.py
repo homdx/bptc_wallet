@@ -130,7 +130,7 @@ class Hashgraph:
         :return: None
         """
         events = copy.deepcopy(events)
-        bptc.logger.info("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
+        bptc.logger.debug("Processing {} events from {}...".format(len(events), from_member.verify_key[:6]))
 
         # Only deal with valid events
         events = filter_valid_events(events)
