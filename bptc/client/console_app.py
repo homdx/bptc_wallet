@@ -2,6 +2,9 @@ import signal
 import itertools
 from functools import partial
 from prompt_toolkit.shortcuts import confirm, prompt
+from prompt_toolkit.token import Token
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.keys import Keys
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
@@ -10,7 +13,6 @@ from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
 from bptc.data.transaction import TransactionStatus, MoneyTransaction
-from prompt_toolkit.keys import Keys
 
 
 class ConsoleApp(InteractiveShell):
@@ -57,7 +59,7 @@ class ConsoleApp(InteractiveShell):
                 help='Send money to another member of the hashgraph network',
                 args=[
                     (['amount'], dict(help='Amount of money', type=int)),
-                    (['receiver'], dict(help='ID or name of the user which should receive the money')),
+                    (['receiver'], dict(help='ID or name of the user which should receive the money', nargs='?')),
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
@@ -88,7 +90,7 @@ class ConsoleApp(InteractiveShell):
         try:
             print(
                 'WARN: Receiving and pushing events might cover over the console ' +
-                'interface. Press Ctrl + V or call command verbose to turn this ' +
+                'interface. Press Ctrl + V or call command "verbose" to turn this ' +
                 'behaviour on or off. \n' +
                 'Press enter to continue...')
             prompt('')
@@ -192,7 +194,16 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
             self.network.send_transaction(args.amount, args.comment, receiver)
         else:
-            print('ERROR: Invalid member name, call list_member to see all available options.')
+            completer = WordCompleter(sorted(member_names.keys()))
+            toolbar = lambda _: [(Token.Toolbar, 'Send {}: Insert the name, id or short id of the receiver'.format(args.amount))]
+            member = prompt('>', get_bottom_toolbar_tokens=toolbar, style=self.style,
+                            completer=completer, complete_while_typing=True)
+            if member in member_names:
+                receiver = member_names[member]
+                bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
+                self.network.send_transaction(args.amount, args.comment, receiver)
+            else:
+                print('Invalid member name: {}'.format(member))
 
     def cmd_members(self, args):
         members = self.network.hashgraph.known_members.values()
