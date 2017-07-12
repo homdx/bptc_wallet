@@ -90,7 +90,7 @@ class ConsoleApp(InteractiveShell):
                 'WARN: Receiving and pushing events might cover over the console ' +
                 'interface. Press Ctrl + V or call command verbose to turn this ' +
                 'behaviour on or off. \n' +
-                'Press any key to continue...')
+                'Press enter to continue...')
             prompt('')
             # starts network client in a new thread
             network_utils.start_reactor_thread()
