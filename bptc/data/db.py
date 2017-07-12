@@ -163,7 +163,7 @@ class DB:
         ordered_events = sorted(ordered_events, key=lambda e: (e.round_received, e.consensus_time, e.id))
         hg.ordered_events = [e.id for e in ordered_events]
 
-        bptc.logger.info('Loaded {} events from DB.'.format(len(events)))
+        bptc.logger.debug('Loaded {} events from DB.'.format(len(events)))
 
         # Create cached account balances
         hg.process_ordered_events()

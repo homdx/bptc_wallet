@@ -34,7 +34,7 @@ def process_query(client, members):
             if member_id not in client.hashgraph.known_members:
                 client.hashgraph.known_members[member_id] = Member(member_id, None)
             client.hashgraph.known_members[member_id].address = IPv4Address('TCP', ip, port)
-            bptc.logger.info('Member update: {}... to ({}, {})'.format(member_id[:6], ip, port))
+            bptc.logger.debug('Member update: {}... to ({}, {})'.format(member_id[:6], ip, port))
 
 
 def query_members(client, query_members_ip, query_members_port):

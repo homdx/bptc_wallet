@@ -1,7 +1,10 @@
 import signal
 import itertools
 from functools import partial
-from prompt_toolkit.shortcuts import confirm
+from prompt_toolkit.shortcuts import confirm, prompt
+from prompt_toolkit.token import Token
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.keys import Keys
 import bptc
 import bptc.utils.network as network_utils
 from bptc.data.db import DB
@@ -49,24 +52,22 @@ class ConsoleApp(InteractiveShell):
             status=dict(
                 help='Print information about the current hashgraph state',
             ),
-            list_members=dict(
+            members=dict(
                 help='Show all members withing the hashgraph network',
             ),
             send=dict(
                 help='Send money to another member of the hashgraph network',
                 args=[
                     (['amount'], dict(help='Amount of money', type=int)),
-                    (['receiver'], dict(help='ID or name of the user which should receive the money')),
+                    (['receiver'], dict(help='ID or name of the user which should receive the money', nargs='?')),
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
             history=dict(help='List all relevant transactions'),
+            verbose=dict(help='Toggle info level of stdout logger'),
         )
+        self.keybindings = ((Keys.ControlV, self.cmd_verbose),)
         super().__init__('BPTC Wallet {} CLI'.format(__version__))
-
-        if self.cl_args.quiet:
-            bptc.logger.removeHandler(bptc.stdout_logger)
-
         self.network = None
         self.pushing = False
         init_hashgraph(self)
@@ -87,6 +88,12 @@ class ConsoleApp(InteractiveShell):
             signal.signal(signal.SIGTERM, partial(self.exit, self))
 
         try:
+            print(
+                'WARN: Receiving and pushing events might cover over the console ' +
+                'interface. Press Ctrl + V or call command "verbose" to turn this ' +
+                'behaviour on or off. \n' +
+                'Press enter to continue...')
+            prompt('')
             # starts network client in a new thread
             network_utils.start_reactor_thread()
             # listen to hashgraph actions
@@ -121,7 +128,7 @@ class ConsoleApp(InteractiveShell):
             ip, port = target.split(':')
             return ip, port
         except ValueError:
-            bptc.logger.error('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
+            print('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
             return None, None
 
     def cmd_register(self, args):
@@ -165,12 +172,12 @@ class ConsoleApp(InteractiveShell):
             self.network.reset(self)
 
     def cmd_status(self, args):
-        bptc.logger.info('I am: {}'.format(repr(self.me)))
-        bptc.logger.info('Account balance: {} BPTC'.format(self.me.account_balance))
-        bptc.logger.info('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
+        print('I am: {}'.format(repr(self.me)))
+        print('Account balance: {} BPTC'.format(self.me.account_balance))
+        print('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
                                                           len(self.hashgraph.ordered_events)))
-        bptc.logger.info('Last push sent: {}'.format(self.network.last_push_sent))
-        bptc.logger.info('Last push received: {}'.format(self.network.last_push_received))
+        print('Last push sent: {}'.format(self.network.last_push_sent))
+        print('Last push received: {}'.format(self.network.last_push_received))
 
     def cmd_send(self, args):
         # Generate mapping from a string to members
@@ -187,16 +194,30 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
             self.network.send_transaction(args.amount, args.comment, receiver)
         else:
-            bptc.logger.error('Invalid member name, call list_member to see all available options.')
+            completer = WordCompleter(sorted(member_names.keys()))
+            toolbar = lambda _: [(Token.Toolbar, 'Send {}: Insert the name, id or short id of the receiver'.format(args.amount))]
+            member = prompt('>', get_bottom_toolbar_tokens=toolbar, style=self.style,
+                            completer=completer, complete_while_typing=True)
+            if member in member_names:
+                receiver = member_names[member]
+                bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
+                self.network.send_transaction(args.amount, args.comment, receiver)
+            else:
+                print('Invalid member name: {}'.format(member))
 
-    def cmd_list_members(self, args):
-        members = list(self.network.hashgraph.known_members.values())
+    def cmd_members(self, args):
+        members = self.network.hashgraph.known_members.values()
+        members = [m for m in members if m != self.network.me]
         members.sort(key=lambda x: x.formatted_name)
-        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members) if m != self.network.me)
-        bptc.logger.info('Members List:\n{}'.format(members_list))
+        members_list = '\n'.join('{}. {}'.format(i+1, repr(m)) for i, m in enumerate(members))
+        print('Members List:\n{}'.format(members_list))
 
     def cmd_history(self, args):
         transactions = self.network.hashgraph.get_relevant_transactions(plain=True)
         transactions_list = '\n'.join('{}. {}'.format(
             i+1, t['formatted']) for i, t in enumerate(transactions))
-        bptc.logger.info('Transactions List:\n{}'.format(transactions_list))
+        print('Transactions List:\n{}'.format(transactions_list))
+
+    def cmd_verbose(self, args):
+        bptc.toggle_stdout_log_level()
+        print('Toggled stdout log level. New level: {}'.format(bptc.get_stdout_levelname()))

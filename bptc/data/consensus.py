@@ -8,6 +8,7 @@ import math
 import dateutil.parser
 import time
 from statistics import median
+from bptc.utils.toposort import toposort
 
 
 # DIVIDE ROUNDS
@@ -139,13 +140,11 @@ def decide_fame(hashgraph):
         if x_round in hashgraph.rounds_with_decided_fame:
             continue
 
-        for x_id in hashgraph.witnesses[x_round].values():
+        x_events = {e: hashgraph.lookup_table[e] for e in hashgraph.witnesses[x_round].values()}
+        for x in toposort(x_events):
             for y_round in range(x_round+1, max(hashgraph.witnesses)+1):
-                # We want to decide the fame of x
-                x = hashgraph.lookup_table[x_id]
-
-                for y_id in hashgraph.witnesses[y_round].values():
-                    y = hashgraph.lookup_table[y_id]
+                y_events = {e: hashgraph.lookup_table[e] for e in hashgraph.witnesses[y_round].values()}
+                for y in toposort(y_events):
                     d = y.round - x.round
 
                     if d == 1:
@@ -178,7 +177,7 @@ def decide_fame(hashgraph):
         # Check if round x was completely decided
         if all([hashgraph.lookup_table[event_id].is_famous != Fame.UNDECIDED for event_id in hashgraph.witnesses[x_round].values()]):
             hashgraph.rounds_with_decided_fame.add(x_round)
-            bptc.logger.info("Fame is completely decided for round {}".format(x_round))
+            bptc.logger.debug("Fame is completely decided for round {}".format(x_round))
 
 
 def get_strongly_seen_witnesses_for_round(hashgraph, event: Event, r: int) -> Set[str]:
