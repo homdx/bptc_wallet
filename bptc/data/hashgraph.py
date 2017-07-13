@@ -45,6 +45,12 @@ class Hashgraph:
         # {round-num => {member-pk => event-hash}}:
         self.witnesses = defaultdict(dict)
 
+        # {event-hash => set(event-hash)}: Cache for event's self-children (used for fast fork check)
+        self.self_children_cache = defaultdict(set)
+
+        # set(member-id): A set of member who forked. Members who forked have no visible events.
+        self.fork_blacklist = set()
+
     @property
     def total_stake(self) -> int:
         """
@@ -121,6 +127,18 @@ class Hashgraph:
         if self.known_members[event.verify_key].head is None or \
                 event.height > self.lookup_table[self.known_members[event.verify_key].head].height:
             self.known_members[event.verify_key].head = event.id
+        if event.parents.self_parent is not None:
+            self.self_children_cache[event.parents.self_parent].add(event.id)
+            if len(self.self_children_cache[event.parents.self_parent]) > 1:
+                # We just added a fork
+                bptc.logger.warn("A fork was created! Blacklisting member and clearing visibility caches.")
+
+                # Blacklist the member who forked
+                self.fork_blacklist.add(event.verify_key)
+
+                # Visibility for events could have changed - throw away the caches
+                for e in self.lookup_table.values():
+                    e.can_see_cache.clear()
 
     def process_events(self, from_member: Member, events: Dict[str, Event]) -> None:
         """

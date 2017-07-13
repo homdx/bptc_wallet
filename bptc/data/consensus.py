@@ -111,17 +111,19 @@ def fast_get_members_on_paths_to_witnesses_for_round(hashgraph, start_event: Eve
 
             if event.parents.self_parent is not None:
                 self_parent = hashgraph.lookup_table[event.parents.self_parent]
-                members_on_paths[self_parent.id].add(self_parent.verify_key)
-                members_on_paths[self_parent.id].add(event.verify_key)
-                members_on_paths[self_parent.id] |= members_on_paths[event.id]
-                queue.append(self_parent)
+                if self_parent.verify_key not in hashgraph.fork_blacklist:
+                    members_on_paths[self_parent.id].add(self_parent.verify_key)
+                    members_on_paths[self_parent.id].add(event.verify_key)
+                    members_on_paths[self_parent.id] |= members_on_paths[event.id]
+                    queue.append(self_parent)
 
             if event.parents.other_parent is not None:
                 other_parent = hashgraph.lookup_table[event.parents.other_parent]
-                members_on_paths[other_parent.id].add(other_parent.verify_key)
-                members_on_paths[other_parent.id].add(event.verify_key)
-                members_on_paths[other_parent.id] |= members_on_paths[event.id]
-                queue.append(other_parent)
+                if other_parent.verify_key not in hashgraph.fork_blacklist:
+                    members_on_paths[other_parent.id].add(other_parent.verify_key)
+                    members_on_paths[other_parent.id].add(event.verify_key)
+                    members_on_paths[other_parent.id] |= members_on_paths[event.id]
+                    queue.append(other_parent)
 
     # Only witnesses are relevant
     result = defaultdict(set)
@@ -220,9 +222,14 @@ def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
     if event_2.id in event_1.can_see_cache:
         return event_1.can_see_cache[event_2.id]
     else:
-        if parents_are_forked(hg, event_1) or event_1.round < event_2.round:
+        # Check for fork
+        if event_2.verify_key in hg.fork_blacklist:
             event_1.can_see_cache[event_2.id] = False
             return False
+
+        if event_1.parents.self_parent == event_2.id or event_1.parents.other_parent == event_2.id:
+            event_1.can_see_cache[event_2.id] = True
+            return True
 
         can_see = False
 
@@ -238,32 +245,6 @@ def event_can_see_event(hg, event_1: Event, event_2: Event) -> bool:
 
         event_1.can_see_cache[event_2.id] = can_see
         return can_see
-
-
-def parents_are_forked(hg, event: Event):
-    """
-    Let w, x, y be events and x and y are ancestors of w. Let x and y be events of member A,
-    but neither of them is a self-ancestor of the other (-> Fork). Then w sees neither x nor y.
-    """
-    if event.parents.self_parent is None or event.parents.other_parent is None:
-        return False
-
-    self_parent = hg.lookup_table[event.parents.self_parent]
-    other_parent = hg.lookup_table[event.parents.other_parent]
-
-    if self_parent.verify_key != other_parent.verify_key:
-        return False
-
-    current_event, goal_event = (self_parent, other_parent) if self_parent.height > other_parent.height else (other_parent, self_parent)
-
-    # Search if we can find goal_event
-    # If so, they can't be forked
-    while current_event.parents.self_parent is not None and current_event.height >= goal_event.height:
-        if current_event.parents.self_parent == goal_event.id:
-            return False
-        current_event = hg.lookup_table[current_event.parents.self_parent]
-
-    return True
 
 
 def decide_randomly_based_on_signature(signature: str) -> bool:
