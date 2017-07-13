@@ -108,7 +108,10 @@ class Network:
         :return: None
         """
         with self.hashgraph.lock:
-            filtered_known_members = [m for key, m in self.hashgraph.known_members.items() if key != self.hashgraph.me.verify_key and m.address is not None]
+            filtered_known_members = [m for key, m in self.hashgraph.known_members.items()
+                                      if key != self.hashgraph.me.verify_key
+                                      and m.address is not None
+                                      and key not in self.hashgraph.fork_blacklist]
 
         if filtered_known_members:
             member = choice(filtered_known_members)

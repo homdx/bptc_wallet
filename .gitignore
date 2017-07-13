@@ -30,6 +30,7 @@ bin/
 libsodium.so
 
 /data/
+/backup/
 
 hello.py
 
