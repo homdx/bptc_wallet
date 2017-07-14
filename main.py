@@ -11,8 +11,8 @@ __version__ = '0.1'
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', type=str, default='localhost',
-                        help='IP of network interface to use for listening')
+    parser.add_argument('-ip', type=str, default='0.0.0.0',
+                        help='IP of network interface to use for listening. Use localhost if you don\'t want to release your application for extern devices.')
     parser.add_argument('-p', '--port', type=int, default=8000,
                         help='Port for pulling information from other members and the registry')
     parser.add_argument('-o', '--output', type=str, default='data',
