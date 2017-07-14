@@ -63,6 +63,12 @@ class ConsoleApp(InteractiveShell):
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
+            publish_name=dict(
+                help='Publish your name accross the network - everyone will see your name!',
+                args=[
+                    (['name'], dict(help='Your public name', nargs='+')),
+                ],
+            ),
             history=dict(
                 help='List all relevant transactions',
                 args=[
@@ -222,6 +228,9 @@ class ConsoleApp(InteractiveShell):
                 print('Invalid member name: {}'.format(member))
         except (EOFError, KeyboardInterrupt):
             pass
+
+    def cmd_publish_name(self, args):
+        self.network.publish_name(args.name)
 
     def cmd_members(self, args):
         members = self.network.hashgraph.known_members.values()
