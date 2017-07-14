@@ -59,7 +59,7 @@ class ConsoleApp(InteractiveShell):
                 help='Send money to another member of the hashgraph network',
                 args=[
                     (['amount'], dict(help='Amount of money', type=int)),
-                    (['receiver'], dict(help='ID or name of the user which should receive the money', nargs='?')),
+                    (['-r', '--receiver'], dict(help='ID or name of the user which should receive the money', nargs='+')),
                     (['-c', '--comment'], dict(help='Comment related to your transaction', default='')),
                 ],
             ),
@@ -185,11 +185,13 @@ class ConsoleApp(InteractiveShell):
         print('Last push received: {}'.format(self.network.last_push_received))
 
     def cmd_send(self, args):
+        # Stored as list if a member name contains spaces
+        args.receiver = ' '.join(args.receiver or [])
         # Generate mapping from a string to members
         members = list(self.network.hashgraph.known_members.values())
         members = [m for m in members if m != self.network.me]
         member_names = dict(itertools.chain(
-            ((m.name, m) for m in members if m.name is not None and len(self.name) != 0),
+            ((m.name, m) for m in members if m.name is not None and len(m.name) != 0),
             ((m.id[:6], m) for m in members),
             ((m.id, m) for m in members),
         ))
@@ -199,9 +201,18 @@ class ConsoleApp(InteractiveShell):
             bptc.logger.info("Transfering {} BPTC to {} with comment '{}'".format(args.amount, receiver, args.comment))
             self.network.send_transaction(args.amount, args.comment, receiver)
         else:
-            completer = WordCompleter(sorted(member_names.keys()))
-            toolbar = lambda _: [(Token.Toolbar, 'Send {}: Insert the name, id or short id of the receiver'.format(args.amount))]
-            member = prompt('>', get_bottom_toolbar_tokens=toolbar, style=self.style,
+            self.ask_for_receiver(args, members)
+
+    def ask_for_receiver(self, args, members):
+        member_names = dict(itertools.chain(
+            ((m.name, m) for m in members if m.name is not None and len(m.name) != 0),
+            (('{}({})'.format(m.id[:6], m.name), m) for m in members),
+            (('{}({})'.format(m.id, m.name), m) for m in members),
+        ))
+        completer = WordCompleter(sorted(member_names.keys()))
+        toolbar = lambda _: [(Token.Toolbar, 'Send {}: Insert the name, id or short id of the receiver'.format(args.amount))]
+        try:
+            member = prompt('Insert receiver: ', get_bottom_toolbar_tokens=toolbar, style=self.style,
                             completer=completer, complete_while_typing=True)
             if member in member_names:
                 receiver = member_names[member]
@@ -209,6 +220,8 @@ class ConsoleApp(InteractiveShell):
                 self.network.send_transaction(args.amount, args.comment, receiver)
             else:
                 print('Invalid member name: {}'.format(member))
+        except (EOFError, KeyboardInterrupt):
+            pass
 
     def cmd_members(self, args):
         members = self.network.hashgraph.known_members.values()
