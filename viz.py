@@ -16,10 +16,6 @@ R_COLORS = small_palettes['Set2'][8]
 
 doc = curdoc()
 
-
-def round_color(r):
-    return R_COLORS[r % 8]
-
 I_COLORS = plasma(256)
 
 ready_event = threading.Event()
@@ -186,11 +182,21 @@ class App:
     @staticmethod
     def color_of(event):
         if event.consensus_time is not None:
-            color = '#000000'
-        elif event.is_famous is Fame.TRUE:
-            color = '#FF0000'
+            # confirmed
+            if event.data is not None:
+                # with data
+                color = '#FF8000'  # orange
+            else:
+                # without data
+                color = '#000000'  # black
         else:
-            color = round_color(event.round)
+            # not confirmed
+            if event.data is not None:
+                # with data
+                color = '#F7D358'  # light orange
+            else:
+                # without data
+                color = '#A4A4A4'  # grey
         return color
 
     @staticmethod
