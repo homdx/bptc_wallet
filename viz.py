@@ -38,6 +38,8 @@ class App:
                             width=500, height=100)
         self.ip_text_input = TextInput(value='localhost')
         self.port_text_input = TextInput(value='8001')
+        self.single_pull_button = Button(label="single pull", width=150)
+        self.single_pull_button.on_click(partial(self.single_pull, self.ip_text_input, self.port_text_input))
         self.pulling_button = Button(label="start/stop pulling", width=150)
         self.pulling_button.on_click(partial(self.toggle_pulling, self.ip_text_input, self.port_text_input))
 
@@ -75,9 +77,16 @@ class App:
         self.events_rend = plot.circle(x='x', y='y', size=20, color='round_color',
                                        line_alpha='line_alpha', source=self.events_src, line_width=5)
 
-        control_row = row(self.text, self.ip_text_input, self.port_text_input, self.pulling_button)
+        control_row = row(self.text, self.ip_text_input, self.port_text_input, self.single_pull_button,
+                          self.pulling_button)
         main_row = column([control_row, plot])
         doc.add_root(main_row)
+
+    def single_pull(self, ip_text_input, port_text_input):
+        ip = ip_text_input.value
+        port = int(port_text_input.value)
+        factory = PullClientFactory(self, doc, ready_event)
+        threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, ip, port, factory))
 
     def toggle_pulling(self, ip_text_input, port_text_input):
         if self.pulling:
@@ -223,7 +232,7 @@ class PullingThread(threading.Thread):
             ready_event.clear()
             print('Try to connect...')
             threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, self.ip, self.port, self.factory))
-            sleep(0.1)
+            sleep(2.0)
 
     def stop(self):
         self._stop_event.set()
