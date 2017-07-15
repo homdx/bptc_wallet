@@ -1,10 +1,12 @@
 #!/usr/bin/python3
+
 import os
 import sqlite3
-
 import matplotlib
 import matplotlib.pyplot as plt
 import dateutil.parser
+import numpy as np
+
 import bptc
 from bptc import init_logger
 from bptc.data.event import Event
@@ -14,6 +16,11 @@ import time
 import matplotlib.patches as mpatches
 
 db_file = None
+
+font = {'family': 'normal',
+        'weight': 'bold',
+        'size': 22}
+matplotlib.rc('font', **font)
 
 
 class DBLoader:
@@ -113,12 +120,8 @@ def analyze_runtime(db_file):
     total_time = time.time() - start_time
     return len(other_events), total_time, divide_rounds_time, decide_fame_time, find_order_time
 
-def plot_runtime():
-    font = {'family': 'normal',
-            'weight': 'bold',
-            'size': 22}
-    matplotlib.rc('font', **font)
 
+def plot_runtime():
     x = []
     y_total_time = []
     y_divide_rounds_time = []
@@ -180,19 +183,21 @@ def plot_db_size():
     plt.xlabel('events')
     plt.show()
 
+
+def plot_confirmation_time():
+    data1 = create_confirmation_length_data('./test_setup/4c_1pps/data/data.db')
+    data2 = create_confirmation_length_data('./test_setup/4c_2pps/data/data.db')
+    data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
+    data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
+
+    plot_boxplot([data1, data2, data3, data4], ['4 clients, 1 push/s', '4 clients, 2 push/s',
+                                                '8 clients, 1 push/s', '8 clients, 2 push/s'],
+                 'confirmation length [s]')
+
 if __name__ == '__main__':
     init_logger('tools/db_analyzer_log.txt')
     bptc.logger.removeHandler(bptc.stdout_logger)
-    plot_db_size()
-
-    # data1 = create_confirmation_length_data('./test_setup/4c_1pps/data/data.db')
-    # data2 = create_confirmation_length_data('./test_setup/4c_2pps/data/data.db')
-    # data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
-    # data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
-
-    # plot_boxplot([data1, data2, data3, data4], ['4 clients, 1000 push/s', '4 clients, 2 push/s',
-    #                                            '8 clients, 1000 push/s', '8 clients, 2 push/s'],
-    #             'confirmation length [s]')
+    plot_confirmation_time()
 
 
 '''

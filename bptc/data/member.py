@@ -23,7 +23,7 @@ class Member:
         self.head = None
 
         # The current stake of this member
-        self.stake = 1  # TODO: Different stakes
+        self.stake = bptc.new_member_stake
 
         # The protocols data
         self.__address = None
@@ -32,7 +32,7 @@ class Member:
         self.name = None
 
         # The account balance of this member
-        self.account_balance = 10  # TODO: Set to 0 as default
+        self.account_balance = bptc.new_member_account_balance
 
         # How often pushing to this member has failed
         # Is reset when the Address changes

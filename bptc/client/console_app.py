@@ -183,10 +183,12 @@ class ConsoleApp(InteractiveShell):
             self.network.reset(self)
 
     def cmd_status(self, args):
-        print('I am: {}'.format(repr(self.me)))
-        print('Account balance: {} BPTC'.format(self.me.account_balance))
+        print('--- {} ---'.format(repr(self.me)))
+        print('Balance: {} BPTC'.format(self.me.account_balance))
+        print('Stake: {}'.format(self.me.stake))
+        print()
         print('{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
-                                                          len(self.hashgraph.ordered_events)))
+                                               len(self.hashgraph.ordered_events)))
         print('Last push sent: {}'.format(self.network.last_push_sent))
         print('Last push received: {}'.format(self.network.last_push_received))
 

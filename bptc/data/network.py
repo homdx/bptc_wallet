@@ -156,15 +156,15 @@ class Network:
             pass
 
     def process_data_string(self, data_string, peer):
-        # Log
-        self.last_push_received = datetime.now().isoformat()
-
         # Decode received JSON data
         received_data = json.loads(data_string)
 
         # Ignore pushes from yourself (should only happen once after the client is started)
         if received_data['from']['verify_key'] == self.me.verify_key:
             return
+
+        # Log
+        self.last_push_received = datetime.now().isoformat()
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']
