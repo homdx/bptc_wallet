@@ -45,7 +45,6 @@ class Network:
         init_hashgraph(app)
 
     def push_to(self, ip, port) -> None:
-        """Update hg and return new event ids in topological order."""
         with self.hashgraph.lock:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.lookup_table,

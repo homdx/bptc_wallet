@@ -7,7 +7,8 @@ from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
 import bptc
 import bptc.utils.network as network_utils
-from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen, DebugScreen
+from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen, \
+    DebugScreen, MembersScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 
@@ -41,6 +42,7 @@ class KivyApp(App):
         sm.add_widget(MainScreen(self.network, defaults))
         sm.add_widget(NewTransactionScreen(self.network))
         sm.add_widget(TransactionsScreen(self.network))
+        sm.add_widget(MembersScreen(self.network))
         debug_screen = PublishNameScreen(self.network)
         sm.add_widget(debug_screen)
         sm.add_widget(DebugScreen(self.network, defaults, self))
