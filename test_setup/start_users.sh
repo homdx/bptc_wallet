@@ -14,6 +14,8 @@ fi
 n=$1
 port=8008
 
+mkdir users
+
 for i in `seq 1 $n`
 do
     rm -rf users/$i
