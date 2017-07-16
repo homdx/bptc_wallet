@@ -39,10 +39,12 @@ class Network:
     def me(self):
         return self.hashgraph.me
 
-    @staticmethod
-    def reset(app):
+    def reset(self):
         DB.reset()
-        init_hashgraph(app)
+        new_me = Member.create()
+        new_hashgraph = Hashgraph(new_me)
+        self.hashgraph = new_hashgraph
+        self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
 
     def push_to(self, ip, port) -> None:
         with self.hashgraph.lock:
