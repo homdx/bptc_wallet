@@ -139,6 +139,36 @@ class TransactionsScreen(KivyScreen):
         self.ids.box_layout.remove_widget(self.list_view)
 
 
+class MembersScreen(KivyScreen):
+    def __init__(self, network):
+        self.network = network
+        self.list_view = None
+        super().__init__()
+
+    def on_pre_enter(self, *args):
+        members = self.network.hashgraph.known_members.values()
+        members = [m for m in members if m != self.network.me]
+        members.sort(key=lambda x: x.formatted_name)
+        # Create updated list
+        args_converter = lambda row_index, rec: {
+            'height': 60,
+            'markup': True,
+            'halign': 'center',
+            'text': repr(members[row_index]),
+        }
+
+        list_adapter = SimpleListAdapter(data=members,
+                                         args_converter=args_converter,
+                                         cls=Label)
+
+        self.list_view = ListView(adapter=list_adapter, size_hint_y=8)
+
+        self.ids.box_layout.add_widget(self.list_view, index=1)
+
+    def on_leave(self, *args):
+        self.ids.box_layout.remove_widget(self.list_view)
+
+
 class PublishNameScreen(KivyScreen):
 
     def __init__(self, network):

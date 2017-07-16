@@ -45,7 +45,6 @@ class Network:
         init_hashgraph(app)
 
     def push_to(self, ip, port) -> None:
-        """Update hg and return new event ids in topological order."""
         with self.hashgraph.lock:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.lookup_table,
@@ -156,15 +155,15 @@ class Network:
             pass
 
     def process_data_string(self, data_string, peer):
-        # Log
-        self.last_push_received = datetime.now().isoformat()
-
         # Decode received JSON data
         received_data = json.loads(data_string)
 
         # Ignore pushes from yourself (should only happen once after the client is started)
         if received_data['from']['verify_key'] == self.me.verify_key:
             return
+
+        # Log
+        self.last_push_received = datetime.now().isoformat()
 
         # Generate Member object
         from_member_id = received_data['from']['verify_key']

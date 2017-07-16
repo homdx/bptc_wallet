@@ -18,7 +18,7 @@ class DB:
         """
         if cls.__connection is None:
             # Connect to DB
-            cls.__connection = sqlite3.connect(cls.__database_file)
+            cls.__connection = sqlite3.connect(cls.__database_file, check_same_thread=False)
 
             # Create tables if necessary
             c = cls.__connection.cursor()
@@ -66,10 +66,11 @@ class DB:
         # cls.__connection.commit()
 
     @classmethod
-    def save(cls, obj) -> None:
+    def save(cls, obj, temp=False) -> None:
         """
         Saves an object to the database
         :param obj: A Member object
+        :temp: Store temporary at another location [Optional]
         :return: None
         """
         if isinstance(obj, Member):
@@ -77,6 +78,13 @@ class DB:
         elif isinstance(obj, Event):
             cls.__save_event(obj)
         elif isinstance(obj, Hashgraph):
+            if temp:
+                orig_connection = cls.__connection
+                orig_file = cls.__database_file
+                cls.__connection = None
+                # Round to the next hundreds
+                number_events = round(len(obj.lookup_table) / 100) * 100
+                cls.__database_file = cls.__database_file.replace('data.db', 'data{}.db'.format(number_events))
             with obj.lock:
                 cls.__save_member(obj.me)
                 for member in obj.known_members.values():
@@ -84,6 +92,10 @@ class DB:
 
                 for event in obj.lookup_table.values():
                     cls.__save_event(event)
+            if temp:
+                cls.__connection.commit()
+                cls.__connection = orig_connection
+                cls.__database_file = orig_file
         else:
             bptc.logger.error("Could not persist object because its type is not supported")
         cls.__connection.commit()

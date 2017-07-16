@@ -2,7 +2,6 @@
 
 import argparse
 import os
-
 import bptc
 from bptc import init_logger
 
@@ -11,10 +10,10 @@ __version__ = '0.1'
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', type=str, default='localhost',
-                        help='IP of network interface to use for listening')
+    parser.add_argument('-ip', type=str, default='0.0.0.0',
+                        help='IP of network interface to use for listening. Use localhost if you don\'t want to release your application for external devices.')
     parser.add_argument('-p', '--port', type=int, default=8000,
-                        help='Port for pulling information from other members and the registry')
+                        help='Port of network interface to use for listening.')
     parser.add_argument('-o', '--output', type=str, default='data',
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
@@ -29,6 +28,8 @@ def parse_args():
                         'your local hashgraph. This is only available for the HeadlessApp.')
     parser.add_argument('-bp', '--bootstrap-push', type=str, default=None,
                         help='Push initially to the given address')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Store hashgraph in a temporary database for each 200 processed events')
     args = parser.parse_args()
     if not args.auto and args.dirty:
         args.dirty = False  # Ignore this flag on every other client

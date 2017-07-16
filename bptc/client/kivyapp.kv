@@ -59,6 +59,14 @@
         BoxLayout:
             size_hint: 1, 0.3
         Button:
+            id: members_button
+            text: 'Members'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'members'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Button:
             id: publish_name_button
             text: 'Publish name'
             on_press:
@@ -160,6 +168,17 @@
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'main'
 
+<MembersScreen>:
+    name: "members"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        Button:
+            id: cancel_button
+            text: "Back"
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
 
 <PublishNameScreen>:
     name: "publish_name"

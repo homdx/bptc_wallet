@@ -22,8 +22,15 @@ class Member:
         # Currently only used for the own member - all others are calculated on the fly
         self.head = None
 
+        # DEMONSTRATION SETUP
         # The current stake of this member
-        self.stake = 1  # TODO: Different stakes
+        if verify_key in ['YM9OhddNrlt4z3OsZ311qFGlKFfa63AdPh0QB0qOWBE=',
+                          'HIogl7s+GxuIwrQRRzCE/0DgAQKM40jTUZitdi/mbLI=',
+                          '0MN1pUFlY9uVpl3vktLVoBkwWbfx8YF2GhsDzireldU=',
+                          'uSN8O+crjr5xPIRKAVFNTTkpiLipkh19FLJGl0+HLdA=']:
+            self.stake = 1
+        else:
+            self.stake = bptc.new_member_stake
 
         # The protocols data
         self.__address = None
@@ -32,7 +39,7 @@ class Member:
         self.name = None
 
         # The account balance of this member
-        self.account_balance = 10  # TODO: Set to 0 as default
+        self.account_balance = bptc.new_member_account_balance
 
         # How often pushing to this member has failed
         # Is reset when the Address changes

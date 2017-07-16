@@ -1,0 +1,29 @@
+2017-07-15 16:10:19,297 [DEBUG] Loaded 0 events from DB.
+2017-07-15 16:10:19,297 [INFO] Created new Member: Member(Me, YM9Ohd...)
+2017-07-15 16:10:19,299 [INFO] Push server listens on port 8000
+2017-07-15 16:10:19,301 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-15 16:10:19,302 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-15 16:10:34,584 [INFO] Stopping...
+2017-07-15 16:11:06,204 [DEBUG] Loaded 1 events from DB.
+2017-07-15 16:11:06,206 [INFO] Push server listens on port 8000
+2017-07-15 16:11:06,208 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-15 16:11:06,211 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-15 16:11:11,984 [INFO] Stopping...
+2017-07-15 16:11:14,223 [DEBUG] Loaded 1 events from DB.
+2017-07-15 16:11:14,225 [INFO] Push server listens on port 8000
+2017-07-15 16:11:14,226 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-15 16:11:14,227 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-15 16:11:18,648 [INFO] Stopping...
+2017-07-15 16:11:43,413 [DEBUG] Loaded 1 events from DB.
+2017-07-15 16:11:43,419 [INFO] Push server listens on port 8000
+2017-07-15 16:11:43,422 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-15 16:11:43,423 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-15 16:12:36,070 [DEBUG] Member update: 0MN1pU... to (127.0.0.1, 8004)
+2017-07-15 16:12:36,072 [DEBUG] Member update: HIogl7... to (127.0.0.1, 8002)
+2017-07-15 16:12:36,073 [DEBUG] Member update: uSN8O+... to (127.0.0.1, 8006)
+2017-07-15 16:13:13,006 [INFO] Stopping...
+2017-07-15 16:13:17,454 [DEBUG] Loaded 1 events from DB.
+2017-07-15 16:13:17,455 [INFO] Push server listens on port 8000
+2017-07-15 16:13:17,457 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-15 16:13:17,457 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-15 16:13:28,064 [INFO] Stopping...

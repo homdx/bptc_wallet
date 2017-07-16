@@ -1,8 +1,12 @@
 #!/usr/bin/python3
 
+import os
 import sqlite3
+import matplotlib
 import matplotlib.pyplot as plt
 import dateutil.parser
+import numpy as np
+
 import bptc
 from bptc import init_logger
 from bptc.data.event import Event
@@ -12,6 +16,11 @@ import time
 import matplotlib.patches as mpatches
 
 db_file = None
+
+font = {'family': 'normal',
+        'weight': 'bold',
+        'size': 22}
+matplotlib.rc('font', **font)
 
 
 class DBLoader:
@@ -111,45 +120,37 @@ def analyze_runtime(db_file):
     total_time = time.time() - start_time
     return len(other_events), total_time, divide_rounds_time, decide_fame_time, find_order_time
 
-if __name__ == '__main__':
-    init_logger('tools/db_analyzer_log.txt')
-    bptc.logger.removeHandler(bptc.stdout_logger)
 
-    # data1 = create_confirmation_length_data('./test_setup/4c_1pps/data/data.db')
-    # data2 = create_confirmation_length_data('./test_setup/4c_2pps/data/data.db')
-    # data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
-    # data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
+def plot_runtime():
+    x = []
+    y_total_time = []
+    y_divide_rounds_time = []
+    y_decide_fame_time = []
+    y_find_order_time = []
+    for i in range(100, 2600, 100):
+        db_file = 'test_setup/1/data/data{}.db'.format(i)
+        print('Processing file {}'.format(db_file))
+        x_, total_time_, divide_rounds_time_, decide_fame_time_, find_order_time_ = analyze_runtime(db_file)
+        x.append(x_)
+        y_total_time.append(total_time_)
+        y_divide_rounds_time.append(divide_rounds_time_)
+        y_decide_fame_time.append(decide_fame_time_)
+        y_find_order_time.append(find_order_time_)
 
-    # plot_boxplot([data1, data2, data3, data4], ['4 clients, 1000 push/s', '4 clients, 2 push/s',
-    #                                            '8 clients, 1000 push/s', '8 clients, 2 push/s'],
-    #             'confirmation length [s]')
-
-    x1, total_time1, divide_rounds_time1, decide_fame_time1, find_order_time1 = analyze_runtime('test_setup/200/data/data.db')
-    x2, total_time2, divide_rounds_time2, decide_fame_time2, find_order_time2 = analyze_runtime('test_setup/400/data/data.db')
-    x3, total_time3, divide_rounds_time3, decide_fame_time3, find_order_time3 = analyze_runtime('test_setup/600/data/data.db')
-    x4, total_time4, divide_rounds_time4, decide_fame_time4, find_order_time4 = analyze_runtime('test_setup/800/data/data.db')
-    x5, total_time5, divide_rounds_time5, decide_fame_time5, find_order_time5 = analyze_runtime('test_setup/1000/data/data.db')
-
-    x = [x1, x2, x3, x4, x5]
-
-    y = [total_time1, total_time2, total_time3, total_time4, total_time5]
-    plt.plot(x, y, 'r')
-    plt.plot(x, y, 'ro')
+    plt.plot(x, y_total_time, 'r')
+    plt.plot(x, y_total_time, 'ro')
     red_patch = mpatches.Patch(color='red', label='total time')
 
-    y = [divide_rounds_time1, divide_rounds_time2, divide_rounds_time3, divide_rounds_time4, divide_rounds_time5]
-    plt.plot(x, y, 'b')
-    plt.plot(x, y, 'bo')
+    plt.plot(x, y_divide_rounds_time, 'b')
+    plt.plot(x, y_divide_rounds_time, 'bo')
     blue_patch = mpatches.Patch(color='blue', label='divide rounds')
 
-    y = [decide_fame_time1, decide_fame_time2, decide_fame_time3, decide_fame_time4, decide_fame_time5]
-    plt.plot(x, y, 'y')
-    plt.plot(x, y, 'yo')
+    plt.plot(x, y_decide_fame_time, 'y')
+    plt.plot(x, y_decide_fame_time, 'yo')
     yellow_patch = mpatches.Patch(color='yellow', label='decide fame')
 
-    y = [find_order_time1, find_order_time2, find_order_time3, find_order_time4, find_order_time5]
-    plt.plot(x, y, 'g')
-    plt.plot(x, y, 'go')
+    plt.plot(x, y_find_order_time, 'g')
+    plt.plot(x, y_find_order_time, 'go')
     green_patch = mpatches.Patch(color='green', label='find order')
 
     plt.legend(handles=[red_patch, blue_patch, yellow_patch, green_patch])
@@ -157,11 +158,46 @@ if __name__ == '__main__':
     plt.xlabel('events')
     plt.show()
 
-    # memory
-    # size_of_db = os.path.getsize(db_file)/float(1024)
-    # bptc.logger.info('Size of DB: {} kB'.format(size_of_db))
-    # avg_event_size = size_of_db/len(other_events1)
-    # bptc.logger.info('Avg. size of event: {} kB'.format(avg_event_size))
+
+def plot_db_size():
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 22}
+    matplotlib.rc('font', **font)
+
+    x = []
+    y_size = []
+    for i in range(100, 5100, 100):
+        db_file = 'test_setup/1/data/data{}.db'.format(i)
+        print('Processing file {}'.format(db_file))
+        y_size_ = os.path.getsize(db_file)/float(1024)
+        x.append(i)
+        y_size.append(y_size_)
+
+    plt.plot(x, y_size, 'r')
+    plt.plot(x, y_size, 'ro')
+    red_patch = mpatches.Patch(color='red', label='db size')
+
+    plt.legend(handles=[red_patch])
+    plt.ylabel('db size [kB]')
+    plt.xlabel('events')
+    plt.show()
+
+
+def plot_confirmation_time():
+    data1 = create_confirmation_length_data('./test_setup/4c_1pps/data/data.db')
+    data2 = create_confirmation_length_data('./test_setup/4c_2pps/data/data.db')
+    data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
+    data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
+
+    plot_boxplot([data1, data2, data3, data4], ['4 clients, 1 push/s', '4 clients, 2 push/s',
+                                                '8 clients, 1 push/s', '8 clients, 2 push/s'],
+                 'confirmation length [s]')
+
+if __name__ == '__main__':
+    init_logger('tools/db_analyzer_log.txt')
+    bptc.logger.removeHandler(bptc.stdout_logger)
+    plot_confirmation_time()
 
 
 '''
