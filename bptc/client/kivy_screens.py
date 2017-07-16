@@ -7,7 +7,6 @@ from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
 import bptc
 import bptc.utils.network as network_utils
-from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 kivy.require('1.0.7')
 
@@ -27,11 +26,8 @@ class MainScreen(KivyScreen):
         super().__init__()
 
         def update_user_details():
-            self.ids.account_balance_label.text = 'Account balance: {} BPTC'.format(self.me.account_balance)
-            self.ids.account_name_label.text = '{} (Port: {})'.format(
-                self.me.formatted_name,
-                self.defaults['listening_port']
-            )
+            self.ids.account_balance_label.text = 'Balance: {} BPTC'.format(self.me.account_balance)
+            self.ids.account_name_label.text = '{}'.format(self.me.formatted_name)
             t = threading.Timer(1, update_user_details)
             t.daemon = True
             t.start()
@@ -190,6 +186,7 @@ class DebugScreen(KivyScreen):
         super().__init__()
 
         def update_statistics():
+            self.ids.listening_interface_label.text = 'Listening interface: {}:{}'.format(bptc.ip, bptc.port)
             self.ids.event_count_label.text = '{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()), len(self.hashgraph.ordered_events))
             self.ids.last_push_sent_label.text = 'Last push sent: {}'.format(self.network.last_push_sent)
             self.ids.last_push_received_label.text = 'Last push received: {}'.format(self.network.last_push_received)
@@ -225,8 +222,9 @@ class DebugScreen(KivyScreen):
     # DebugScreen actions
     # --------------------------------------------------------------------------
 
-    def debug_checks(self):
-        print(self.hashgraph.rounds_with_decided_fame)
+    @staticmethod
+    def change_log_level():
+        bptc.toggle_stdout_log_level()
 
     def confirm_reset(self):
         from .confirmpopup import ConfirmPopup

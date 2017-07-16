@@ -229,6 +229,14 @@
         BoxLayout:
             size_hint: 1, 0.3
         Label:
+            id: listening_interface_label
+            text: '<ip>:<port>'
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
             id: event_count_label
             text: '{} events, {} confirmed'.format(len(root.hashgraph.lookup_table.keys()), len(root.hashgraph.ordered_events))
             halign: 'left'
@@ -261,9 +269,9 @@
                 text: 'Reset'
                 on_press: root.confirm_reset()
             Button:
-                id: debug_checks
-                text: 'Debug Checks'
-                on_press: root.debug_checks()
+                id: change_log_level
+                text: 'Change Log Level'
+                on_press: root.change_log_level()
         BoxLayout:
             size_hint: 1, 0.3
         BoxLayout:
