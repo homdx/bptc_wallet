@@ -93,11 +93,11 @@ class Hashgraph:
 
         return result
 
-    def add_own_event(self, event: Event, first: bool = False):
+    def add_own_event(self, event: Event, calculate_consensus: bool = False):
         """
         Adds an own event to the hashgraph
         :param event: The event to be added
-        :param first: whether it is the first event
+        :param calculate_consensus: Whether the consensus should be calculated immediately
         :return: None
         """
 
@@ -108,7 +108,7 @@ class Hashgraph:
         self.add_event(event)
 
         # Only do consensus if this is the first event
-        if first:
+        if calculate_consensus:
             divide_rounds(self, [event])
             decide_fame(self)
             find_order(self)

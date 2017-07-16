@@ -131,7 +131,7 @@ class Network:
 
         with self.hashgraph.lock:
             event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
-            self.hashgraph.add_own_event(event)
+            self.hashgraph.add_own_event(event, True)
 
         return event
 
@@ -145,7 +145,7 @@ class Network:
 
         with self.hashgraph.lock:
             event = Event(self.hashgraph.me.verify_key, [transaction], Parents(self.hashgraph.me.head, None))
-            self.hashgraph.add_own_event(event)
+            self.hashgraph.add_own_event(event, True)
 
         return event
 
