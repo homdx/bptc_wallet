@@ -1,5 +1,5 @@
+from datetime import datetime
 import zlib
-
 from math import ceil
 from twisted.internet import protocol
 import bptc
@@ -50,9 +50,10 @@ class PushServer(protocol.Protocol):
 
 class PushClientFactory(protocol.ClientFactory):
 
-    def __init__(self, string_to_send, receiver=None):
+    def __init__(self, string_to_send, network=None, receiver=None):
         self.string_to_send = string_to_send
         self.protocol = PushClient
+        self.network = network
         self.receiver = receiver
 
     def clientConnectionLost(self, connector, reason):
@@ -77,6 +78,9 @@ class PushClient(protocol.Protocol):
         for i in range(1, (ceil(len(data_to_send) / 65536)) + 1):
             self.transport.write(data_to_send[(i-1) * 65536:min(i*65536, len(data_to_send))])
         self.transport.loseConnection()
+
+        if self.factory.network:
+            self.factory.network.last_push_sent = datetime.now().isoformat()
 
     def connectionLost(self, reason):
         pass

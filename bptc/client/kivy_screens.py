@@ -7,7 +7,6 @@ from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
 import bptc
 import bptc.utils.network as network_utils
-from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 kivy.require('1.0.7')
 
@@ -225,8 +224,9 @@ class DebugScreen(KivyScreen):
     # DebugScreen actions
     # --------------------------------------------------------------------------
 
-    def debug_checks(self):
-        print(self.hashgraph.rounds_with_decided_fame)
+    @staticmethod
+    def change_log_level():
+        bptc.toggle_stdout_log_level()
 
     def confirm_reset(self):
         from .confirmpopup import ConfirmPopup

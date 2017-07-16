@@ -50,13 +50,12 @@ class Network:
                                                     self.hashgraph.lookup_table,
                                                     filter_members_with_address(self.hashgraph.known_members.values()))
 
-        factory = PushClientFactory(data_string)
+        factory = PushClientFactory(data_string, network=self)
 
         def push():
             reactor.connectTCP(ip, port, factory)
 
         threads.blockingCallFromThread(reactor, push)
-        self.last_push_sent = datetime.now().isoformat()
 
     @staticmethod
     def generate_data_string(me, events, members):
@@ -90,16 +89,16 @@ class Network:
                                                     self.hashgraph.get_unknown_events_of(member),
                                                     filter_members_with_address(self.hashgraph.known_members.values()))
 
-        factory = PushClientFactory(data_string, member)
+        if not ignore_for_statistics:
+            factory = PushClientFactory(data_string, network=self, receiver=member)
+        else:
+            factory = PushClientFactory(data_string, network=None, receiver=member)
 
         def push():
             if member.address is not None:
                 reactor.connectTCP(member.address.host, member.address.port, factory)
 
         threads.blockingCallFromThread(reactor, push)
-
-        if not ignore_for_statistics:
-            self.last_push_sent = datetime.now().isoformat()
 
     def push_to_random(self) -> None:
         """

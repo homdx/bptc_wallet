@@ -21,7 +21,6 @@ class PullServerFactory(protocol.ServerFactory):
 class PullServer(protocol.Protocol):
 
     def connectionMade(self):
-        bptc.logger.info('connectionMade()')
         serialized_events = {}
         with self.factory.hashgraph.lock:
             for event_id, event in self.factory.hashgraph.lookup_table.items():

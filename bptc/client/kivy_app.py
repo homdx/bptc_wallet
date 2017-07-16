@@ -43,9 +43,10 @@ class KivyApp(App):
         sm.add_widget(NewTransactionScreen(self.network))
         sm.add_widget(TransactionsScreen(self.network))
         sm.add_widget(MembersScreen(self.network))
-        debug_screen = PublishNameScreen(self.network)
+        PublishNameScreen(self.network)
+        sm.add_widget(PublishNameScreen(self.network))
+        debug_screen = DebugScreen(self.network, defaults, self)
         sm.add_widget(debug_screen)
-        sm.add_widget(DebugScreen(self.network, defaults, self))
 
         if self.cl_args.register:
             ip, port = self.cl_args.register.split(':')
