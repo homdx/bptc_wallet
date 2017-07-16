@@ -7,7 +7,7 @@ do
     #rm -rf $i
     #mkdir $i
 
-    ip='localhost'
+    ip='0.0.0.0'
 
     # auto-close terminal
     gnome-terminal --tab -e "/bin/bash -c 'cd stakeholders/$i; ../../../main.py -cli -q -ip $ip -p $port -sp'"

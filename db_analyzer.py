@@ -190,14 +190,16 @@ def plot_confirmation_time():
     data3 = create_confirmation_length_data('./test_setup/8c_1pps/data/data.db')
     data4 = create_confirmation_length_data('./test_setup/8c_2pps/data/data.db')
 
-    plot_boxplot([data1, data2, data3, data4], ['4 clients, 1 push/s', '4 clients, 2 push/s',
-                                                '8 clients, 1 push/s', '8 clients, 2 push/s'],
+    plot_boxplot([data1, data2, data3, data4], ['4 members,\n1 push/s', '4 members,\n2 push/s',
+                                                '8 members,\n1 push/s', '8 members,\n2 push/s'],
                  'confirmation length [s]')
 
 if __name__ == '__main__':
     init_logger('tools/db_analyzer_log.txt')
     bptc.logger.removeHandler(bptc.stdout_logger)
     plot_confirmation_time()
+    #data = create_confirmation_length_data('./test_setup/members/1/data/data.db')
+    #plot_boxplot([data], ['8 member (4 stakeholder), 1 push/s'], 'confirmation length [s]')
 
 
 '''
