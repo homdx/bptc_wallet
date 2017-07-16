@@ -234,7 +234,7 @@ class DebugScreen(KivyScreen):
 
     def do_reset(self, _dialog):
         bptc.logger.warn('Deleting local database containing the hashgraph')
-        self.network.reset(self.app)
+        self.network.reset()
         self.defaults['member_id'] = self.me.formatted_name
 
     def start_listening(self):
