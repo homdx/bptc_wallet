@@ -123,7 +123,7 @@ class Network:
             member = choice(filtered_known_members)
             self.push_to_member(member)
         else:
-            bptc.logger.debug("Don't know any other members. Get them from the registry!")
+            bptc.logger.debug("I don't know any other members!")
 
     def send_transaction(self, amount: int, comment: str, receiver: Member) -> Event:
         """
