@@ -1,0 +1,377 @@
+#:kivy 1.0
+#:import label kivy.uix.label
+#:import da kivy.adapters.dictadapter
+#:import lv kivy.uix.listview
+
+<MainScreen>:
+    name: 'main'
+    id: MainScreen
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: "res/images/black-and-gray-background.jpg"
+    GridLayout:
+        cols: 1
+        BoxLayout:
+            size_hint: 1, 2
+            orientation: 'vertical'
+            Label:
+                text: 'BPTC Wallet'
+                text_size: self.width, 200
+                font: 'Calibri Light'
+                font_size: 20
+                size_hint: 1, .8
+                halign: 'center'
+                valign: 'middle'
+            Label:
+                id: account_name_label
+                text: '{} (Port: {})'.format(root.defaults['member_id'], root.defaults['listening_port'])
+                halign: 'left'
+                valign: 'top'
+                size_hint: 1, .2
+                padding: 30, 30
+                text_size: self.width, None
+            Label:
+                id: account_balance_label
+                text: 'Account balance: {} BPTC'.format(root.me.account_balance)
+                halign: 'left'
+                valign: 'top'
+                size_hint: 1, .2
+                padding: 30, 30
+                text_size: self.width, None
+        BoxLayout:
+            size_hint: 1, 0.3
+        Button:
+            id: new_transaction_button
+            text: 'New Transaction'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'new_transaction'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Button:
+            id: new_transaction_button
+            text: 'Transaction History'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'transactions'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Button:
+            id: members_button
+            text: 'Members'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'members'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Button:
+            id: publish_name_button
+            text: 'Publish name'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'publish_name'
+        BoxLayout:
+            size_hint: 1, 5
+        Button:
+            id: debug_button
+            text: 'Debug'
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'debug'
+
+
+<NewTransactionScreen>:
+	name: "new_transaction"
+	BoxLayout:
+	    orientation: 'vertical'
+	    BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Amount:'
+	            size_hint: 0.2, 1
+            TextInput:
+                id: amount_field
+                size_hint: 0.5, 1
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: 'int'
+            Label:
+                size_hint: 0.3, 1
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1, 1)
+                    Rectangle:
+                        # The image size is at least 35x35
+                        # Horizontal centering image, Vertical padding if possible
+                        pos: [self.pos[0] + (self.size[0] - max(self.size[1] - 25, 35)) / 2, self.pos[1] + min(22, self.size[1] - max(self.size[1] - 25, 35))]
+                        size: [max(self.size[1] - 25, 35), max(self.size[1] - 25, 35)]
+                        source: "res/images/coin.png"
+                text: 'BPT Coins'
+                text_size: self.size
+                padding_y: 4
+                # font: 'Calibri Light'
+                # font_size: 20
+                halign: 'center'
+                valign: 'bottom'
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Comment:'
+	            size_hint: 0.2, 1
+            TextInput:
+                id: comment_field
+                size_hint: 0.8, 1
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 100)
+        BoxLayout:
+            id: receiver_layout
+            size_hint: 1, 5
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Receiver:'
+	            size_hint: 0.2, 1
+	            padding_x: 100
+	    Button:
+	        id: send_button
+	        text: "Send"
+	        disabled: True
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.send_transaction()
+	            root.manager.transition.direction = 'left'
+                root.manager.current = 'transactions'
+        Button:
+            id: cancel_button
+            text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+
+<TransactionsScreen>:
+    name: "transactions"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        Button:
+            id: cancel_button
+            text: "Back"
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+<MembersScreen>:
+    name: "members"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        Button:
+            id: cancel_button
+            text: "Back"
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+<PublishNameScreen>:
+    name: "publish_name"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        BoxLayout:
+	        orientation: 'horizontal'
+	        Label:
+	            text: 'Name:'
+	            size_hint: 0.3, 1
+            TextInput:
+                id: name_field
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 50)
+        Label:
+            text: '[b]Warning[/b]:\nThis name will be published on the Hashgraph\nand will be visible for all members!'
+            halign: 'center'
+            markup: True
+            size_hint: 1, 2
+	    BoxLayout:
+            size_hint: 1, 4
+        Button:
+	        id: publish_name_button
+	        text: "Publish name"
+	        background_color: 0.5, 1, 0.5, 1
+	        on_release:
+	            root.publish_name()
+	            root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+        Button:
+            id: cancel_button
+            text: "Cancel"
+            background_color: 1, 0.5, 0.5, 1
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'
+
+
+<DebugScreen>
+    name: "debug"
+    BoxLayout:
+        id: box_layout
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, 0.3
+        Label:
+            id: listening_interface_label
+            text: '<ip>:<port>'
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
+            id: event_count_label
+            text: '{} events, {} confirmed'.format(len(root.hashgraph.lookup_table.keys()), len(root.hashgraph.ordered_events))
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
+            id: last_push_sent_label
+            text: 'Last push sent: {}'.format(root.network.last_push_sent)
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        Label:
+            id: last_push_received_label
+            text: 'Last push received: {}'.format(root.network.last_push_received)
+            halign: 'left'
+            valign: 'top'
+            padding: 30, 30
+            size_hint: 1, 0.4
+            text_size: self.width, None
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
+            Button:
+                id: reset
+                text: 'Reset'
+                on_press: root.confirm_reset()
+            Button:
+                id: change_log_level
+                text: 'Change Log Level'
+                on_press: root.change_log_level()
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
+            id: registering_container
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: [x + 1 for x in self.pos]
+                    size: [x - 2 for x in self.size]
+            Label:
+                text: 'Registering-Adress: '
+                valign: 'middle'
+                padding: 20, 20
+                text_size: self.width, None
+                color: 0, 0, 0, 1
+            TextInput:
+                id: registering_address
+                text: str(root.defaults['registering_address'])
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                multiline: False
+                write_tab: False
+                input_filter: root.generate_limited_input(self, 21)
+        BoxLayout:
+            size_hint: 1, 1
+            id: members_container
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: [x + 1 for x in self.pos]
+                    size: [x - 2 for x in self.size]
+            Label:
+                text: 'Get-Members-Adress: '
+                valign: 'middle'
+                padding: 20, 20
+                text_size: self.width, None
+                color: 0, 0, 0, 1
+            TextInput:
+                id: query_members_address
+                text: str(root.defaults['query_members_address'])
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 21)
+        BoxLayout:
+            size_hint: 1, 1
+            id: network_container
+            Button:
+                id: register
+                text: 'Register'
+                on_press: root.register()
+            Button:
+                id: query_members
+                text: 'Query members'
+                on_press: root.query_members()
+        BoxLayout:
+            size_hint: 1, 0.3
+        BoxLayout:
+            size_hint: 1, 1
+            id: push_input_container
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: [x + 1 for x in self.pos]
+                    size: [x - 2 for x in self.size]
+            Label:
+                text: 'Push-Adress: '
+                valign: 'middle'
+                padding: 20, 20
+                text_size: self.width, None
+                color: 0, 0, 0, 1
+            TextInput:
+                id: push_address
+                text: str(root.defaults['push_address'])
+                padding_x: 20
+                padding_y: ( self.height - self.line_height ) / 2
+                write_tab: False
+                multiline: False
+                input_filter: root.generate_limited_input(self, 21)
+        BoxLayout:
+            size_hint: 1, 1
+            id: push_container
+            Button:
+                id: push
+                text: 'Push'
+                on_press: root.push()
+            Button:
+                id: push_random
+                text: 'Start/stop pushing to random'
+                on_press: root.push_random()
+        BoxLayout:
+            size_hint: 1, 3
+        Button:
+            id: cancel_button
+            text: "Back"
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'main'

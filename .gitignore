@@ -1,0 +1,39 @@
+# PyCharm
+.idea
+
+# Log
+/log.txt
+
+# Python
+*__pycache__/
+
+# virtualenv (Windows)
+Include/
+Lib/
+./Scripts/
+pip-selfcheck.json
+tcl/
+venv/
+
+# DLLs used by kivy
+share/
+
+# Buildozer
+.buildozer/
+
+# Database
+/data.db
+
+# apk
+bin/
+
+libsodium.so
+
+/data/
+/backup/
+
+hello.py
+
+# db analyzer
+db_analyzer.cprof
+tools/db_analyzer_log.txt
