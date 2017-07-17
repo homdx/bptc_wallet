@@ -1,4 +1,6 @@
-# BPT Hashgraph
+# BPT Coin Wallet
+A crypto currency based on [Swirlds Hashgraph Consensus](http://www.swirlds.com/downloads/SWIRLDS-TR-2016-01.pdf). The code is inspired by https://github.com/Lapin0t/py-swirld.
+
 
 ## Setup Linux
 ```shell
@@ -19,7 +21,12 @@ named in requirements.txt. Instead you can use requirements_cli.txt.
   python main.py -cli
 ```
 
+## Visualization
 
+Starting bokeh
+```shell
+  viz.sh
+```
 
 ## Docker
 
@@ -45,22 +52,3 @@ After setting up Buildozer run:
 ```shell
   buildozer android debug deploy run
 ```
-
-## Execution
-Starting bokeh
-```shell
-  bokeh serve viz.py
-```
-
-Starting bokeh and browser
-```shell
-  bokeh serve --show viz.py
-```
-
-## Debugging
-Start registry, multiple clients and bokeh on Windows:
-```
-  tools\scripts\start_clients
-```
-The clients will automatically start listening on events, register at the
-registry and query other members.
