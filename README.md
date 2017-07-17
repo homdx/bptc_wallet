@@ -1,6 +1,7 @@
 # BPT Coin Wallet
 A crypto currency based on [Swirlds Hashgraph Consensus](http://www.swirlds.com/downloads/SWIRLDS-TR-2016-01.pdf). The code is inspired by https://github.com/Lapin0t/py-swirld.
 
+![kivy_app](kivy_app.png)
 
 ## Setup Linux
 ```shell
