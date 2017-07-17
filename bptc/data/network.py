@@ -4,6 +4,9 @@ from typing import Dict, List
 import random
 from twisted.internet import threads, reactor
 import json
+
+from twisted.internet.address import IPv4Address
+
 import bptc
 from bptc.data.event import Event, Parents
 from bptc.data.hashgraph import Hashgraph, init_hashgraph
@@ -42,9 +45,12 @@ class Network:
     def reset(self):
         DB.reset()
         new_me = Member.create()
+        new_me.address = IPv4Address("TCP", bptc.ip, bptc.port)
         new_hashgraph = Hashgraph(new_me)
         self.hashgraph = new_hashgraph
         self.hashgraph.add_own_event(Event(self.hashgraph.me.verify_key, None, Parents(None, None)), True)
+        self.last_push_sent = None
+        self.last_push_received = None
 
     def push_to(self, ip, port) -> None:
         with self.hashgraph.lock:
