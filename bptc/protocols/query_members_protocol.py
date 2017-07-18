@@ -44,7 +44,12 @@ class QueryMembersClient(protocol.Protocol):
         return
 
     def dataReceived(self, data):
-        data_received = json.loads(data.decode('UTF-8'))
+        try:
+            data_received = json.loads(data.decode('UTF-8'))
+        except:
+            bptc.logger.warn("Could not parse JSON message")
+            return
+
         self.factory.callback(data_received)
 
     def connectionLost(self, reason):

@@ -18,7 +18,12 @@ class RegisterServer(protocol.Protocol):
         return
 
     def dataReceived(self, data):
-        data_received = json.loads(data.decode('UTF-8'))
+        try:
+            data_received = json.loads(data.decode('UTF-8'))
+        except:
+            bptc.logger.warn("Could not parse JSON message")
+            return
+
         member_id = data_received['member_id']
         port = data_received['port']
         info = self.transport.getPeer()
