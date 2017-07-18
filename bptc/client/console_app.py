@@ -232,7 +232,7 @@ class ConsoleApp(InteractiveShell):
             pass
 
     def cmd_publish_name(self, args):
-        self.network.publish_name(args.name)
+        self.network.publish_name(' '.join(args.name))
 
     def cmd_members(self, args):
         members = self.network.hashgraph.known_members.values()
