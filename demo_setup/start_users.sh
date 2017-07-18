@@ -24,10 +24,10 @@ do
     ip='0.0.0.0'
 
     # auto-close terminal
-    gnome-terminal --tab -e "/bin/bash -c 'cd users/$i; ../../../main.py -cli -q -ip $ip -p $port -sp -bp localhost:8000'"
+    gnome-terminal --tab -e "/bin/bash -c 'cd users/$i; ../../../main.py -cli -q -ip $ip -p $port -bp localhost:8000'"
 
     # don't auto-close terminal
-    #gnome-terminal --tab -e "/bin/bash -c 'cd users/$i; ../../../main.py -cli -q -ip $ip -p $port -sp -bp localhost:8000; exec /bin/bash -i'"
+    #gnome-terminal --tab -e "/bin/bash -c 'cd users/$i; ../../../main.py -cli -q -ip $ip -p $port -bp localhost:8000; exec /bin/bash -i'"
 
     port=$((port+2))
 done
