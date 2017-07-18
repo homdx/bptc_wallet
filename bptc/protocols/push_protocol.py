@@ -59,8 +59,8 @@ class PushClientFactory(protocol.ClientFactory):
 
     def clientConnectionLost(self, connector, reason):
         # Ignore failed connections because we expect this to happen
-        # if reason.getErrorMessage() != 'Connection was closed cleanly.':
-        # bptc.logger.error("ConnLost: {}".format(reason.getErrorMessage()))
+        if reason.getErrorMessage() != 'Connection was closed cleanly.':
+            bptc.logger.error("Connection lost: {}".format(reason.getErrorMessage()))
         pass
 
     def clientConnectionFailed(self, connector, reason):
