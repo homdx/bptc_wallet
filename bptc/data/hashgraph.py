@@ -218,7 +218,7 @@ class Hashgraph:
                     receiver = self.known_members[transaction.receiver]
 
                     # Check if the sender has the funds
-                    if sender.account_balance < transaction.amount:
+                    if sender.account_balance < transaction.amount or transaction.amount < 0:
                         transaction.status = TransactionStatus.DENIED
                     else:
                         sender.account_balance -= transaction.amount
