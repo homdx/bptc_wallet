@@ -27,3 +27,80 @@
 2017-07-15 16:13:17,457 [INFO] [Pull server (for viz tool) listens on port 8001]
 2017-07-15 16:13:17,457 [DEBUG] Push to YM9Ohd... (localhost, 8000)
 2017-07-15 16:13:28,064 [INFO] Stopping...
+2017-07-18 10:21:01,672 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:21:01,681 [INFO] Push server listens on port 8000
+2017-07-18 10:21:01,684 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-18 10:21:01,687 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-18 10:21:01,749 [DEBUG] 1 parts to send:
+2017-07-18 10:21:01,750 [DEBUG] - sent part 1
+2017-07-18 10:25:35,561 [INFO] Stopping...
+2017-07-18 10:25:45,132 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:25:45,141 [INFO] Push server listens on port 8000
+2017-07-18 10:25:45,145 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-18 10:25:45,147 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-18 10:25:45,152 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:25:45,218 [DEBUG] 1 parts to send:
+2017-07-18 10:25:45,219 [DEBUG] - sent part 1
+2017-07-18 10:25:46,213 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:25:47,225 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:25:48,231 [DEBUG] Forgot address of Member(uSN8O+...) after three failed attempts
+2017-07-18 10:25:48,231 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:25:48,660 [INFO] Stopping...
+2017-07-18 10:26:24,251 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:26:24,254 [INFO] Push server listens on port 8000
+2017-07-18 10:26:24,255 [INFO] [Pull server (for viz tool) listens on port 8001]
+2017-07-18 10:26:24,256 [DEBUG] Push to YM9Ohd... (localhost, 8000)
+2017-07-18 10:26:24,258 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:24,282 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,282 [DEBUG] - sent part 1
+2017-07-18 10:26:24,286 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,286 [DEBUG] - sent part 1
+2017-07-18 10:26:24,639 [DEBUG] - Received 3 events
+2017-07-18 10:26:24,640 [DEBUG] Processing 3 events from uSN8O+...
+2017-07-18 10:26:24,643 [DEBUG] - Received 3 members
+2017-07-18 10:26:24,681 [DEBUG] - Received 1 events
+2017-07-18 10:26:24,682 [DEBUG] Processing 1 events from uSN8O+...
+2017-07-18 10:26:24,684 [DEBUG] - Received 3 members
+2017-07-18 10:26:24,727 [DEBUG] - Received 1 events
+2017-07-18 10:26:24,728 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:24,730 [DEBUG] - Received 3 members
+2017-07-18 10:26:25,206 [DEBUG] - Received 3 members
+2017-07-18 10:26:25,290 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:26:25,293 [DEBUG] 1 parts to send:
+2017-07-18 10:26:25,293 [DEBUG] - sent part 1
+2017-07-18 10:26:25,621 [DEBUG] - Received 5 events
+2017-07-18 10:26:25,623 [DEBUG] Processing 5 events from uSN8O+...
+2017-07-18 10:26:25,630 [DEBUG] - Received 3 members
+2017-07-18 10:26:26,222 [DEBUG] - Received 3 members
+2017-07-18 10:26:26,283 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:26,286 [DEBUG] 1 parts to send:
+2017-07-18 10:26:26,286 [DEBUG] - sent part 1
+2017-07-18 10:26:27,215 [DEBUG] - Received 1 events
+2017-07-18 10:26:27,216 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:27,218 [DEBUG] - Received 3 members
+2017-07-18 10:26:27,227 [DEBUG] - Received 3 members
+2017-07-18 10:26:27,267 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-07-18 10:26:27,270 [DEBUG] 1 parts to send:
+2017-07-18 10:26:27,271 [DEBUG] - sent part 1
+2017-07-18 10:26:27,642 [DEBUG] - Received 5 events
+2017-07-18 10:26:27,643 [DEBUG] Processing 5 events from uSN8O+...
+2017-07-18 10:26:27,648 [DEBUG] - Received 3 members
+2017-07-18 10:26:28,206 [DEBUG] - Received 1 events
+2017-07-18 10:26:28,207 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:28,209 [DEBUG] - Received 3 members
+2017-07-18 10:26:28,255 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:28,258 [DEBUG] 1 parts to send:
+2017-07-18 10:26:28,259 [DEBUG] - sent part 1
+2017-07-18 10:26:29,203 [DEBUG] - Received 1 events
+2017-07-18 10:26:29,204 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:29,207 [DEBUG] - Received 3 members
+2017-07-18 10:26:29,247 [DEBUG] - Received 3 members
+2017-07-18 10:26:29,272 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-07-18 10:26:29,276 [DEBUG] 1 parts to send:
+2017-07-18 10:26:29,276 [DEBUG] - sent part 1
+2017-07-18 10:26:30,306 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:26:31,227 [DEBUG] - Received 1 events
+2017-07-18 10:26:31,228 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:31,230 [DEBUG] - Received 3 members
+2017-07-18 10:26:31,279 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:26:32,283 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)

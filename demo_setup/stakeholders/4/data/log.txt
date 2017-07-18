@@ -27,3 +27,37 @@
 2017-07-15 16:13:18,314 [INFO] [Pull server (for viz tool) listens on port 8007]
 2017-07-15 16:13:18,314 [DEBUG] Push to uSN8O+... (localhost, 8006)
 2017-07-15 16:13:27,344 [INFO] Stopping...
+2017-07-18 10:26:23,625 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:26:23,631 [INFO] Push server listens on port 8006
+2017-07-18 10:26:23,633 [INFO] [Pull server (for viz tool) listens on port 8007]
+2017-07-18 10:26:23,634 [DEBUG] Push to uSN8O+... (localhost, 8006)
+2017-07-18 10:26:23,648 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:23,687 [DEBUG] 1 parts to send:
+2017-07-18 10:26:23,688 [DEBUG] - sent part 1
+2017-07-18 10:26:24,207 [DEBUG] - Received 1 events
+2017-07-18 10:26:24,208 [DEBUG] Processing 1 events from 0MN1pU...
+2017-07-18 10:26:24,209 [DEBUG] - Received 3 members
+2017-07-18 10:26:24,632 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:24,635 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,636 [DEBUG] - sent part 1
+2017-07-18 10:26:24,679 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,679 [DEBUG] - sent part 1
+2017-07-18 10:26:25,228 [DEBUG] - Received 1 events
+2017-07-18 10:26:25,229 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:25,232 [DEBUG] - Received 3 members
+2017-07-18 10:26:25,297 [DEBUG] - Received 3 members
+2017-07-18 10:26:25,615 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:25,618 [DEBUG] 1 parts to send:
+2017-07-18 10:26:25,619 [DEBUG] - sent part 1
+2017-07-18 10:26:26,603 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-07-18 10:26:26,606 [DEBUG] 1 parts to send:
+2017-07-18 10:26:26,606 [DEBUG] - sent part 1
+2017-07-18 10:26:27,635 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:27,638 [DEBUG] 1 parts to send:
+2017-07-18 10:26:27,639 [DEBUG] - sent part 1
+2017-07-18 10:26:28,657 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:28,660 [DEBUG] 1 parts to send:
+2017-07-18 10:26:28,660 [DEBUG] - sent part 1
+2017-07-18 10:26:29,634 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:29,647 [DEBUG] 1 parts to send:
+2017-07-18 10:26:29,647 [DEBUG] - sent part 1

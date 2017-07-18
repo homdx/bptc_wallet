@@ -17,9 +17,9 @@ port = None
 
 
 # Logging
-def init_logger(logfile, be_quiet=False):
+def init_logger(logfile, verbose=False):
     global stdout_logger, file_logger, logger
-    stdout_logger_lvl = logging.INFO if be_quiet else logging.DEBUG
+    stdout_logger_lvl = logging.DEBUG if verbose else logging.INFO
 
     stdout_logger = logging.StreamHandler(sys.stdout)
     stdout_logger.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))

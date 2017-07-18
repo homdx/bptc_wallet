@@ -10,7 +10,7 @@ do
     ip='0.0.0.0'
 
     # auto-close terminal
-    gnome-terminal --tab -e "/bin/bash -c 'cd stakeholders/$i; ../../../main.py -cli -q -ip $ip -p $port -sp'"
+    gnome-terminal --tab -e "/bin/bash -c 'cd stakeholders/$i; ../../../main.py -cli -ip $ip -p $port -sp'"
 
     # don't auto-close terminal
     #gnome-terminal --tab -e "/bin/bash -c 'cd stakeholders/$i; ../../../main.py -cli -q -ip $ip -p $port -sp; exec /bin/bash -i'"

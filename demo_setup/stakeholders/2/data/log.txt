@@ -27,3 +27,47 @@
 2017-07-15 16:13:17,833 [INFO] [Pull server (for viz tool) listens on port 8003]
 2017-07-15 16:13:17,834 [DEBUG] Push to HIogl7... (localhost, 8002)
 2017-07-15 16:13:28,703 [INFO] Stopping...
+2017-07-18 10:25:51,018 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:25:51,130 [INFO] Push server listens on port 8002
+2017-07-18 10:25:51,177 [INFO] [Pull server (for viz tool) listens on port 8003]
+2017-07-18 10:25:51,211 [DEBUG] Push to HIogl7... (localhost, 8002)
+2017-07-18 10:25:51,319 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:25:52,139 [DEBUG] 1 parts to send:
+2017-07-18 10:25:52,140 [DEBUG] - sent part 1
+2017-07-18 10:25:52,379 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:25:53,157 [INFO] Stopping...
+2017-07-18 10:26:24,189 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:26:24,192 [INFO] Push server listens on port 8002
+2017-07-18 10:26:24,194 [INFO] [Pull server (for viz tool) listens on port 8003]
+2017-07-18 10:26:24,196 [DEBUG] Push to HIogl7... (localhost, 8002)
+2017-07-18 10:26:24,202 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:24,233 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,234 [DEBUG] - sent part 1
+2017-07-18 10:26:24,724 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,725 [DEBUG] - sent part 1
+2017-07-18 10:26:25,222 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:26:25,224 [DEBUG] 1 parts to send:
+2017-07-18 10:26:25,225 [DEBUG] - sent part 1
+2017-07-18 10:26:26,234 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:26,237 [DEBUG] 1 parts to send:
+2017-07-18 10:26:26,238 [DEBUG] - sent part 1
+2017-07-18 10:26:26,609 [DEBUG] - Received 3 members
+2017-07-18 10:26:27,208 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:27,211 [DEBUG] 1 parts to send:
+2017-07-18 10:26:27,212 [DEBUG] - sent part 1
+2017-07-18 10:26:27,273 [DEBUG] - Received 3 members
+2017-07-18 10:26:28,200 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:28,203 [DEBUG] 1 parts to send:
+2017-07-18 10:26:28,204 [DEBUG] - sent part 1
+2017-07-18 10:26:28,227 [DEBUG] - Received 3 members
+2017-07-18 10:26:29,198 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:29,201 [DEBUG] 1 parts to send:
+2017-07-18 10:26:29,201 [DEBUG] - sent part 1
+2017-07-18 10:26:29,278 [DEBUG] - Received 3 members
+2017-07-18 10:26:30,214 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-07-18 10:26:30,217 [DEBUG] 1 parts to send:
+2017-07-18 10:26:30,217 [DEBUG] - sent part 1
+2017-07-18 10:26:30,246 [DEBUG] - Received 3 members
+2017-07-18 10:26:31,221 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:31,224 [DEBUG] 1 parts to send:
+2017-07-18 10:26:31,225 [DEBUG] - sent part 1
