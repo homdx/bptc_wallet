@@ -1,7 +1,7 @@
 import math
 import os
 import threading
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import Dict
 import copy
 from twisted.internet.address import IPv4Address
@@ -93,7 +93,8 @@ class Hashgraph:
                     to_visit.add(event.parents.other_parent)
                 visited.add(event_id)
 
-        return result
+        result_tuples = [(e.id, e) for e in toposort(result)][100:]
+        return OrderedDict(result_tuples)
 
     def add_own_event(self, event: Event, calculate_consensus: bool = False):
         """
