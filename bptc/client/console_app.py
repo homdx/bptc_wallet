@@ -110,8 +110,7 @@ class ConsoleApp(InteractiveShell):
             # listen to hashgraph actions
             network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
 
-            if self.cl_args.start_pushing:
-                self.network.start_background_pushes()
+            self.network.start_background_pushes()
 
             if self.cl_args.bootstrap_push:
                 ip, port = self.cl_args.bootstrap_push.split(':')

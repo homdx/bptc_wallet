@@ -225,6 +225,7 @@ class DebugScreen(KivyScreen):
     @staticmethod
     def change_log_level():
         bptc.toggle_stdout_log_level()
+        print('Toggled stdout log level. New level: {}'.format(bptc.get_stdout_levelname()))
 
     def confirm_reset(self):
         from .confirmpopup import ConfirmPopup

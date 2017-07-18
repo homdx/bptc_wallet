@@ -21,7 +21,6 @@ def parse_args():
     parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')
     parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
                         help='Address for querying members automatically')
-    parser.add_argument('-sp', '--start-pushing', action='store_false', help='Start frequent pushing')
     parser.add_argument('-v', '--verbose', action='store_true', help='Log to stdout in debug mode')
     parser.add_argument('--dirty', action='store_true',
                         help='This allows other clients to send a signal resetting ' +

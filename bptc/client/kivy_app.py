@@ -55,9 +55,8 @@ class KivyApp(App):
             threading.Timer(2, network_utils.query_members,
                             args=(self, ip, port)).start()
 
-        if self.cl_args.start_pushing:
-            self.network.start_background_pushes()
-            debug_screen.pushing = True
+        self.network.start_background_pushes()
+        debug_screen.pushing = True
 
         if self.cl_args.bootstrap_push:
             ip, port = self.cl_args.bootstrap_push.split(':')
