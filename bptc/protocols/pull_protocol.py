@@ -76,7 +76,12 @@ class PullClient(protocol.Protocol):
         finally:
             self.factory.received_data = b""
 
-        received_data = json.loads(data.decode('UTF-8'))
+        try:
+            received_data = json.loads(data.decode('UTF-8'))
+        except:
+            bptc.logger.warn("Could not parse JSON message")
+            return
+
         from_member = received_data['from']
         s_events = received_data['events']
         events = {}

@@ -163,7 +163,11 @@ class Network:
 
     def process_data_string(self, data_string, peer):
         # Decode received JSON data
-        received_data = json.loads(data_string)
+        try:
+            received_data = json.loads(data_string)
+        except:
+            bptc.logger.warn("Could not parse JSON message")
+            return
 
         # Ignore pushes from yourself (should only happen once after the client is started)
         if received_data['from']['verify_key'] == self.me.verify_key:
