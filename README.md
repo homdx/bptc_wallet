@@ -17,9 +17,21 @@ named in requirements.txt. Instead you can use requirements_cli.txt.
   python main.py
 ```
 
+If you get an error on startup, the `python` binary on your system might be Python 2. In this case, try running
+
+```shell
+  python3 main.py
+```
+
 ## Start CLI client
 ```shell
   python main.py -cli
+```
+
+If you get an error on startup, the `python` binary on your system might be Python 2. In this case, try running
+
+```shell
+  python3 main.py -cli
 ```
 
 ## Visualization
