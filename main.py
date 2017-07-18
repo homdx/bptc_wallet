@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
                         help='Address for querying members automatically')
     parser.add_argument('-sp', '--start-pushing', action='store_true', help='Start frequent pushing')
-    parser.add_argument('-q', '--quiet', action='store_true', help='Less output as possible')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Log to stdout in debug mode')
     parser.add_argument('--dirty', action='store_true',
                         help='This allows other clients to send a signal resetting ' +
                         'your local hashgraph. This is only available for the HeadlessApp.')
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     bptc.ip = cl_args.ip
     bptc.port = cl_args.port
     os.makedirs(cl_args.output, exist_ok=True)
-    init_logger(os.path.join(cl_args.output, 'log.txt'), cl_args.quiet)
+    init_logger(os.path.join(cl_args.output, 'log.txt'), cl_args.verbose)
     if cl_args.console:
         from bptc.client.console_app import ConsoleApp
         ConsoleApp(cl_args)()

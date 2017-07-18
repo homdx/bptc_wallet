@@ -27,3 +27,43 @@
 2017-07-15 16:13:18,064 [INFO] [Pull server (for viz tool) listens on port 8005]
 2017-07-15 16:13:18,065 [DEBUG] Push to 0MN1pU... (localhost, 8004)
 2017-07-15 16:13:29,360 [INFO] Stopping...
+2017-07-18 10:26:24,167 [DEBUG] Loaded 1 events from DB.
+2017-07-18 10:26:24,169 [INFO] Push server listens on port 8004
+2017-07-18 10:26:24,171 [INFO] [Pull server (for viz tool) listens on port 8005]
+2017-07-18 10:26:24,172 [DEBUG] Push to 0MN1pU... (localhost, 8004)
+2017-07-18 10:26:24,175 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-07-18 10:26:24,205 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,205 [DEBUG] - sent part 1
+2017-07-18 10:26:24,210 [DEBUG] 1 parts to send:
+2017-07-18 10:26:24,211 [DEBUG] - sent part 1
+2017-07-18 10:26:24,284 [DEBUG] - Received 1 events
+2017-07-18 10:26:24,285 [DEBUG] Processing 1 events from YM9Ohd...
+2017-07-18 10:26:24,286 [DEBUG] - Received 2 members
+2017-07-18 10:26:25,201 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:25,203 [DEBUG] 1 parts to send:
+2017-07-18 10:26:25,204 [DEBUG] - sent part 1
+2017-07-18 10:26:26,217 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:26,220 [DEBUG] 1 parts to send:
+2017-07-18 10:26:26,220 [DEBUG] - sent part 1
+2017-07-18 10:26:26,240 [DEBUG] - Received 1 events
+2017-07-18 10:26:26,241 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:26,243 [DEBUG] - Received 3 members
+2017-07-18 10:26:26,288 [DEBUG] - Received 3 members
+2017-07-18 10:26:27,221 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:27,224 [DEBUG] 1 parts to send:
+2017-07-18 10:26:27,225 [DEBUG] - sent part 1
+2017-07-18 10:26:28,221 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-07-18 10:26:28,224 [DEBUG] 1 parts to send:
+2017-07-18 10:26:28,225 [DEBUG] - sent part 1
+2017-07-18 10:26:28,261 [DEBUG] - Received 3 members
+2017-07-18 10:26:28,662 [DEBUG] - Received 3 members
+2017-07-18 10:26:29,241 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-07-18 10:26:29,244 [DEBUG] 1 parts to send:
+2017-07-18 10:26:29,245 [DEBUG] - sent part 1
+2017-07-18 10:26:29,650 [DEBUG] - Received 3 members
+2017-07-18 10:26:30,219 [DEBUG] - Received 1 events
+2017-07-18 10:26:30,220 [DEBUG] Processing 1 events from HIogl7...
+2017-07-18 10:26:30,223 [DEBUG] - Received 3 members
+2017-07-18 10:26:30,240 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-07-18 10:26:30,244 [DEBUG] 1 parts to send:
+2017-07-18 10:26:30,244 [DEBUG] - sent part 1
