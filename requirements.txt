@@ -1,3 +1,4 @@
+prompt_toolkit
 bokeh==0.12.6
 buildozer==0.33
 Kivy==1.10.0
