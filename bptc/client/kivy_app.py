@@ -1,5 +1,4 @@
 import os
-import threading
 from bptc.data.network import BootstrapPushThread
 from kivy.app import App
 from kivy.config import Config
@@ -48,13 +47,6 @@ class KivyApp(App):
         sm.add_widget(PublishNameScreen(self.network))
         debug_screen = DebugScreen(self.network, defaults, self)
         sm.add_widget(debug_screen)
-
-        if self.cl_args.register:
-            ip, port = self.cl_args.register.split(':')
-            network_utils.register(self.me.id, bptc.port, ip, port)
-            port = str(int(port) + 1)
-            threading.Timer(2, network_utils.query_members,
-                            args=(self, ip, port)).start()
 
         # start a thread that pushes frequently
         self.network.start_push_thread()

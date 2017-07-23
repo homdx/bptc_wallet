@@ -18,7 +18,7 @@ class PushServerFactory(protocol.ServerFactory):
 class PushServer(protocol.Protocol):
 
     def connectionMade(self):
-        # Dont call transport.write at this point - all received data might be gone
+        # Don't call transport.write at this point - all received data might be gone
         pass
 
     def dataReceived(self, data):
@@ -38,7 +38,7 @@ class PushServer(protocol.Protocol):
             bptc.logger.warn('No data received!')
             return
         try:
-            #data = zlib.decompress(self.factory.received_data)
+            # data = zlib.decompress(self.factory.received_data)
             data = self.factory.received_data
             self.factory.receive_data_string_callback(data.decode('UTF-8'), self.transport.getPeer())
         except zlib.error as err:
@@ -75,11 +75,9 @@ class PushClientFactory(protocol.ClientFactory):
 class PushClient(protocol.Protocol):
 
     def connectionMade(self):
-        #data_to_send = zlib.compress(self.factory.string_to_send)
+        # data_to_send = zlib.compress(self.factory.string_to_send)
         data_to_send = self.factory.string_to_send
-        bptc.logger.debug('{} parts to send:'.format((ceil(len(data_to_send) / 65536))))
         for i in range(1, (ceil(len(data_to_send) / 65536)) + 1):
-            bptc.logger.debug('- sent part {}'.format(i))
             self.transport.write(data_to_send[(i-1) * 65536:min(i*65536, len(data_to_send))])
         self.transport.loseConnection()
 

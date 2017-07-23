@@ -19,10 +19,7 @@ def parse_args():
     parser.add_argument('-o', '--output', type=str, default='data',
                         help='Output directory for the sqlite3 database and log files')
     parser.add_argument('-cli', '--console', action='store_true', help='Use the interactive shell')
-    parser.add_argument('-headless', '--headless', action='store_true', help='Headless client')
-    parser.add_argument('-r', '--register', type=str, default=None, help='Automatically register at given address')
-    parser.add_argument('-qm', '--query-members', type=str, default='localhost:9001',
-                        help='Address for querying members automatically')
+    parser.add_argument('--headless', action='store_true', help='Headless client')
     parser.add_argument('-v', '--verbose', action='store_true', help='Log to stdout in debug mode')
     parser.add_argument('--dirty', action='store_true',
                         help='This allows other clients to send a signal resetting ' +
@@ -32,7 +29,7 @@ def parse_args():
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Store hashgraph in a temporary database for each 200 processed events')
     args = parser.parse_args()
-    if not args.auto and args.dirty:
+    if not args.headless and args.dirty:
         args.dirty = False  # Ignore this flag on every other client
         print('WARN: The dirty command will be ignored! See the manual for further information.')
     return args

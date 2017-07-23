@@ -19,12 +19,15 @@ class KivyScreen(Screen):
 
 
 class MainScreen(KivyScreen):
+    """The main screen of the Kivy App."""
+
     def __init__(self, network, defaults):
         self.network = network
         self.defaults = defaults
 
         super().__init__()
 
+        # endless loop that updates information displayed
         def update_user_details():
             self.ids.account_balance_label.text = 'Balance: {} BPTC'.format(self.me.account_balance)
             self.ids.account_name_label.text = '{}'.format(self.me.formatted_name)
@@ -44,11 +47,10 @@ class MainScreen(KivyScreen):
 
 
 class NewTransactionScreen(KivyScreen):
+    """NewTransaction screen of the Kivy App"""
 
     class MemberListItemButton(ListItemButton):
-
         def __init__(self, **kwargs):
-
             self.deselected_color = [1, 1, 1, 1]
             self.selected_color = [0.2, 0.5, 1, 1]
             super().__init__(**kwargs)
@@ -65,10 +67,11 @@ class NewTransactionScreen(KivyScreen):
         members.sort(key=lambda x: x.formatted_name)
         self.data = [{'member': m, 'is_selected': False} for m in members if m != self.network.me]
 
-        args_converter = lambda row_index, rec: {
-            'text': rec['member'].formatted_name,
-            'height': 40
-        }
+        def args_converter(row_index, rec):
+            return {
+                'text': rec['member'].formatted_name,
+                'height': 40
+            }
 
         list_adapter = ListAdapter(data=self.data,
                                    args_converter=args_converter,
@@ -106,6 +109,7 @@ class NewTransactionScreen(KivyScreen):
 
 
 class TransactionsScreen(KivyScreen):
+    """Transaction screen of the Kivy App"""
 
     def __init__(self, network):
         self.network = network
@@ -116,16 +120,18 @@ class TransactionsScreen(KivyScreen):
         # Load relevant transactions
         transactions = self.network.hashgraph.get_relevant_transactions()
         # Create updated list
-        args_converter = lambda row_index, rec: {
-            'height': 60,
-            'markup': True,
-            'halign': 'center',
-            'text': rec['formatted'],
-        }
+
+        def args_converter(row_index, rec):
+            return {
+                'height': 60,
+                'markup': True,
+                'halign': 'center',
+                'text': rec['formatted']
+            }
 
         list_adapter = SimpleListAdapter(data=transactions,
-                                   args_converter=args_converter,
-                                   cls=Label)
+                                         args_converter=args_converter,
+                                         cls=Label)
 
         self.list_view = ListView(adapter=list_adapter, size_hint_y=8)
 
@@ -136,6 +142,8 @@ class TransactionsScreen(KivyScreen):
 
 
 class MembersScreen(KivyScreen):
+    """Members screen of the Kivy App"""
+
     def __init__(self, network):
         self.network = network
         self.list_view = None
@@ -146,12 +154,14 @@ class MembersScreen(KivyScreen):
         members = [m for m in members if m != self.network.me]
         members.sort(key=lambda x: x.formatted_name)
         # Create updated list
-        args_converter = lambda row_index, rec: {
-            'height': 60,
-            'markup': True,
-            'halign': 'center',
-            'text': repr(members[row_index]),
-        }
+
+        def args_converter(row_index, rec):
+            return {
+                'height': 60,
+                'markup': True,
+                'halign': 'center',
+                'text': repr(members[row_index]),
+            }
 
         list_adapter = SimpleListAdapter(data=members,
                                          args_converter=args_converter,
@@ -166,6 +176,7 @@ class MembersScreen(KivyScreen):
 
 
 class PublishNameScreen(KivyScreen):
+    """PublishName screen of the Kivy App."""
 
     def __init__(self, network):
         self.network = network
@@ -177,7 +188,7 @@ class PublishNameScreen(KivyScreen):
 
 
 class DebugScreen(KivyScreen):
-
+    """Debug screen of the Kivy App."""
     def __init__(self, network, defaults, app):
         self.network = network
         self.defaults = defaults
@@ -185,9 +196,11 @@ class DebugScreen(KivyScreen):
         self.app = app
         super().__init__()
 
+        # endless loop for updating information displayed
         def update_statistics():
             self.ids.listening_interface_label.text = 'Listening interface: {}:{}'.format(bptc.ip, bptc.port)
-            self.ids.event_count_label.text = '{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()), len(self.hashgraph.ordered_events))
+            self.ids.event_count_label.text = '{} events, {} confirmed'.format(len(self.hashgraph.lookup_table.keys()),
+                                                                               len(self.hashgraph.ordered_events))
             self.ids.last_push_sent_label.text = 'Last push sent: {}'.format(self.network.last_push_sent)
             self.ids.last_push_received_label.text = 'Last push received: {}'.format(self.network.last_push_received)
 
@@ -212,48 +225,46 @@ class DebugScreen(KivyScreen):
                 return obj.text
         return self.defaults[key]
 
-    def get_widget_id(self, widget):
-        for id_, obj in self.ids.items():
-            if obj == widget:
-                return id_
-        return None
-
     # --------------------------------------------------------------------------
     # DebugScreen actions
     # --------------------------------------------------------------------------
 
     @staticmethod
     def change_log_level():
+        """Toggle the log level."""
         bptc.toggle_stdout_log_level()
         print('Toggled stdout log level. New level: {}'.format(bptc.get_stdout_levelname()))
 
-    def confirm_reset(self):
+    def confirm_reset_popup(self):
+        """Ask for confirmation to do member-reset."""
         from .confirmpopup import ConfirmPopup
         popup = ConfirmPopup(text='Reset database containing the local hashgraph')
         popup.bind(on_ok=self.do_reset)
         popup.open()
 
     def do_reset(self, _dialog):
+        """Perform a member-reset"""
         bptc.logger.warn('Deleting local database containing the hashgraph')
         self.network.reset()
         self.defaults['member_id'] = self.me.formatted_name
 
-    def start_listening(self):
-        network_utils.start_listening(self.network, bptc.ip, bptc.port, False)
-
     def register(self):
+        """Register at the given registry address."""
         ip, port = self.get('registering_address').split(':')
         network_utils.register(self.me.id, self.get('listening_port'), ip, port)
 
     def query_members(self):
+        """Query members from the given registry address"""
         ip, port = self.get('query_members_address').split(':')
         network_utils.query_members(self, ip, port)
 
     def push(self):
+        """Push events to the given member address."""
         ip, port = self.get('push_address').split(':')
         self.network.push_to(ip, int(port))
 
     def push_random(self):
+        """Push to a random member."""
         if not self.pushing:
             self.network.start_push_thread()
             self.pushing = True

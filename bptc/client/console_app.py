@@ -12,7 +12,6 @@ from bptc.data.hashgraph import init_hashgraph
 from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
-from bptc.data.transaction import TransactionStatus, MoneyTransaction
 
 
 class ConsoleApp(InteractiveShell):
@@ -32,14 +31,14 @@ class ConsoleApp(InteractiveShell):
             register=dict(
                 help='Register this hashgraph member at the registry',
                 args=[
-                    (['target'], dict(default=self.cl_args.register,
+                    (['target'], dict(default='localhost:9000',
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
             query_members=dict(
                 help='Query network members from registry',
                 args=[
-                    (['target'], dict(default=self.cl_args.query_members,
+                    (['target'], dict(default='localhost:9001',
                      nargs='?', help='Registry address (incl. port)'))
                 ],
             ),
