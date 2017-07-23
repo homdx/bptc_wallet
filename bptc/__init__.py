@@ -1,10 +1,6 @@
 import logging
 import sys
 
-stdout_logger = None
-file_logger = None
-logger = None
-
 # PARAMETER
 C = 6  # How often a coin round occurs, e.g. 6 for every sixth round
 push_waiting_time_mu, push_waiting_time_sigma = 1, 0.02  # mean and standard deviation of push rate
@@ -15,9 +11,14 @@ new_member_account_balance = 10  # TODO: Set to 0 as default
 ip = None
 port = None
 
-
 # Logging
+stdout_logger = None
+file_logger = None
+logger = None
+
+
 def init_logger(logfile, verbose=False):
+    """Initialize the logger."""
     global stdout_logger, file_logger, logger
     stdout_logger_lvl = logging.DEBUG if verbose else logging.INFO
 
@@ -37,6 +38,7 @@ def init_logger(logfile, verbose=False):
 
 # Toggle output level for stdout logger (stdout_logger_lvl or logging.WARN)
 def toggle_stdout_log_level():
+    """Toggle the log level."""
     if stdout_logger.level == logging.INFO:
         stdout_logger.setLevel(logging.DEBUG)
     else:
@@ -44,4 +46,5 @@ def toggle_stdout_log_level():
 
 
 def get_stdout_levelname():
+    """Return the log levelname."""
     return logging._levelToName[stdout_logger.level]

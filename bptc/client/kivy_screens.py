@@ -255,8 +255,8 @@ class DebugScreen(KivyScreen):
 
     def push_random(self):
         if not self.pushing:
-            self.network.start_background_pushes()
+            self.network.start_push_thread()
             self.pushing = True
         else:
-            self.network.stop_background_pushes()
+            self.network.stop_push_thread()
             self.pushing = False

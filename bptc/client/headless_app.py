@@ -21,7 +21,7 @@ class HeadlessApp():
         network_utils.initial_checks(self)
         try:
             bptc.logger.info('Automatically query members, push randomly, listen to pushs')
-            self.network.start_background_pushes()
+            self.network.start_push_thread()
             while True:
                 self.query_members()
                 time.sleep(30)

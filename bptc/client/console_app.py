@@ -110,7 +110,7 @@ class ConsoleApp(InteractiveShell):
             # listen to hashgraph actions
             network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
 
-            self.network.start_background_pushes()
+            self.network.start_push_thread()
 
             if self.cl_args.bootstrap_push:
                 ip, port = self.cl_args.bootstrap_push.split(':')
@@ -168,11 +168,11 @@ class ConsoleApp(InteractiveShell):
     def cmd_toggle_pushing(self, args):
         if not self.pushing:
             bptc.logger.info('Start pushing randomly')
-            self.network.start_background_pushes()
+            self.network.start_push_thread()
             self.pushing = True
         else:
             bptc.logger.info('Stop pushing randomly')
-            self.network.stop_background_pushes()
+            self.network.stop_push_thread()
             self.pushing = False
 
     def cmd_reset(self, args):

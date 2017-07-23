@@ -234,12 +234,12 @@ class Network:
                 elif self.hashgraph.known_members[member.id].address is None:
                     self.hashgraph.known_members[member.id].address = member.address
 
-    def start_background_pushes(self) -> None:
+    def start_push_thread(self) -> None:
         self.background_push_client_thread = PushingClientThread(self)
         self.background_push_client_thread.daemon = True
         self.background_push_client_thread.start()
 
-    def stop_background_pushes(self) -> None:
+    def stop_push_thread(self) -> None:
         self.background_push_client_thread.stop()
 
 

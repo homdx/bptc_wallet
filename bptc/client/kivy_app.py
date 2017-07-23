@@ -1,5 +1,4 @@
 import os
-os.environ["KIVY_NO_ARGS"] = "1"  # Ignore command line arguments in Kivy
 import threading
 from bptc.data.network import BootstrapPushThread
 from kivy.app import App
@@ -11,6 +10,8 @@ from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, Transacti
     DebugScreen, MembersScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
+
+os.environ["KIVY_NO_ARGS"] = "1"  # Ignore command line arguments in Kivy
 
 # size of an iPhone 6 Plus
 Config.set('graphics', 'width', '414')
@@ -24,17 +25,17 @@ class KivyApp(App):
         super().__init__()
         self.network = None
         init_hashgraph(self)
-        # starts network client in a new thread
+        # start network client in a new thread
         network_utils.start_reactor_thread()
-        # listen to hashgraph actions
-        network_utils.start_listening(self.network, self.cl_args.ip, self.cl_args.port, self.cl_args.dirty)
+        # start listening to network communication
+        network_utils.start_listening(self.network, bptc.ip, bptc.port, self.cl_args.dirty)
 
     def build(self):
         defaults = {
-            'listening_port': self.cl_args.port,
-            'push_address': 'localhost:8000',
-            'registering_address': 'localhost:9000',
-            'query_members_address': 'localhost:9001',
+            'listening_port': bptc.port,
+            'push_address': bptc.ip + ':8000',
+            'registering_address': bptc.ip + ':9000',
+            'query_members_address': bptc.ip + ':9001',
             'member_id': self.network.me.formatted_name
         }
 
@@ -50,14 +51,16 @@ class KivyApp(App):
 
         if self.cl_args.register:
             ip, port = self.cl_args.register.split(':')
-            network_utils.register(self.me.id, self.cl_args.port, ip, port)
+            network_utils.register(self.me.id, bptc.port, ip, port)
             port = str(int(port) + 1)
             threading.Timer(2, network_utils.query_members,
                             args=(self, ip, port)).start()
 
-        self.network.start_background_pushes()
+        # start a thread that pushes frequently
+        self.network.start_push_thread()
         debug_screen.pushing = True
 
+        # push to a specific network address until knowing other members
         if self.cl_args.bootstrap_push:
             ip, port = self.cl_args.bootstrap_push.split(':')
             thread = BootstrapPushThread(ip, port, self.network)
@@ -67,9 +70,7 @@ class KivyApp(App):
         return sm
 
     def on_stop(self):
-        # The Kivy event loop is about to stop, set a stop signal;
-        # otherwise the app window will close, but the Python process will
-        # keep running until all secondary threads exit.
         bptc.logger.info("Stopping...")
+        self.network.stop_push_thread()
         network_utils.stop_reactor_thread()
         DB.save(self.network.hashgraph)
