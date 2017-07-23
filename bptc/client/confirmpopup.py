@@ -5,25 +5,26 @@ from kivy.uix.popup import Popup
 
 Builder.load_file(join(dirname(__file__), 'confirmpopup.kv'))
 
+
 # Source: https://gist.github.com/kived/742397a80d61e6be225a
 class ConfirmPopup(Popup):
-	text = StringProperty('')
+    text = StringProperty('')
 
-	ok_text = StringProperty('OK')
-	cancel_text = StringProperty('Cancel')
+    ok_text = StringProperty('OK')
+    cancel_text = StringProperty('Cancel')
 
-	__events__ = ('on_ok', 'on_cancel')
+    __events__ = ('on_ok', 'on_cancel')
 
-	def ok(self):
-		self.dispatch('on_ok')
-		self.dismiss()
+    def ok(self):
+        self.dispatch('on_ok')
+        self.dismiss()
 
-	def cancel(self):
-		self.dispatch('on_cancel')
-		self.dismiss()
+    def cancel(self):
+        self.dispatch('on_cancel')
+        self.dismiss()
 
-	def on_ok(self):
-		pass
+    def on_ok(self):
+        pass
 
-	def on_cancel(self):
-		pass
+    def on_cancel(self):
+        pass
