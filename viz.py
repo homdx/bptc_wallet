@@ -79,12 +79,14 @@ class App:
         doc.add_root(main_row)
 
     def single_pull(self, ip_text_input, port_text_input):
+        """Trigger the reactor to pull from the specified client."""
         ip = ip_text_input.value
         port = int(port_text_input.value)
         factory = PullClientFactory(self, doc, ready_event)
         threads.blockingCallFromThread(reactor, partial(reactor.connectTCP, ip, port, factory))
 
     def toggle_pulling(self, ip_text_input, port_text_input):
+        """Start/stop a thread that frequently triggers the reactor to pull from the specified client."""
         if self.pulling:
             self.pull_thread.stop()
             self.pulling = False
@@ -100,6 +102,7 @@ class App:
 
     @gen.coroutine
     def received_data_callback(self, from_member, events):
+        """Called by the reactor when a Pull was successful. Process the received data."""
         print('received_data_callback()')
         patch = {}
         new_events = []
@@ -135,6 +138,7 @@ class App:
         ready_event.set()
 
     def extract_data(self, events):
+        """Extract the data out of the event list and adapt it for the use with Bokeh."""
         events_data = {'x': [], 'y': [], 'round_color': [], 'line_alpha': [], 'round': [], 'id': [], 'payload': [],
                        'time': [], 'from': [], 'height': [], 'data': [], 'witness': [], 'famous': [],
                        'round_received': [], 'consensus_timestamp': []}
@@ -181,6 +185,7 @@ class App:
 
     @staticmethod
     def color_of(event):
+        """Return the color of the given event."""
         if event.consensus_time is not None:
             # confirmed
             if event.data is not None:
@@ -201,6 +206,7 @@ class App:
 
     @staticmethod
     def fame_to_string(fame):
+        """Convert the fame of an event to a string."""
         if fame is Fame.UNDECIDED:
             return 'UNDECIDED'
         elif fame is Fame.FALSE:
@@ -210,6 +216,7 @@ class App:
 
     @staticmethod
     def start_reactor_thread():
+        """Start the reactor in a separate thread."""
         def start_reactor():
             reactor.run(installSignalHandlers=0)
 
