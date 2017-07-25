@@ -2,6 +2,8 @@ import json
 from twisted.internet import protocol
 import bptc
 
+"""The query members protocol is used between a client and a member registry for querying the members."""
+
 
 class QueryMembersServerFactory(protocol.ServerFactory):
 
@@ -11,6 +13,7 @@ class QueryMembersServerFactory(protocol.ServerFactory):
 
 
 class QueryMembersServer(protocol.Protocol):
+    """The query members server handles the query of a query members client"""
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)
@@ -38,6 +41,7 @@ class QueryMembersClientFactory(protocol.ClientFactory):
 
 
 class QueryMembersClient(protocol.Protocol):
+    """The query member client queries the members of a query members server."""
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)

@@ -3,6 +3,8 @@ from twisted.internet import protocol
 
 import bptc
 
+"""The register protocol is used between a client and a member registry for the registration."""
+
 
 class RegisterServerFactory(protocol.ServerFactory):
 
@@ -12,6 +14,7 @@ class RegisterServerFactory(protocol.ServerFactory):
 
 
 class RegisterServer(protocol.Protocol):
+    """The register server handles the registration of the register clients."""
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)
@@ -50,6 +53,7 @@ class RegisterClientFactory(protocol.ClientFactory):
 
 
 class RegisterClient(protocol.Protocol):
+    """The register client registers at a register server."""
 
     def connectionMade(self):
         self.transport.setTcpNoDelay(True)

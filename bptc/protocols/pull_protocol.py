@@ -9,6 +9,8 @@ import bptc
 from bptc.data.event import Event
 from bptc.utils.toposort import toposort
 
+"""The pull protocol is used between a visualization and a client for pulling the events."""
+
 
 class PullServerFactory(protocol.ServerFactory):
 
@@ -19,6 +21,7 @@ class PullServerFactory(protocol.ServerFactory):
 
 
 class PullServer(protocol.Protocol):
+    """The pull server handles the pulling of a pull client."""
 
     def connectionMade(self):
         serialized_events = {}
@@ -54,6 +57,7 @@ class PullClientFactory(protocol.ClientFactory):
 
 
 class PullClient(protocol.Protocol):
+    """The pull client pulls from a pull server."""
 
     def connectionMade(self):
         print('Connected! Start updating at {}...'.format(strftime("%H:%M:%S", gmtime())))

@@ -4,6 +4,8 @@ from math import ceil
 from twisted.internet import protocol
 import bptc
 
+"""The push protocol is used between two clients for pushing events."""
+
 
 class PushServerFactory(protocol.ServerFactory):
 
@@ -16,6 +18,7 @@ class PushServerFactory(protocol.ServerFactory):
 
 
 class PushServer(protocol.Protocol):
+    """The push server handles the pushes of a push client."""
 
     def connectionMade(self):
         # Don't call transport.write at this point - all received data might be gone
@@ -73,6 +76,7 @@ class PushClientFactory(protocol.ClientFactory):
 
 
 class PushClient(protocol.Protocol):
+    """The push client pushes to a push server."""
 
     def connectionMade(self):
         # data_to_send = zlib.compress(self.factory.string_to_send)
