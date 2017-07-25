@@ -4,7 +4,7 @@ from kivy.app import App
 from kivy.config import Config
 from kivy.uix.screenmanager import ScreenManager
 import bptc
-import bptc.utils.network as network_utils
+import bptc.data.network as network_utils
 from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, TransactionsScreen, PublishNameScreen, \
     DebugScreen, MembersScreen
 from bptc.data.db import DB

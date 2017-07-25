@@ -1,7 +1,7 @@
 import sys
 import time
 import bptc
-import bptc.utils.network as network_utils
+import bptc.data.network as network_utils
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 from main import __version__

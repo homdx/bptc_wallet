@@ -2,7 +2,7 @@ from toposort import toposort_flatten
 
 
 def toposort(events):
-    # convert dict of events to adjacent dict
+    """Return a topological sorted list of events."""
     graph = {}
     for event_id, event in events.items():
         if event.parents.self_parent in events:

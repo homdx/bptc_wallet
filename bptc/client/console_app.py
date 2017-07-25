@@ -6,7 +6,7 @@ from prompt_toolkit.token import Token
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.keys import Keys
 import bptc
-import bptc.utils.network as network_utils
+import bptc.data.network as network_utils
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 from bptc.data.network import BootstrapPushThread

@@ -6,7 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.screenmanager import Screen
 import bptc
-import bptc.utils.network as network_utils
+import bptc.data.network as network_utils
 
 kivy.require('1.0.7')
 

@@ -10,7 +10,6 @@ from bptc.data.consensus import divide_rounds, decide_fame, find_order
 from bptc.data.event import Event, Parents
 from bptc.data.member import Member
 from bptc.utils.toposort import toposort
-import bptc.utils.network as network_utils
 from bptc.data.transaction import MoneyTransaction, TransactionStatus, PublishNameTransaction
 
 
