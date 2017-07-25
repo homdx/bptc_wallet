@@ -1,4 +1,5 @@
 import os
+os.environ["KIVY_NO_ARGS"] = "1"  # Ignore command line arguments in Kivy
 from bptc.data.network import BootstrapPushThread
 from kivy.app import App
 from kivy.config import Config
@@ -9,8 +10,6 @@ from bptc.client.kivy_screens import MainScreen, NewTransactionScreen, Transacti
     DebugScreen, MembersScreen
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
-
-os.environ["KIVY_NO_ARGS"] = "1"  # Ignore command line arguments in Kivy
 
 # size of an iPhone 6 Plus
 Config.set('graphics', 'width', '414')
