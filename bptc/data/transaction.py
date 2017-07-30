@@ -38,10 +38,6 @@ class Transaction:
             return MoneyTransaction(transaction_dict['receiver'],
                                     transaction_dict['amount'],
                                     transaction_dict['comment'] if 'comment' in transaction_dict else "")
-        elif transaction_dict['type'] == 'stake':
-            return StakeTransaction(transaction_dict['receiver'],
-                                    transaction_dict['amount'],
-                                    transaction_dict['comment'] if 'comment' in transaction_dict else "")
         elif transaction_dict['type'] == 'publish_name':
             return PublishNameTransaction(transaction_dict['name'])
         else:
@@ -50,6 +46,7 @@ class Transaction:
 
 
 class MoneyTransaction(Transaction):
+    """This transaction type is used for transferring money."""
 
     def __str__(self):
         return "MoneyTransaction(receiver={}, amount={}, comment={})".format(self.receiver, self.amount, self.comment)
@@ -62,20 +59,8 @@ class MoneyTransaction(Transaction):
             ('comment', self.comment)])
 
 
-class StakeTransaction(Transaction):
-
-    def __str__(self):
-        return "StakeTransaction(receiver={}, amount={}, comment={})".format(self.receiver, self.amount, self.comment)
-
-    def to_dict(self) -> Dict:
-        return OrderedDict([
-            ('type', 'stake'),
-            ('receiver', self.receiver),
-            ('amount', self.amount),
-            ('comment', self.comment)])
-
-
 class PublishNameTransaction(Transaction):
+    """This transaction type is used for publishing the own name."""
 
     def __init__(self, name):
         super().__init__(None, 0, name)
