@@ -23,7 +23,7 @@ class Member:
         self.head = None
 
         # DEMONSTRATION SETUP
-        # The current stake of this member
+        # This code makes sure that the 4 prepared stakeholders in /demo_setup are accepted to have stake.
         if verify_key in ['YM9OhddNrlt4z3OsZ311qFGlKFfa63AdPh0QB0qOWBE=',
                           'HIogl7s+GxuIwrQRRzCE/0DgAQKM40jTUZitdi/mbLI=',
                           '0MN1pUFlY9uVpl3vktLVoBkwWbfx8YF2GhsDzireldU=',
@@ -108,6 +108,8 @@ class Member:
 
     @classmethod
     def from_db_tuple(cls, db: Tuple) -> "Member":
+        """Instantiate a Member from a tuple created by Member.to_db_tuple()"""
+
         member = Member(db[0], None)
         member.signing_key = db[1] if db[1] is not None else None
         member.head = db[2]
@@ -119,6 +121,8 @@ class Member:
         return member
 
     def to_db_tuple(self) -> Tuple:
+        """Save a member in a tuple for storing in the data base."""
+
         return (self.verify_key,
                 self.signing_key if self.signing_key is not None else None,
                 self.head,
@@ -128,6 +132,8 @@ class Member:
                 self.name)
 
     def to_dict(self) -> Dict:
+        """Save the Member in a dict."""
+
         return OrderedDict([
             ('verify_key', self.verify_key),
             ('host', self.host),
@@ -135,6 +141,8 @@ class Member:
 
     @classmethod
     def from_dict(cls, member_dict):
+        """Instantiate a member from a dict created with Member.to_dict()"""
+
         member = Member(member_dict['verify_key'], None)
         member.address = IPv4Address('TCP', member_dict['host'], int(member_dict['port']))
         return member

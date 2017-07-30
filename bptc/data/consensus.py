@@ -253,6 +253,8 @@ def decide_randomly_based_on_signature(signature: str) -> bool:
     return middle_byte >= 128  # 50:50 chance
 
 
+# FIND ORDER
+
 def find_order(hg):
     decided_events = set()
 

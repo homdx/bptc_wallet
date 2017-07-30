@@ -22,11 +22,16 @@ from bptc.protocols.pull_protocol import PullServerFactory
 
 class Network:
 
+    """Provides the functionality needed for a member to interact with other members"""
+
     def __init__(self, hashgraph: Hashgraph, create_initial_event: bool = True):
         # The current hashgraph
         self.hashgraph = hashgraph
+
+        # the thread that frequently pushes
         self.background_push_client_thread = None
 
+        # the thread that processes the pushes from other members
         self.background_push_server_thread = PushingServerThread(self)
         self.background_push_server_thread.daemon = True
         self.background_push_server_thread.start()
@@ -44,6 +49,8 @@ class Network:
         return self.hashgraph.me
 
     def reset(self):
+        """Delete the hashgraph and create a new one."""
+
         DB.reset()
         new_me = Member.create()
         new_me.address = IPv4Address("TCP", bptc.ip, bptc.port)
@@ -54,6 +61,8 @@ class Network:
         self.last_push_received = None
 
     def push_to(self, ip, port) -> None:
+        """Push to the specified network address."""
+
         with self.hashgraph.lock:
             data_string = self.generate_data_string(self.hashgraph.me,
                                                     self.hashgraph.lookup_table,
@@ -68,6 +77,8 @@ class Network:
 
     @staticmethod
     def generate_data_string(me, events, members):
+        """Generates a string out of events and members for transferring it over the network."""
+
         serialized_events = {}
         if events is not None:
             for event_id, event in events.items():
@@ -91,6 +102,8 @@ class Network:
         return json.dumps(data_to_send).encode('UTF-8')
 
     def push_to_member(self, member: Member, ignore_for_statistics=False) -> None:
+        """Push to the specified member."""
+
         bptc.logger.debug('Push to {}... ({}, {})'.format(member.verify_key[:6], member.address.host, member.address.port))
 
         with self.hashgraph.lock:
@@ -157,12 +170,16 @@ class Network:
         return event
 
     def receive_data_string_callback(self, data_string, peer):
+        """Turn a received data string over to the responsible thread."""
+
         try:
             self.background_push_server_thread.q.put((data_string, peer), block=False)
         except:
             pass
 
     def process_data_string(self, data_string, peer):
+        """Process a received data string."""
+
         # Decode received JSON data
         try:
             received_data = json.loads(data_string)
@@ -236,17 +253,20 @@ class Network:
                     self.hashgraph.known_members[member.id].address = member.address
 
     def start_push_thread(self) -> None:
+        """Start the thread responsible for frequent pushing."""
+
         self.background_push_client_thread = PushingClientThread(self)
         self.background_push_client_thread.daemon = True
         self.background_push_client_thread.start()
 
     def stop_push_thread(self) -> None:
+        """Stop the thread responsible for frequent pushing."""
+
         self.background_push_client_thread.stop()
 
 
 class PushingClientThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
+    """Thread responsible for frequent pushing to random members."""
 
     def __init__(self, network):
         super(PushingClientThread, self).__init__()
@@ -266,8 +286,7 @@ class PushingClientThread(threading.Thread):
 
 
 class PushingServerThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
+    """Thread responsible for processing the received pushes."""
 
     def __init__(self, network):
         super(PushingServerThread, self).__init__()
@@ -289,6 +308,9 @@ class PushingServerThread(threading.Thread):
 
 
 class BootstrapPushThread(threading.Thread):
+    """Thread used for initial pushing to a specified network address until someone pushes
+    back and other members are known."""
+
     def __init__(self, ip, port, network):
         threading.Thread.__init__(self)
         self.ip = ip
@@ -311,16 +333,22 @@ def filter_members_with_address(members: List[Member]) -> List[Member]:
 
 
 def start_reactor_thread():
+    """Start twisted's reactor in a separate thread."""
+
     thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
     thread.daemon = True
     thread.start()
 
 
 def stop_reactor_thread():
+    """Stop twisted's reactor."""
+
     reactor.callFromThread(reactor.stop)
 
 
 def start_listening(network, listening_ip, listening_port, allow_reset_signal):
+    """Makes twisted's reactor listen for pushes and pulls"""
+
     bptc.logger.info("Push server listens on port {}".format(listening_port))
     push_server_factory = PushServerFactory(network.receive_data_string_callback, allow_reset_signal, network)
     reactor.listenTCP(interface=listening_ip, port=int(listening_port), factory=push_server_factory)

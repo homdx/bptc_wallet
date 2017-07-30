@@ -14,6 +14,7 @@ class TransactionStatus:
 
 
 class Transaction:
+    """A Transaction is a peace of information stored in an event."""
 
     def __init__(self, receiver, amount, comment=""):
         self.receiver = receiver

@@ -8,9 +8,8 @@ from libnacl import crypto_hash_sha512, crypto_sign_open, crypto_sign
 from libnacl.encode import base64_encode, base64_decode
 
 
-# The parents of an event
 class Parents(collections.namedtuple("Parents", ["self_parent", "other_parent"])):
-
+    """The parents of an event."""
     def __str__(self):
         return 'Parents(self_parent: {}, other_parent: {})'.format(
             None if self.self_parent is None else self.self_parent[:6] + '...',
@@ -18,6 +17,7 @@ class Parents(collections.namedtuple("Parents", ["self_parent", "other_parent"])
 
 
 class Fame:
+    """The status of fame of an event."""
     UNDECIDED = -1
     FALSE = 0
     TRUE = 1
@@ -49,10 +49,6 @@ class Event:
         # {event-hash => bool}
         self.votes = dict()
 
-        # {node-id = > event}}: stores for each event ev
-        # and for each member m the latest event from m having same round
-        # number as ev that ev can see
-
         # The signature is empty at the beginning - use sign() to sign the event once it is finished
         self.signature = None
 
@@ -69,8 +65,7 @@ class Event:
         # A cache for event visibility
         self.can_see_cache = dict()
 
-        # DEBUGGING
-        self.processed_by_divideRounds = None
+        # time when the client learns about the confirmation
         self.confirmation_time = None
 
     def __str__(self):
@@ -82,6 +77,8 @@ class Event:
 
     @property
     def body(self):
+        """The part of an event that gets signed."""
+
         return json.dumps(OrderedDict([
             ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
             ('self_parent', self.parents.self_parent),
@@ -94,12 +91,10 @@ class Event:
     def id(self):
         return self.__id
 
-    @property
-    def short_id(self):
-        return self.id[:6]
-
     @classmethod
     def from_debug_dict(cls, dict_event) -> "Event":
+        """This is only used for the visualization!"""
+
         data = None
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
@@ -116,6 +111,8 @@ class Event:
         return event
 
     def to_debug_dict(self) -> Dict:
+        """This is only used for the visualization!"""
+
         return OrderedDict([
             ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
             ('parents', self.parents),
@@ -132,6 +129,8 @@ class Event:
 
     @classmethod
     def from_dict(cls, dict_event) -> "Event":
+        """Instantiate an event from a dict created with Event.to_dict()."""
+
         data = None
         if dict_event['data'] is not None:
             data = [Transaction.from_dict(x) for x in dict_event['data']]
@@ -142,6 +141,8 @@ class Event:
         return event
 
     def to_dict(self) -> Dict:
+        """Save the event in a dict."""
+
         return OrderedDict([
             ('data', [x.to_dict() for x in self.data] if self.data is not None else None),
             ('parents', self.parents),
@@ -151,6 +152,8 @@ class Event:
         ])
 
     def to_db_tuple(self) -> Tuple:
+        """Save the event in a tuple for being stored in the data base."""
+
         return (
             self.id,
             json.dumps([x.to_dict() for x in self.data]) if self.data is not None else None,
@@ -170,6 +173,8 @@ class Event:
 
     @classmethod
     def from_db_tuple(cls, e: Tuple) -> "Event":
+        """Instantiate an event from a tuple created with Event.to_db_tuple()."""
+
         data = None
         if e[1] is not None:
             data = [Transaction.from_dict(x) for x in json.loads(e[1])]
