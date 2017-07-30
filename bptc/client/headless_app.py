@@ -6,6 +6,9 @@ from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
 from main import __version__
 
+"""The headless client is supposed to run on a server in the background.
+Typical for the headless mode is that there is no user interface."""
+
 
 class HeadlessApp:
     def __init__(self, cl_args):
@@ -38,5 +41,4 @@ class HeadlessApp:
             DB.save(self.network.hashgraph)
 
     def run(self):
-        # TODO: Maybe add registering if not successfully until now
         pass

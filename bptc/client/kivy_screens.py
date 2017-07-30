@@ -248,16 +248,6 @@ class DebugScreen(KivyScreen):
         self.network.reset()
         self.defaults['member_id'] = self.me.formatted_name
 
-    def register(self):
-        """Register at the given registry address."""
-        ip, port = self.get('registering_address').split(':')
-        network_utils.register(self.me.id, self.get('listening_port'), ip, port)
-
-    def query_members(self):
-        """Query members from the given registry address"""
-        ip, port = self.get('query_members_address').split(':')
-        network_utils.query_members(self, ip, port)
-
     def push(self):
         """Push events to the given member address."""
         ip, port = self.get('push_address').split(':')

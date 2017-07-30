@@ -13,6 +13,9 @@ from bptc.data.network import BootstrapPushThread
 from bptc.utils.interactive_shell import InteractiveShell
 from main import __version__
 
+"""The console client is supposed to run on a system, where you only have access via shell.
+It has the same functionality as the GUI client."""
+
 
 class ConsoleApp(InteractiveShell):
     def __init__(self, cl_args):
@@ -27,20 +30,6 @@ class ConsoleApp(InteractiveShell):
             ),
             toggle_pushing=dict(
                 help='Start/Stop pushing to randomly chosen clients',
-            ),
-            register=dict(
-                help='Register this hashgraph member at the registry',
-                args=[
-                    (['target'], dict(default='localhost:9000',
-                     nargs='?', help='Registry address (incl. port)'))
-                ],
-            ),
-            query_members=dict(
-                help='Query network members from registry',
-                args=[
-                    (['target'], dict(default='localhost:9001',
-                     nargs='?', help='Registry address (incl. port)'))
-                ],
             ),
             reset=dict(
                 help='Call this command to reset the local hashgraph',
@@ -139,24 +128,6 @@ class ConsoleApp(InteractiveShell):
         except ValueError:
             print('Error: Unable to extract IP and port. Input was \'{}\''.format(target))
             return None, None
-
-    def cmd_register(self, args):
-        if args.target:
-            ip, port = self.check_input(args.target)
-            if not ip or not port:
-                return
-        else:
-            ip, port = 'localhost', 9000
-        network_utils.register(self.me.id, self.cl_args.port, ip, port)
-
-    def cmd_query_members(self, args):
-        if args.target:
-            ip, port = self.check_input(args.target)
-            if not ip or not port:
-                return
-        else:
-            ip, port = 'localhost', 9001
-        network_utils.query_members(self, ip, port)
 
     def cmd_push(self, args):
         ip, port = self.check_input(args.target)

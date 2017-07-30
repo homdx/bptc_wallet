@@ -17,8 +17,6 @@ from twisted.internet.address import IPv4Address
 import bptc
 from bptc.data.member import Member
 from bptc.protocols.push_protocol import PushServerFactory
-from bptc.protocols.query_members_protocol import QueryMembersClientFactory
-from bptc.protocols.register_protocol import RegisterClientFactory
 from bptc.protocols.pull_protocol import PullServerFactory
 
 
@@ -246,15 +244,6 @@ class Network:
         self.background_push_client_thread.stop()
 
 
-def filter_members_with_address(members: List[Member]) -> List[Member]:
-    """
-    Filters a list of members, only returning those who have a known network address
-    :param members: The list of members to be filtered
-    :return: The filtered lise
-    """
-    return [m for m in members if m.address is not None]
-
-
 class PushingClientThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
@@ -311,6 +300,16 @@ class BootstrapPushThread(threading.Thread):
             self.network.push_to(self.ip, int(self.port))
             time.sleep(2)
 
+
+def filter_members_with_address(members: List[Member]) -> List[Member]:
+    """
+    Filters a list of members, only returning those who have a known network address
+    :param members: The list of members to be filtered
+    :return: The filtered lise
+    """
+    return [m for m in members if m.address is not None]
+
+
 def start_reactor_thread():
     thread = threading.Thread(target=partial(reactor.run, installSignalHandlers=0))
     thread.daemon = True
@@ -319,31 +318,6 @@ def start_reactor_thread():
 
 def stop_reactor_thread():
     reactor.callFromThread(reactor.stop)
-
-
-def register(member_id, listening_port, registry_ip, registry_port):
-    factory = RegisterClientFactory(str(member_id), int(listening_port))
-
-    def register():
-        reactor.connectTCP(registry_ip, int(registry_port), factory)
-    threads.blockingCallFromThread(reactor, register)
-
-
-def process_query(client, members):
-    for member_id, (ip, port) in members.items():
-        if member_id != str(client.me.id):
-            if member_id not in client.hashgraph.known_members:
-                client.hashgraph.known_members[member_id] = Member(member_id, None)
-            client.hashgraph.known_members[member_id].address = IPv4Address('TCP', ip, port)
-            bptc.logger.debug('Member update: {}... to ({}, {})'.format(member_id[:6], ip, port))
-
-
-def query_members(client, query_members_ip, query_members_port):
-    factory = QueryMembersClientFactory(client, lambda x: process_query(client, x))
-
-    def query():
-        reactor.connectTCP(query_members_ip, int(query_members_port), factory)
-    threads.blockingCallFromThread(reactor, query)
 
 
 def start_listening(network, listening_ip, listening_port, allow_reset_signal):

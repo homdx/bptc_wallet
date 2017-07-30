@@ -15,6 +15,8 @@ from bptc.data.hashgraph import init_hashgraph
 Config.set('graphics', 'width', '414')
 Config.set('graphics', 'height', '736')
 
+"The Kivy client is supposed to run on desktop machines and mobile devices."
+
 
 class KivyApp(App):
     def __init__(self, cl_args):
@@ -32,8 +34,6 @@ class KivyApp(App):
         defaults = {
             'listening_port': bptc.port,
             'push_address': bptc.ip + ':8000',
-            'registering_address': bptc.ip + ':9000',
-            'query_members_address': bptc.ip + ':9001',
             'member_id': self.network.me.formatted_name
         }
 

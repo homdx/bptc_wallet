@@ -289,6 +289,7 @@ def filter_valid_events(events: Dict[str, Event]) -> Dict[str, Event]:
 
 
 def init_hashgraph(app):
+    """Loads the hashgraph from file or creates a new one, if the file doesn't exist."""
     from bptc.data.db import DB
     from bptc.data.network import Network
 
