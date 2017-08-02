@@ -12,7 +12,7 @@ You also need the libsodium.so for libnacl - Therefore download it from [here](h
 If you only want to run the application via the CLI you don't have to install all modules
 named in requirements.txt. Instead you can use requirements_cli.txt.
 
-## Start UI client
+## Run Kivy App (GUI)
 ```shell
   python main.py
 ```
@@ -23,7 +23,7 @@ If you get an error on startup, the `python` binary on your system might be Pyth
   python3 main.py
 ```
 
-## Start CLI client
+## Run Console App (CLI)
 ```shell
   python main.py -cli
 ```
@@ -32,6 +32,11 @@ If you get an error on startup, the `python` binary on your system might be Pyth
 
 ```shell
   python3 main.py -cli
+```
+
+## Run Headless App
+```shell
+  python main.py --headless
 ```
 
 ## Visualization
@@ -50,3 +55,5 @@ You can find detailed descriptions on how to use docker in our repository in the
 ```shell
   docker build . -t chaoste/bptc
 ```
+
+For more information look in the [Wiki](https://github.com/ceddie/bptc_wallet/wiki)!
