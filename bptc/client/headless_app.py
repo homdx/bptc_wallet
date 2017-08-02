@@ -4,6 +4,7 @@ import bptc
 import bptc.data.network as network_utils
 from bptc.data.db import DB
 from bptc.data.hashgraph import init_hashgraph
+from bptc.data.network import BootstrapPushThread
 from main import __version__
 
 """The headless client is supposed to run on a server in the background.
@@ -24,9 +25,16 @@ class HeadlessApp:
         network_utils.start_reactor_thread()
         # start listening to network communication
         network_utils.start_listening(self.network, bptc.ip, bptc.port, self.cl_args.dirty)
+        bptc.logger.info('Push randomly and listen to pushs')
+        self.network.start_push_thread()
+
+        if self.cl_args.bootstrap_push:
+            ip, port = self.cl_args.bootstrap_push.split(':')
+            thread = BootstrapPushThread(ip, port, self.network)
+            thread.daemon = True
+            thread.start()
+
         try:
-            bptc.logger.info('Push randomly and listen to pushs')
-            self.network.start_push_thread()
             while True:
                 time.sleep(30)
         except (EOFError, KeyboardInterrupt):
