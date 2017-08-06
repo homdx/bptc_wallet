@@ -13,6 +13,8 @@ If you only want to run the application via the CLI you don't have to install al
 named in requirements.txt. Instead you can use requirements_cli.txt.
 
 ## Run Kivy App (GUI)
+You can download the android app [here](https://drive.google.com/open?id=0B6JQcxQ0IGR4NXpEQV9hMnRqVEk).
+
 ```shell
   python main.py
 ```
@@ -24,6 +26,7 @@ If you get an error on startup, the `python` binary on your system might be Pyth
 ```
 
 ## Run Console App (CLI)
+
 ```shell
   python main.py -cli
 ```
