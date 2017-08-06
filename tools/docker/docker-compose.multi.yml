@@ -2,29 +2,29 @@ version: "3"
 services:
   client1:
     image: chaoste/bptc
-    command: python main.py --headless -p 8100
+    command: python main.py --headless -p 8000 -o demo_setup\stakeholders\1\data
     tty: true
     ports:
-      - "8100:8100"
-      - "8101:8101"
+      - "8000:8000"
+      - "8001:8001"
   client2:
     image: chaoste/bptc
-    command: python main.py --headless -p 8102
+    command: python main.py --headless -p 8002 -o demo_setup\stakeholders\2\data
     tty: true
     ports:
-      - "8102:8102"
-      - "8103:8103"
+      - "8002:8002"
+      - "8003:8003"
   client3:
     image: chaoste/bptc
-    command: python main.py --headless -p 8104
+    command: python main.py --headless -p 8004 -o demo_setup\stakeholders\3\data
     tty: true
     ports:
-      - "8104:8104"
-      - "8105:8105"
+      - "8004:8004"
+      - "8005:8005"
   client4:
     image: chaoste/bptc
-    command: python main.py --headless -p 8106
+    command: python main.py --headless -p 8006 -o demo_setup\stakeholders\4\data
     tty: true
     ports:
-      - "8106:8106"
-      - "8107:8107"
+      - "8006:8006"
+      - "8007:8007"
