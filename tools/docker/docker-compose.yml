@@ -1,0 +1,40 @@
+version: "3"
+services:
+  client1:
+    image: chaoste/bptc
+    command: python main.py --headless -p 8000 -o demo_setup/stakeholders/1/data -bp client4:8006
+    tty: true
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    networks:
+      - bptc
+  client2:
+    image: chaoste/bptc
+    command: python main.py --headless -p 8002 -o demo_setup/stakeholders/2/data -bp client1:8000
+    tty: true
+    ports:
+      - "8002:8002"
+      - "8003:8003"
+    networks:
+      - bptc
+  client3:
+    image: chaoste/bptc
+    command: python main.py --headless -p 8004 -o demo_setup/stakeholders/3/data -bp client2:8002
+    tty: true
+    ports:
+      - "8004:8004"
+      - "8005:8005"
+    networks:
+      - bptc
+  client4:
+    image: chaoste/bptc
+    command: python main.py --headless -p 8006 -o demo_setup/stakeholders/4/data -bp client3:8004
+    tty: true
+    ports:
+      - "8006:8006"
+      - "8007:8007"
+    networks:
+      - bptc
+networks:
+  bptc:
