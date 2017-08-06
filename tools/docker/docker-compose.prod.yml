@@ -4,15 +4,15 @@ services:
     image: chaoste/bptc
     # You can get the IP of the registry container by running the following:
     # docker inspect bptc_registry_1 | grep IP
-    command: python main.py --headless -p 8000
+    command: python main.py --headless -p 8100
     tty: true
     volumes:
       # Run following commad to create the volume:
       # docker volume create bptc_client1
       - bptc_client1:/home/bptc_wallet/data
     ports:
-      - "8000:8000"
-      - "8001:8001"
+      - "8100:8100"
+      - "8101:8101"
 volumes:
   bptc_client1:
     driver: local
