@@ -149,7 +149,7 @@ class ConsoleApp(InteractiveShell):
         do_it = confirm('Are you sure you want to reset the local hashgraph? (y/n) ')
         if do_it:
             bptc.logger.warn('Deleting local database containing the hashgraph')
-            self.network.reset(self)
+            self.network.reset()
 
     def cmd_status(self, args):
         print('--- {} ---'.format(repr(self.me)))

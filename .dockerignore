@@ -29,7 +29,7 @@ share/
 .buildozer/
 
 # Database
-/data.db
+data/
 
 # apk
 bin/

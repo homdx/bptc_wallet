@@ -3,13 +3,14 @@ services:
   client:
     image: chaoste/bptc
     command: python main.py -cli -p 8000
+    # CLI will try to connect to the TTY
     tty: true
     stdin_open: true
     volumes:
-      - bptc_client:/home/bptc_wallet/data
+      - client:/home/bptc_wallet/data
     ports:
       - "8000:8000"
       - "8001:8001"
 volumes:
-  bptc_client:
+  client:
     driver: local
