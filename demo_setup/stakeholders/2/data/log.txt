@@ -71,3 +71,53 @@
 2017-07-18 10:26:31,221 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
 2017-07-18 10:26:31,224 [DEBUG] 1 parts to send:
 2017-07-18 10:26:31,225 [DEBUG] - sent part 1
+2017-08-06 22:06:56,685 [DEBUG] Loaded 1 events from DB.
+2017-08-06 22:06:56,689 [INFO] Push server listens on port 8002
+2017-08-06 22:06:56,691 [INFO] [Pull server (for viz tool) listens on port 8003]
+2017-08-06 22:06:56,693 [DEBUG] Push to HIogl7... (localhost, 8002)
+2017-08-06 22:06:56,702 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:06:56,765 [WARNING] No data received!
+2017-08-06 22:06:56,766 [WARNING] Could not parse JSON message
+2017-08-06 22:06:57,742 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:06:58,759 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)
+2017-08-06 22:06:59,766 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:06:59,771 [DEBUG] - Received 11 events
+2017-08-06 22:06:59,776 [DEBUG] Processing 11 events from YM9Ohd...
+2017-08-06 22:06:59,794 [DEBUG] - Received 3 members
+2017-08-06 22:07:00,772 [DEBUG] - Received 17 events
+2017-08-06 22:07:00,776 [DEBUG] Processing 17 events from uSN8O+...
+2017-08-06 22:07:00,792 [DEBUG] - Received 3 members
+2017-08-06 22:07:00,793 [DEBUG] - Received 4 events
+2017-08-06 22:07:00,795 [DEBUG] Processing 4 events from 0MN1pU...
+2017-08-06 22:07:00,799 [DEBUG] - Received 3 members
+2017-08-06 22:07:00,807 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:01,758 [DEBUG] - Received 1 events
+2017-08-06 22:07:01,758 [DEBUG] Processing 1 events from uSN8O+...
+2017-08-06 22:07:01,762 [DEBUG] - Received 3 members
+2017-08-06 22:07:01,826 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:02,781 [DEBUG] - Received 3 events
+2017-08-06 22:07:02,782 [DEBUG] Processing 3 events from YM9Ohd...
+2017-08-06 22:07:02,788 [DEBUG] - Received 3 members
+2017-08-06 22:07:02,845 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:03,838 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:04,736 [DEBUG] - Received 3 events
+2017-08-06 22:07:04,737 [DEBUG] Processing 3 events from uSN8O+...
+2017-08-06 22:07:04,742 [DEBUG] - Received 3 members
+2017-08-06 22:07:04,793 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:05,717 [DEBUG] - Received 6 events
+2017-08-06 22:07:05,719 [DEBUG] Processing 6 events from 0MN1pU...
+2017-08-06 22:07:05,730 [DEBUG] - Received 3 members
+2017-08-06 22:07:05,758 [DEBUG] - Received 7 events
+2017-08-06 22:07:05,759 [DEBUG] Processing 7 events from uSN8O+...
+2017-08-06 22:07:05,768 [DEBUG] - Received 3 members
+2017-08-06 22:07:05,790 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:06,719 [DEBUG] - Received 6 events
+2017-08-06 22:07:06,720 [DEBUG] Processing 6 events from 0MN1pU...
+2017-08-06 22:07:06,725 [DEBUG] - Received 3 members
+2017-08-06 22:07:06,786 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:07,739 [DEBUG] - Received 3 events
+2017-08-06 22:07:07,740 [DEBUG] Processing 3 events from 0MN1pU...
+2017-08-06 22:07:07,750 [DEBUG] Fame is completely decided for round 1
+2017-08-06 22:07:07,775 [DEBUG] - Received 3 members
+2017-08-06 22:07:07,775 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:08,789 [DEBUG] Push to 0MN1pU... (127.0.0.1, 8004)

@@ -32,8 +32,9 @@ libsodium.so
 /data/
 /backup/
 
-hello.py
-
 # db analyzer
 db_analyzer.cprof
 tools/db_analyzer_log.txt
+
+# android app
+*.apk

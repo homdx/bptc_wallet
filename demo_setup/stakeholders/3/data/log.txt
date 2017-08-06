@@ -67,3 +67,41 @@
 2017-07-18 10:26:30,240 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
 2017-07-18 10:26:30,244 [DEBUG] 1 parts to send:
 2017-07-18 10:26:30,244 [DEBUG] - sent part 1
+2017-08-06 22:06:56,688 [DEBUG] Loaded 1 events from DB.
+2017-08-06 22:06:56,692 [INFO] Push server listens on port 8004
+2017-08-06 22:06:56,694 [INFO] [Pull server (for viz tool) listens on port 8005]
+2017-08-06 22:06:56,696 [DEBUG] Push to 0MN1pU... (localhost, 8004)
+2017-08-06 22:06:56,702 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-08-06 22:06:56,758 [DEBUG] - Received 1 events
+2017-08-06 22:06:56,763 [DEBUG] Processing 1 events from YM9Ohd...
+2017-08-06 22:06:56,765 [DEBUG] - Received 2 members
+2017-08-06 22:06:57,745 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:06:58,765 [DEBUG] - Received 1 events
+2017-08-06 22:06:58,766 [DEBUG] Processing 1 events from HIogl7...
+2017-08-06 22:06:58,768 [DEBUG] - Received 3 members
+2017-08-06 22:06:58,768 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:06:59,774 [DEBUG] Push to uSN8O+... (127.0.0.1, 8006)
+2017-08-06 22:07:00,784 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-08-06 22:07:01,752 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:02,752 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:02,766 [DEBUG] - Received 19 events
+2017-08-06 22:07:02,771 [DEBUG] Processing 19 events from uSN8O+...
+2017-08-06 22:07:02,795 [DEBUG] - Received 3 members
+2017-08-06 22:07:03,708 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:03,793 [DEBUG] - Received 7 events
+2017-08-06 22:07:03,795 [DEBUG] Processing 7 events from YM9Ohd...
+2017-08-06 22:07:03,804 [DEBUG] - Received 3 members
+2017-08-06 22:07:04,717 [DEBUG] Push to YM9Ohd... (127.0.0.1, 8000)
+2017-08-06 22:07:05,711 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-08-06 22:07:06,713 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-08-06 22:07:06,753 [DEBUG] - Received 9 events
+2017-08-06 22:07:06,757 [DEBUG] Processing 9 events from uSN8O+...
+2017-08-06 22:07:06,769 [DEBUG] Fame is completely decided for round 1
+2017-08-06 22:07:06,781 [DEBUG] - Received 3 members
+2017-08-06 22:07:07,734 [DEBUG] Push to HIogl7... (127.0.0.1, 8002)
+2017-08-06 22:07:07,745 [DEBUG] - Received 12 events
+2017-08-06 22:07:07,750 [DEBUG] Processing 12 events from uSN8O+...
+2017-08-06 22:07:07,767 [DEBUG] - Received 3 members
+2017-08-06 22:07:07,862 [DEBUG] - Received 10 events
+2017-08-06 22:07:07,865 [DEBUG] Processing 10 events from YM9Ohd...
+2017-08-06 22:07:07,878 [DEBUG] - Received 3 members
