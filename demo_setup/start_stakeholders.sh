@@ -10,10 +10,10 @@ do
     ip='0.0.0.0'
 
     # auto-close terminal
-    gnome-terminal --tab -e "/bin/bash -c '../main.py -o stakeholders/$i/data -cli -ip $ip -p $port'"
+    gnome-terminal --tab -e "/bin/bash -c '../main.py -o stakeholders/$i/data -cli -ip $ip -p $port -bp localhost:8000'"
 
     # don't auto-close terminal
-    #gnome-terminal --tab -e "/bin/bash -c '../main.py -o stakeholders/$i/data -cli -ip $ip -p $port; exec /bin/bash -i'"
+    #gnome-terminal --tab -e "/bin/bash -c '../main.py -o stakeholders/$i/data -cli -ip $ip -p $port -bp localhost:8000; exec /bin/bash -i'"
 
     port=$((port+2))
 done
