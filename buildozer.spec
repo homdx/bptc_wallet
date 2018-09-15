@@ -103,7 +103,7 @@ android.permissions = INTERNET
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = ~/Android/crystax-ndk-10.3.2
+android.ndk_path = ~/.buildozer/crystax-ndk-10.3.1
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =
