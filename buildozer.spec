@@ -36,7 +36,7 @@ version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = python3crystax,kivy,twisted,libnacl,toposort,dateutil,cachetools
+requirements = python3crystax,kivy,twisted,libnacl,toposort,dateutil,cachetools,bokeh==0.12.6,Pillow==4.1.1,prompt-toolkit==1.0.14,py-dateutil==2.2,toposort==1.5,Twisted==17.1.0.,service_identity==17.0.0,python-dateutil==2.6.0,pygame>=1.9
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -103,7 +103,7 @@ android.permissions = INTERNET
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = ~/.buildozer/crystax-ndk-10.3.1
+# android.ndk_path = ~/.buildozer/crystax-ndk-10.3.1
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =
@@ -190,7 +190,7 @@ android.arch = armeabi-v7a
 #
 
 # (str) python-for-android git clone directory (if empty, it will be automatically cloned from github)
-p4a.source_dir = ~/git/python-for-android
+# p4a.source_dir = ~/git/python-for-android
 
 # (str) The directory in which python-for-android should look for your own build recipes (if any)
 #p4a.local_recipes =
