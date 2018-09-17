@@ -65,6 +65,6 @@ RUN chown user /home/user/ -R && chown user /home/user/hostcwd
 
 USER ${USER}
 
-COPY buildozer.spec main.py patch-zmey.patch ${WORK_DIR}/
+COPY . .
 
 RUN buildozer android debug || /bin/true
